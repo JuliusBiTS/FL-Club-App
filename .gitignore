@@ -1,0 +1,49 @@
+# Flutter / Dart
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/android/.gradle/
+**/android/local.properties
+**/android/key.properties
+**/*.g.dart
+**/*.freezed.dart
+**/*.gr.dart
+!**/lib/**/*.g.dart.example
+
+# Generated localization
+**/lib/l10n/generated/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+supabase/.env
+supabase/.temp/
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+*.jks
+*.keystore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (WordPress plugin tooling, admin build tools if any)
+node_modules/
+
+# Logs
+*.log
