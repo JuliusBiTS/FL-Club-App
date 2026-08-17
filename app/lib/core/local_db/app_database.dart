@@ -201,6 +201,42 @@ class AppDatabase extends _$AppDatabase {
     return (select(cachedEvents)..where((t) => t.slug.equals(slug))).getSingleOrNull();
   }
 
+  Future<void> upsertArticles(List<(String id, String slug, DateTime publishedAt, String json)> rows) {
+    return batch((batchBuilder) {
+      for (final row in rows) {
+        batchBuilder.insert(
+          cachedArticles,
+          CachedArticlesCompanion.insert(id: row.$1, slug: row.$2, publishedAt: row.$3, json: row.$4),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  Future<List<CachedArticle>> articlesSortedByPublished() {
+    return (select(cachedArticles)..orderBy([(t) => OrderingTerm.desc(t.publishedAt)])).get();
+  }
+
+  Future<CachedArticle?> articleBySlug(String slug) {
+    return (select(cachedArticles)..where((t) => t.slug.equals(slug))).getSingleOrNull();
+  }
+
+  Future<void> upsertPodcastEpisodes(List<(String id, String guid, DateTime publishedAt, String json)> rows) {
+    return batch((batchBuilder) {
+      for (final row in rows) {
+        batchBuilder.insert(
+          cachedPodcastEpisodes,
+          CachedPodcastEpisodesCompanion.insert(id: row.$1, guid: row.$2, publishedAt: row.$3, json: row.$4),
+          mode: InsertMode.insertOrReplace,
+        );
+      }
+    });
+  }
+
+  Future<List<CachedPodcastEpisode>> podcastEpisodesSortedByPublished() {
+    return (select(cachedPodcastEpisodes)..orderBy([(t) => OrderingTerm.desc(t.publishedAt)])).get();
+  }
+
   Future<void> saveScanPack(
     String eventId,
     DateTime expiresAt,

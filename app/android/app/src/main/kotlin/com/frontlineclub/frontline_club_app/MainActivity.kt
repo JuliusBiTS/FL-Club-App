@@ -1,7 +1,7 @@
 package com.frontlineclub.frontline_club_app
 
 import android.view.WindowManager
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -16,7 +16,12 @@ import io.flutter.plugin.common.MethodChannel
 // restores whatever the system/user setting was.
 private const val SECURE_SCREEN_CHANNEL = "flc/secure_screen"
 
-class MainActivity : FlutterActivity() {
+// audio_service (M8, briefing §9.8) requires the launch Activity to extend
+// its own AudioServiceActivity rather than plain FlutterActivity — it binds
+// the Activity's FlutterEngine to the background playback service that
+// drives lock screen/notification controls. Without this, AudioService.init
+// throws "wrong Activity class" at startup and podcast playback can't work.
+class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SECURE_SCREEN_CHANNEL)

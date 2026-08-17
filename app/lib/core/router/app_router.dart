@@ -13,6 +13,7 @@ import '../../features/events/presentation/events_feed_screen.dart';
 import '../../features/loyalty/loyalty_screen.dart';
 import '../../features/membership/membership_interest_screen.dart';
 import '../../features/podcast/podcast_screen.dart';
+import '../../features/read/presentation/article_detail_screen.dart';
 import '../../features/read/read_screen.dart';
 import '../../features/scanner/scanner_screen.dart';
 import '../../features/shell/app_shell.dart';
@@ -78,7 +79,18 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
             routes: <RouteBase>[GoRoute(path: '/podcast', builder: (context, state) => const PodcastScreen())],
           ),
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: '/read', builder: (context, state) => const ReadScreen())],
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/read',
+                builder: (context, state) => const ReadScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: ':slug',
+                    builder: (context, state) => ArticleDetailScreen(slug: state.pathParameters['slug']!),
+                  ),
+                ],
+              ),
+            ],
           ),
           StatefulShellBranch(
             routes: <RouteBase>[

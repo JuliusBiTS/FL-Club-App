@@ -70,8 +70,38 @@ Deno.serve(async (req) => {
   return jsonResponse({ upserted });
 });
 
+// Title/excerpt are shown as plain text (Flutter Text widgets), unlike
+// content_html which goes through an HTML renderer that decodes entities
+// itself — these two need decoding here or WordPress's literal "&nbsp;"
+// etc. shows up verbatim on screen.
+const HTML_ENTITIES: Record<string, string> = {
+  nbsp: " ",
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  "#039": "'",
+  hellip: "…",
+  mdash: "—",
+  ndash: "–",
+  ldquo: "“",
+  rdquo: "”",
+  lsquo: "‘",
+  rsquo: "’",
+};
+
+function decodeHtmlEntities(text: string): string {
+  return text.replace(/&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z]+\d*);/g, (match, entity) => {
+    if (entity in HTML_ENTITIES) return HTML_ENTITIES[entity];
+    if (entity.startsWith("#x")) return String.fromCodePoint(parseInt(entity.slice(2), 16));
+    if (entity.startsWith("#")) return String.fromCodePoint(parseInt(entity.slice(1), 10));
+    return match;
+  });
+}
+
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  return decodeHtmlEntities(html.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
 }
 
 interface WpPost {
