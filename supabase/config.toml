@@ -31,7 +31,7 @@ enable_confirmations = false
 
 [storage]
 enabled = true
-file_size_limit = "10MiB"
+file_size_limit = "50MiB"
 
 [edge_runtime]
 enabled = true
