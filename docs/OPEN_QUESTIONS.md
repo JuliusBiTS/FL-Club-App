@@ -8,7 +8,7 @@ Loyalty rules are fixed (see `DECISIONS.md`). Free member reservations are expli
 
 ## Technical / access — these block real milestones, chase them early
 
-- [ ] **Stripe** — access to the club's existing account (WooCommerce Stripe is already installed on the site) or authority to create a new one. Apply for the nonprofit rate at the same time. **Blocks M3.**
+- [ ] **Stripe** — access to the club's existing account (WooCommerce Stripe is already installed on the site) or authority to create a new one. Apply for the nonprofit rate at the same time. **Does not block M3 anymore** — the whole checkout flow (Edge Functions deployed, Flutter UI built) is done and waiting; see `docs/STRIPE_SETUP.md` for the exact remaining steps once access exists (two secrets + one webhook registration, no code changes).
 - [ ] **Eventbrite** — organiser account API token (organiser ID `29840816681`). **Blocks M9.**
 - [ ] **WordPress** — staging access + permission to install a small custom plugin (`wordpress-plugin/`). If custom plugins are refused, fall back to an iframe-free JS embed served from Supabase (worse for SEO, no plugin needed). **Blocks M8.**
 - [ ] **Podcast RSS** — canonical feed URL from Spotify for Creators (show settings; Apple Podcasts show id `1744425242`). **Blocks M8.**

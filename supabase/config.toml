@@ -38,3 +38,37 @@ enabled = true
 
 [analytics]
 enabled = false
+
+# Per-function JWT verification, declared explicitly rather than relying on
+# `--no-verify-jwt` at deploy time — that flag's effect turned out to be
+# sticky server-side across redeploys that omit it, so the only reliable
+# way to keep this correct is to state it here and let every deploy
+# reconcile against it. User-facing functions (called with the caller's own
+# session) verify a real JWT; functions Stripe or pg_cron call directly
+# don't carry one at all, so they can't.
+[functions.create-order]
+verify_jwt = true
+[functions.refund-order]
+verify_jwt = true
+[functions.delete-account]
+verify_jwt = true
+[functions.get-member-card]
+verify_jwt = true
+[functions.get-scan-pack]
+verify_jwt = true
+[functions.verify-scan]
+verify_jwt = true
+[functions.membership-apply]
+verify_jwt = false # briefing §4/§9.7: guests (no account) can also register interest
+[functions.stripe-webhook]
+verify_jwt = false # Stripe calls this with its own signature, not a Supabase JWT — see §13.1 T8
+[functions.expire-pending-orders]
+verify_jwt = false # pg_cron-triggered
+[functions.eventbrite-sync]
+verify_jwt = false # pg_cron-triggered
+[functions.podcast-sync]
+verify_jwt = false # pg_cron-triggered
+[functions.wordpress-sync]
+verify_jwt = false # pg_cron-triggered
+[functions.purge-deleted-accounts]
+verify_jwt = false # pg_cron-triggered

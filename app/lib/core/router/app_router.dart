@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/account_screen.dart';
 import '../../features/account/presentation/delete_account_screen.dart';
 import '../../features/account/presentation/sign_in_screen.dart';
+import '../../features/checkout/domain/checkout_args.dart';
+import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/events_feed_screen.dart';
 import '../../features/loyalty/loyalty_screen.dart';
@@ -38,6 +40,15 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: <RouteBase>[
       GoRoute(path: '/sign-in', builder: (context, state) => const SignInScreen()),
+      // Full-screen, outside the shell (no bottom nav) — briefing §9.3's
+      // four-step flow is its own focused task, not a tab. Lives at the
+      // full path rather than nested under the /events branch so it can
+      // stay outside the StatefulShellRoute while still reading as
+      // "checkout for this event" in the URL.
+      GoRoute(
+        path: '/events/:slug/checkout',
+        builder: (context, state) => CheckoutScreen(args: state.extra! as CheckoutArgs),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[

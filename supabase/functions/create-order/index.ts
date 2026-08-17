@@ -69,10 +69,14 @@ Deno.serve(async (req) => {
     currency: string;
   }>)[0];
 
-  const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), { apiVersion: "2024-06-20" });
-
   let paymentIntent: Stripe.PaymentIntent;
   try {
+    // Constructing the Stripe client (and therefore reading
+    // STRIPE_SECRET_KEY) happens inside this try too — until the club
+    // connects a real Stripe account this throws on every checkout, and
+    // that must still release the inventory hold and return a clean
+    // error rather than an opaque 500.
+    const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), { apiVersion: "2024-06-20" });
     paymentIntent = await stripe.paymentIntents.create(
       {
         amount: reservation.total_minor,

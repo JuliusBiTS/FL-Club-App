@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/profile_provider.dart';
+import '../../core/ui/membership_handle_visibility.dart';
 import '../membership/membership_card_handle.dart';
 
 /// Bottom navigation shell — briefing §9.0. Four tabs for everyone, a
@@ -19,6 +20,7 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
+    final bool showHandle = ref.watch(showMembershipHandleProvider);
 
     final destinations = <NavigationDestination>[
       const NavigationDestination(
@@ -55,7 +57,10 @@ class AppShell extends ConsumerWidget {
           navigationShell,
           // Reachable from anywhere in one gesture, opens in <300ms, never
           // needs a network call (briefing §9.6) — sits just above the bar.
-          const Positioned(left: 0, right: 0, bottom: 0, child: MembershipCardHandle()),
+          // Hidden while a screen-specific bottom bar (e.g. event detail's
+          // "Get tickets") claims the same space — see
+          // showMembershipHandleProvider's doc comment.
+          if (showHandle) const Positioned(left: 0, right: 0, bottom: 0, child: MembershipCardHandle()),
         ],
       ),
       bottomNavigationBar: NavigationBar(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../sections/admin_sections.dart';
+import '../sections/orders_section.dart';
 
 /// Desktop-first console shell — briefing §9.12. Wide NavigationRail
 /// rather than the mobile app's bottom nav; this runs in a browser tab on
@@ -18,7 +19,7 @@ class _AdminShellState extends State<AdminShell> {
   static const _sections = <(String, IconData, Widget)>[
     ('Dashboard', Icons.dashboard_outlined, dashboardSection),
     ('Events', Icons.event_outlined, eventsSection),
-    ('Orders', Icons.receipt_long_outlined, ordersSection),
+    ('Orders', Icons.receipt_long_outlined, OrdersSection()),
     ('Attendees', Icons.groups_outlined, attendeesSection),
     ('Members', Icons.badge_outlined, membersSection),
     ('Applications', Icons.mark_email_unread_outlined, applicationsSection),

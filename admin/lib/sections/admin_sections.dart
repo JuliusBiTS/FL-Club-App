@@ -39,11 +39,6 @@ const eventsSection = AdminSectionPlaceholder(
   description: 'Create/edit/publish/cancel events, manage ticket types, split capacity between app and Eventbrite, duplicate a recurring format.',
 );
 
-const ordersSection = AdminSectionPlaceholder(
-  title: 'Orders',
-  description: 'Search, view, resend confirmation, refund (full or partial) — calls supabase/functions/refund-order.',
-);
-
 const attendeesSection = AdminSectionPlaceholder(
   title: 'Attendees',
   description: 'Per-event list, export CSV, live check-in status.',
