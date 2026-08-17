@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/account/account_screen.dart';
+import '../../features/account/presentation/delete_account_screen.dart';
+import '../../features/account/presentation/sign_in_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/events_feed_screen.dart';
 import '../../features/loyalty/loyalty_screen.dart';
@@ -35,6 +37,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: <RouteBase>[
+      GoRoute(path: '/sign-in', builder: (context, state) => const SignInScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[
@@ -67,6 +70,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
                   GoRoute(path: 'tickets', builder: (context, state) => const TicketsScreen()),
                   GoRoute(path: 'loyalty', builder: (context, state) => const LoyaltyScreen()),
                   GoRoute(path: 'become-a-member', builder: (context, state) => const MembershipInterestScreen()),
+                  GoRoute(path: 'delete-account', builder: (context, state) => const DeleteAccountScreen()),
                 ],
               ),
             ],
