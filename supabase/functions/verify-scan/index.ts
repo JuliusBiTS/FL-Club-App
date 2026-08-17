@@ -31,7 +31,15 @@ const ticketScanItem = z.object({
   was_offline: z.boolean().default(false),
 });
 
-const bodySchema = z.discriminatedUnion("kind", [
+// Not z.discriminatedUnion: it requires every branch to have a UNIQUE
+// discriminator value, but the two membership branches both need
+// kind === "membership" (manual vs QR is a second axis, not a variant of
+// the same one) — z.discriminatedUnion throws at module load if two
+// branches share a discriminator literal, which crashed every membership
+// call with an opaque 500 until this was caught by live-testing M5's
+// manual lookup path. z.union has no such constraint: it just tries each
+// branch in order.
+const bodySchema = z.union([
   z.object({
     kind: z.literal("ticket"),
     event_id: z.string().uuid(),
