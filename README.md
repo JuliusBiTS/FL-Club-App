@@ -1,8 +1,6 @@
-# Frontline Club — Mobile App
+# Mobile App
 
-Ticketing, membership, podcast and news app for [The Frontline Club](https://www.frontlineclub.com) — built to replace Eventbrite fees with direct Stripe checkout and give members a real digital membership card.
-
-Full product/engineering spec: see the original briefing (kept by the project owner) and [`docs/DECISIONS.md`](docs/DECISIONS.md) / [`docs/OPEN_QUESTIONS.md`](docs/OPEN_QUESTIONS.md) below for the parts that matter day to day.
+Ticketing, membership, podcast and news app built with Flutter and Supabase.
 
 ## Layout (monorepo)
 
@@ -14,7 +12,7 @@ supabase/
   migrations/         Postgres schema + RLS, applied in order
   functions/          Edge Functions (Deno) — the only code that talks to Stripe/Eventbrite/WordPress
   seed.sql            Demo data for local dev
-wordpress-plugin/     [frontline_events] shortcode/block that renders from the Supabase API
+wordpress-plugin/     Shortcode/block that renders from the Supabase API
 docs/                 Decisions already made, open questions still blocking work
 ```
 
@@ -22,15 +20,13 @@ docs/                 Decisions already made, open questions still blocking work
 
 Flutter (Riverpod, go_router, freezed) · Supabase (Postgres + Auth + Storage + Edge Functions) · Stripe · Firebase Cloud Messaging · Drift (local cache) · flutter_secure_storage.
 
-Nothing here needs a paid tier at the club's scale — see cost notes in `docs/DECISIONS.md`.
-
 ## Getting started
 
 ### 1. Install the Flutter SDK
-See the step-by-step Windows guide the assistant gave at project kickoff, or https://docs.flutter.dev/get-started/install. Run `flutter doctor` until it's clean (Android toolchain at minimum; Xcode only needed once iOS work starts).
+https://docs.flutter.dev/get-started/install. Run `flutter doctor` until it's clean (Android toolchain at minimum; Xcode only needed once iOS work starts).
 
 ### 2. Create a Supabase project
-Free tier, **EU or UK region** (cannot be changed later). Then:
+Free tier is enough to start. Then:
 ```bash
 cd supabase
 supabase link --project-ref <your-project-ref>
@@ -52,24 +48,6 @@ cd admin
 flutter pub get
 flutter run -d chrome
 ```
-
-## Delivery plan
-
-Ten milestones, each demonstrable end to end. See the full breakdown in the briefing §18; short version:
-
-- [x] **M0** Foundations — repo, CI, schema, RLS, design tokens
-- [x] **M1** Events, read-only
-- [x] **M2** Accounts
-- [x] **M3** Payments (Stripe checkout) — built and live-tested end to end; only Stripe credentials remain, see `docs/STRIPE_SETUP.md`
-- [x] **M4** Tickets (rotating signed QR wallet) — built, deployed, and confirmed live end to end (real ticket, real rotating QR, FLAG_SECURE)
-- [x] **M5** Scanner (staff door mode, offline) — built, deployed, and confirmed live end to end (staff gate, offline pack download, membership lookup); real-camera QR detection relies on mobile_scanner (not independently re-tested against a physical code, see summary)
-- [x] **M6** Membership (the card) — built, deployed, and confirmed live end to end (photo/barcode/PIN/rotating QR all render, FLAG_SECURE, cross-verified against the M5 staff scanner, guest interest form)
-- [ ] **M7** Loyalty
-- [ ] **M8** Content (podcast RSS, news, WordPress plugin)
-- [ ] **M9** Hardening & launch (Android)
-- [ ] **M10** iOS
-
-Ship M0–M5 before demoing to club staff — a demo that can't sell a ticket and scan it at a door doesn't answer the question they care about.
 
 ## The one thing to get right
 

@@ -4,6 +4,7 @@ import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/env.dart';
 import '../data/checkout_repository.dart';
@@ -15,10 +16,11 @@ import '../domain/checkout_args.dart';
 /// payment…" with a 60s timeout and a "we'll email you" fallback rather
 /// than a false failure (§9.3 step 5).
 class PaymentStep extends ConsumerStatefulWidget {
-  const PaymentStep({required this.args, required this.onPaid, super.key});
+  const PaymentStep({required this.args, required this.onPaid, this.useLoyaltyReward = false, super.key});
 
   final CheckoutArgs args;
   final void Function(String orderId, String reference) onPaid;
+  final bool useLoyaltyReward;
 
   @override
   ConsumerState<PaymentStep> createState() => _PaymentStepState();
@@ -98,6 +100,7 @@ class _PaymentStepState extends ConsumerState<PaymentStep> {
             eventId: widget.args.eventId,
             ticketTypeId: widget.args.ticketTypeId,
             quantity: widget.args.quantity,
+            useLoyaltyReward: widget.useLoyaltyReward,
           );
 
       await Stripe.instance.initPaymentSheet(
@@ -129,9 +132,19 @@ class _PaymentStepState extends ConsumerState<PaymentStep> {
       if (!mounted) return;
       setState(() {
         _phase = _Phase.error;
-        _errorMessage = 'Something went wrong. No money has been taken.';
+        // create-order surfaces reserve_order_inventory's validation errors
+        // as plain English (§16.4) — e.g. "No free ticket is available to
+        // use." if the reward was spent elsewhere between page load and
+        // submit. Show that directly rather than a generic message.
+        _errorMessage = e is FunctionException ? _serverMessage(e) : 'Something went wrong. No money has been taken.';
       });
     }
+  }
+
+  String _serverMessage(FunctionException e) {
+    final details = e.details;
+    if (details is Map && details['error'] is String) return details['error'] as String;
+    return 'Something went wrong. No money has been taken.';
   }
 
   void _watchForPaid(String orderId, String reference) {
