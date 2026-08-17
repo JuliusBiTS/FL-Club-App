@@ -1,0 +1,34 @@
+name: frontline_club_admin
+description: Frontline Club admin console — events, orders, members, staff, audit log.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+# See app/README.md for the equivalent note: run
+#   flutter create --org com.frontlineclub --project-name frontline_club_admin --platforms web .
+# from this directory before the first `flutter run -d chrome`.
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flc_core:
+    path: ../packages/flc_core
+
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  supabase_flutter: ^2.8.0
+  intl: ^0.19.0
+  data_table_2: ^2.5.16 # sortable/filterable tables for Orders/Members/Attendees, briefing §9.12
+  file_picker: ^8.1.4 # CSV import for SHEEP CRM reconciliation, briefing §12.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

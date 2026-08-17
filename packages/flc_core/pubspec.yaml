@@ -1,0 +1,29 @@
+name: flc_core
+description: >
+  Shared design tokens, models, ticket/membership crypto and repository
+  contracts used by both the Frontline Club app and the admin console.
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  crypto: ^3.0.3
+  meta: ^1.15.0
+
+dev_dependencies:
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  flutter_lints: ^4.0.0
+  test: ^1.25.8
+
+flutter:
+  # No assets of its own — fonts/icons live in app/ and admin/, which both
+  # depend on this package for tokens, not the other way round.

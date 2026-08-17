@@ -1,0 +1,104 @@
+name: frontline_club_app
+description: Frontline Club — events, tickets, membership card, podcast and news.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.22.0"
+
+# NOTE: this pubspec was hand-written before `flutter create` had been run
+# in this environment (see README "Getting started"). Once Flutter is
+# installed, running `flutter create --org com.frontlineclub --project-name
+# frontline_club_app --platforms android,ios .` from this directory will
+# generate the missing android/, ios/ platform folders WITHOUT touching
+# this file or lib/ — do that before the first `flutter run`.
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  flc_core:
+    path: ../packages/flc_core
+
+  # State & navigation (briefing §7.1)
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+  go_router: ^14.6.2
+
+  # Models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Backend
+  supabase_flutter: ^2.8.0
+
+  # Payments
+  flutter_stripe: ^11.3.0
+
+  # Local cache / secure storage
+  drift: ^2.21.0
+  sqlite3_flutter_libs: ^0.5.26
+  path_provider: ^2.1.5
+  flutter_secure_storage: ^9.2.2
+
+  # Push
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.5
+
+  # Audio (podcast player)
+  just_audio: ^0.9.42
+  audio_service: ^0.18.15
+
+  # Scanning / codes
+  mobile_scanner: ^6.0.2
+  qr_flutter: ^4.1.0
+  barcode_widget: ^2.0.4
+
+  # Content rendering
+  flutter_widget_from_html_core: ^0.15.2
+  cached_network_image: ^3.4.1
+
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  package_info_plus: ^8.1.1
+  device_info_plus: ^11.2.0
+  connectivity_plus: ^6.1.1
+
+  # Monitoring
+  sentry_flutter: ^8.11.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  riverpod_generator: ^2.6.3
+  drift_dev: ^2.21.1
+  golden_toolkit: ^0.15.0
+
+flutter:
+  uses-material-design: true
+  generate: true # flutter_localizations / ARB codegen, briefing §6 Language
+
+  # TODO: add once the real assets exist — see docs/OPEN_QUESTIONS.md
+  # (logo/mark) and packages/flc_core/lib/src/theme/flc_typography.dart
+  # (font licensing).
+  # assets:
+  #   - assets/images/
+  # fonts:
+  #   - family: Source Serif 4
+  #     fonts:
+  #       - asset: assets/fonts/SourceSerif4-Regular.ttf
+  #       - asset: assets/fonts/SourceSerif4-SemiBold.ttf
+  #         weight: 600
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
