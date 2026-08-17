@@ -123,7 +123,7 @@ class _ProgressCard extends StatelessWidget {
               value: progress,
               minHeight: 8,
               backgroundColor: Colors.white24,
-              valueColor: const AlwaysStoppedAnimation<Color>(FlcColors.red),
+              valueColor: const AlwaysStoppedAnimation<Color>(FlcColors.brand),
             ),
           ),
         ],

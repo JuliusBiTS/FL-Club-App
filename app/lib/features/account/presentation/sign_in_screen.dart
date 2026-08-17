@@ -17,7 +17,17 @@ class SignInScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(FlcSpace.md),
-          child: AuthForm(onAuthenticated: () => context.pop()),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(FlcRadius.card),
+                child: Image.asset('assets/images/brand/frontline_logo.jpg', height: 120, fit: BoxFit.cover),
+              ),
+              const SizedBox(height: FlcSpace.lg),
+              AuthForm(onAuthenticated: () => context.pop()),
+            ],
+          ),
         ),
       ),
     );

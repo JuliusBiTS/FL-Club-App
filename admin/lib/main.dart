@@ -25,7 +25,7 @@ class FrontlineClubAdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'Frontline Club — Admin',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFFC8102E)), // placeholder flcRed, see docs/OPEN_QUESTIONS.md
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF33460C)), // real brand olive, sampled from frontlineclub.com's logo/nav
       home: const AdminAuthGate(),
     );
   }

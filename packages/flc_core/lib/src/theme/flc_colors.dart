@@ -2,15 +2,14 @@ import 'package:flutter/widgets.dart';
 
 /// Design tokens — briefing §16.1.
 ///
-/// PLACEHOLDER VALUES. There is no formal brand style guide; these were
-/// derived from the club's known black/white/red character, not measured
-/// from the live site. Before shipping any real screen, extract the exact
-/// hex values from frontlineclub.com's rendered CSS and replace the
-/// values below — do not extend this palette, replace it. See
-/// docs/OPEN_QUESTIONS.md.
+/// `brand` is sampled directly from the live site: the logo background
+/// (frontlineclub.com/wp-content/uploads/2025/04/Frontline-Club-Logo.jpg)
+/// and the site's own nav/button backgrounds all independently land on
+/// the same #33460c dark olive — not the red originally guessed here
+/// before anyone had checked. See docs/OPEN_QUESTIONS.md for anything
+/// in this palette still unconfirmed.
 abstract final class FlcColors {
-  // [CONFIRM] against the live site.
-  static const Color red = Color(0xFFC8102E);
+  static const Color brand = Color(0xFF33460C);
 
   static const Color ink = Color(0xFF111214);
   static const Color graphite = Color(0xFF3A3D42);

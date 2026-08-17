@@ -235,7 +235,7 @@ class _TicketTypeRow extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: FlcSpace.xs),
       shape: selected
-          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(FlcRadius.card), side: const BorderSide(color: FlcColors.red, width: 2))
+          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(FlcRadius.card), side: const BorderSide(color: FlcColors.brand, width: 2))
           : null,
       child: ListTile(
         title: Text(ticketType.name),

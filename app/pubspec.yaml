@@ -84,16 +84,30 @@ dev_dependencies:
   json_serializable: ^6.14.1
   drift_dev: ^2.21.1
   golden_toolkit: ^0.15.0
+  flutter_launcher_icons: ^0.14.3
+
+# Generates android/app/src/main/res/mipmap-*/ic_launcher.png +
+# adaptive-icon layers from the demo logo pulled from frontlineclub.com
+# (see assets/images/brand/ — flat JPG, no transparency, fine for a demo,
+# not for a store submission). Re-run `dart run flutter_launcher_icons`
+# after swapping in a real vector mark. docs/OPEN_QUESTIONS.md.
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/images/brand/app_icon_source.png"
+  adaptive_icon_background: "#33460C"
+  adaptive_icon_foreground: "assets/images/brand/app_icon_source.png"
+  min_sdk_android: 21
 
 flutter:
   uses-material-design: true
   generate: true # flutter_localizations / ARB codegen, briefing §6 Language
 
-  # TODO: add once the real assets exist — see docs/OPEN_QUESTIONS.md
-  # (logo/mark) and packages/flc_core/lib/src/theme/flc_typography.dart
-  # (font licensing).
-  # assets:
-  #   - assets/images/
+  assets:
+    - assets/images/brand/
+
+  # TODO: real font files still needed — see
+  # packages/flc_core/lib/src/theme/flc_typography.dart (font licensing),
+  # docs/OPEN_QUESTIONS.md.
   # fonts:
   #   - family: Source Serif 4
   #     fonts:

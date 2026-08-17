@@ -42,7 +42,7 @@ class EventCard extends StatelessWidget {
                   if (event.category != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: FlcSpace.xxs),
-                      child: Text(event.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.red)),
+                      child: Text(event.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.brand)),
                     ),
                   Text(event.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3),
                   const SizedBox(height: FlcSpace.xxs),
@@ -74,10 +74,10 @@ class _Chip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 2),
       decoration: BoxDecoration(
-        color: FlcColors.red.withValues(alpha: 0.1),
+        color: FlcColors.brand.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(FlcRadius.input),
       ),
-      child: Text(label, style: FlcTextStyles.caption.copyWith(color: FlcColors.red, fontWeight: FontWeight.w600)),
+      child: Text(label, style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600)),
     );
   }
 }

@@ -76,7 +76,7 @@ class _LoyaltyCallout extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(hasAvailableReward ? Icons.card_giftcard : Icons.loyalty_outlined, size: 18, color: FlcColors.red),
+          Icon(hasAvailableReward ? Icons.card_giftcard : Icons.loyalty_outlined, size: 18, color: FlcColors.brand),
           const SizedBox(width: FlcSpace.xs),
           Text(
             hasAvailableReward

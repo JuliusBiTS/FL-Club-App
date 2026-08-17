@@ -38,7 +38,7 @@ class ArticleCard extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: FlcSpace.xxs),
                       child: Text(
                         article.categories.first.toUpperCase(),
-                        style: FlcTextStyles.overline.copyWith(color: FlcColors.red),
+                        style: FlcTextStyles.overline.copyWith(color: FlcColors.brand),
                       ),
                     ),
                   Text(article.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3),

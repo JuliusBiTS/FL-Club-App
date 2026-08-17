@@ -17,8 +17,8 @@ Loyalty rules are fixed (see `DECISIONS.md`). Free member reservations are expli
 
 ## Brand — blocks M0's design tokens
 
-- [ ] Logo in vector (SVG), plus a square club mark for the app icon and membership card.
-- [ ] Confirmed hex values for primary red / near-black / body grey / background off-white, extracted from the live site's rendered CSS. The palette currently in `packages/flc_core/lib/src/theme/` is a **placeholder** derived from the club's known black/white/red character — replace, don't extend.
+- [ ] Logo in vector (SVG), plus a square club mark for the app icon and membership card. A flat JPG (no transparency) was pulled from the live site for the demo build — fine for a demo, not for shipping (can't recolor/resize cleanly for adaptive icons).
+- [x] Primary brand colour — **not red**. Sampled directly from the live site: `#33460C` (dark olive), confirmed independently from the logo background, the nav bar, and the button background, all matching. `packages/flc_core/lib/src/theme/flc_colors.dart`'s `FlcColors.brand` now uses this. Near-black/body grey/background off-white were left as the original placeholders — they're brand-neutral and were never specifically red-derived.
 - [ ] Font licensing — do the site's typefaces cover mobile app embedding? If not, `Source Serif 4` + `Inter` are the pre-approved free substitutes already wired into the theme.
 
 ## Operational — needed before launch, not before build

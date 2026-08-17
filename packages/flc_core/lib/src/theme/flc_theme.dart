@@ -17,7 +17,7 @@ abstract final class FlcTheme {
 
     final ColorScheme colorScheme = ColorScheme(
       brightness: brightness,
-      primary: FlcColors.red,
+      primary: FlcColors.brand,
       onPrimary: Colors.white,
       secondary: FlcColors.graphite,
       onSecondary: Colors.white,

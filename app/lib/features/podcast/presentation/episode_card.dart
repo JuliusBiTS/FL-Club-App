@@ -67,7 +67,7 @@ class EpisodeCard extends StatelessWidget {
               Icon(
                 progress?.completed ?? false ? Icons.replay_circle_filled_outlined : Icons.play_circle_outline,
                 size: 32,
-                color: FlcColors.red,
+                color: FlcColors.brand,
               ),
             ],
           ),
