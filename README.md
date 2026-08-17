@@ -61,7 +61,7 @@ Ten milestones, each demonstrable end to end. See the full breakdown in the brie
 - [x] **M1** Events, read-only
 - [x] **M2** Accounts
 - [x] **M3** Payments (Stripe checkout) — built and live-tested end to end; only Stripe credentials remain, see `docs/STRIPE_SETUP.md`
-- [x] **M4** Tickets (rotating signed QR wallet) — built and live-tested end to end; only the ticket/membership signing keys remain, see `docs/TICKET_KEYS_SETUP.md`
+- [x] **M4** Tickets (rotating signed QR wallet) — built, deployed, and confirmed live end to end (real ticket, real rotating QR, FLAG_SECURE)
 - [ ] **M5** Scanner (staff door mode, offline)
 - [ ] **M6** Membership (the card — see below)
 - [ ] **M7** Loyalty
