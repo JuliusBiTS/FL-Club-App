@@ -13,6 +13,9 @@ create table orders (
 
   user_id                   uuid not null references profiles(id),
   event_id                  uuid not null references events(id),
+  ticket_type_id            uuid not null references ticket_types(id),
+  quantity                  integer not null check (quantity > 0),
+  attendee_names            text[],       -- optional, index-aligned with the tickets created on payment; falls back to buyer_name
 
   status                    order_status not null default 'pending',
 
@@ -43,6 +46,7 @@ create table orders (
 create index orders_user_idx on orders (user_id, created_at desc);
 create index orders_event_idx on orders (event_id, status);
 create index orders_pending_expiry_idx on orders (created_at) where status = 'pending';
+create index orders_ticket_type_pending_idx on orders (ticket_type_id) where status = 'pending';
 
 create table tickets (
   id                    uuid primary key default gen_random_uuid(),
