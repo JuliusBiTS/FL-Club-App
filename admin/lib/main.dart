@@ -12,7 +12,7 @@ Future<void> main() async {
     'SUPABASE_URL / SUPABASE_ANON_KEY were not passed via --dart-define. See admin/README (root README "Getting started").',
   );
 
-  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
+  await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabaseAnonKey);
 
   runApp(const FrontlineClubAdminApp());
 }

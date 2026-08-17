@@ -146,7 +146,7 @@ class _EmptyState extends StatelessWidget {
           children: <Widget>[
             const Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.slate),
             const SizedBox(height: FlcSpace.sm),
-            Text(
+            const Text(
               'No events scheduled right now — new events are usually announced a few weeks ahead',
               textAlign: TextAlign.center,
               style: FlcTextStyles.body,

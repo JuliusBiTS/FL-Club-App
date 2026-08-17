@@ -9,7 +9,7 @@ part 'article.g.dart';
 /// the widget rendering it should still use the same allow-list rather
 /// than trusting that blindly — belt and braces.
 @freezed
-class ArticleModel with _$ArticleModel {
+abstract class ArticleModel with _$ArticleModel {
   const factory ArticleModel({
     required String id,
     @JsonKey(name: 'wp_post_id') int? wpPostId,

@@ -3,15 +3,22 @@ import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
-/// Ticket & membership-card code generation — mirrors
+/// Ticket & membership-card code signing — mirrors
 /// supabase/functions/_shared/ticket-crypto.ts BYTE FOR BYTE (briefing
 /// §13.3/§13.4). If you change one, change the other in the same commit.
 ///
-/// The app only ever GENERATES codes here (from a secret it was handed once
-/// over TLS at ticket issue / card sync) — it never verifies anyone else's,
-/// that's the scanner's job server-side. This is what lets a ticket
-/// holder's device regenerate a rotating QR every 30 seconds, and the
-/// membership card render, with zero network calls.
+/// Two roles use this, both inside the same app binary (briefing §9.11 —
+/// "Staff scanner lives inside the same app"):
+///   - A ticket/card HOLDER only ever GENERATES codes, from a secret handed
+///     over TLS once at issue/card-sync — the sign* / current* functions.
+///   - STAFF running the door scanner in offline mode VERIFY codes against
+///     an event_scan_key downloaded ahead of time via get-scan-pack
+///     (§13.5) — the parse*/verify* functions. This is what lets the door
+///     work when the venue Wi-Fi fails.
+/// Neither role ever needs master_ticket_key/master_member_key on-device;
+/// those never leave the server.
+
+// ---------------------------------------------------------------- encoding --
 
 String base64UrlEncodeBytes(Uint8List bytes) => base64Url.encode(bytes).replaceAll('=', '');
 
@@ -39,6 +46,17 @@ String bytesToUuid(Uint8List bytes) {
 }
 
 String _base36(int n) => n.toRadixString(36);
+
+bool _constantTimeEquals(String a, String b) {
+  if (a.length != b.length) return false;
+  var diff = 0;
+  for (var i = 0; i < a.length; i++) {
+    diff |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
+  }
+  return diff == 0;
+}
+
+// ------------------------------------------------------------------ crypto --
 
 Uint8List _hmacSha256(Uint8List key, List<int> message) =>
     Uint8List.fromList(Hmac(sha256, key).convert(message).bytes);
@@ -96,6 +114,45 @@ String signTicketPayload(Uint8List ticketSecret, String ticketId, int counter) {
 String currentTicketPayload(Uint8List ticketSecret, String ticketId, {DateTime? now}) =>
     signTicketPayload(ticketSecret, ticketId, currentCounter(now));
 
+class ParsedTicketPayload {
+  const ParsedTicketPayload({required this.ticketId, required this.counter, required this.sig});
+  final String ticketId;
+  final int counter;
+  final String sig;
+}
+
+ParsedTicketPayload? parseTicketPayload(String payload) {
+  final parts = payload.split('|');
+  if (parts.length != 5 || parts[0] != 'FLC1' || parts[1] != 'T') return null;
+  try {
+    final idBytes = base64UrlDecodeString(parts[2]);
+    if (idBytes.length != 16) return null;
+    final counter = int.parse(parts[3], radix: 36);
+    return ParsedTicketPayload(ticketId: bytesToUuid(idBytes), counter: counter, sig: parts[4]);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Offline door verification (briefing §13.5) — the staff scanner downloads
+/// event_scan_key once via get-scan-pack, then verifies every ticket for
+/// that event entirely locally. Accepts counter-1/counter/counter+1 (±90s)
+/// to tolerate clock drift and slow scans, same window as the server.
+/// Does NOT check redemption state — the scanner's local scan-pack cache
+/// (or the tickets table, once synced) is the single source of truth for
+/// "already used", not this function.
+bool verifyTicketSignature(
+  Uint8List eventScanKey,
+  ParsedTicketPayload parsed, {
+  int? nowCounter,
+}) {
+  final now = nowCounter ?? currentCounter();
+  if ((parsed.counter - now).abs() > 1) return false;
+  final secret = deriveTicketSecret(eventScanKey, parsed.ticketId);
+  final expected = signTicketPayload(secret, parsed.ticketId, parsed.counter).split('|').last;
+  return _constantTimeEquals(expected, parsed.sig);
+}
+
 // ------------------------------------------------------------ membership --
 
 /// The current UTC period as "YYYY-MM" — matches the server's monthly
@@ -130,3 +187,40 @@ String signMemberPayload(Uint8List memberSecret, String profileId, int counter) 
 /// (compare against `period` returned alongside it).
 String currentMemberPayload(Uint8List memberSecret, String profileId, {DateTime? now}) =>
     signMemberPayload(memberSecret, profileId, currentCounter(now));
+
+class ParsedMemberPayload {
+  const ParsedMemberPayload({required this.profileId, required this.counter, required this.sig});
+  final String profileId;
+  final int counter;
+  final String sig;
+}
+
+ParsedMemberPayload? parseMemberPayload(String payload) {
+  final parts = payload.split('|');
+  if (parts.length != 5 || parts[0] != 'FLC1' || parts[1] != 'M') return null;
+  try {
+    final idBytes = base64UrlDecodeString(parts[2]);
+    if (idBytes.length != 16) return null;
+    final counter = int.parse(parts[3], radix: 36);
+    return ParsedMemberPayload(profileId: bytesToUuid(idBytes), counter: counter, sig: parts[4]);
+  } catch (_) {
+    return null;
+  }
+}
+
+/// Membership verification is online-only in v1 (briefing §9.11 — checked
+/// "at leisure at a desk", not at a door queue), so this takes the already-
+/// derived member_secret for the relevant period rather than a master key —
+/// unlike verifyTicketSignature, no offline scan-pack equivalent exists for
+/// membership yet. Kept here anyway so a future offline membership mode
+/// doesn't have to invent this from scratch.
+bool verifyMemberSignature(
+  Uint8List memberSecret,
+  ParsedMemberPayload parsed, {
+  int? nowCounter,
+}) {
+  final now = nowCounter ?? currentCounter();
+  if ((parsed.counter - now).abs() > 1) return false;
+  final expected = signMemberPayload(memberSecret, parsed.profileId, parsed.counter).split('|').last;
+  return _constantTimeEquals(expected, parsed.sig);
+}

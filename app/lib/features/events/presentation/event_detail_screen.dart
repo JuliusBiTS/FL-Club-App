@@ -71,7 +71,7 @@ class _EventDetailBody extends ConsumerWidget {
                   text: 'This event will be filmed. Footage may be used publicly and commercially.',
                 ),
               const SizedBox(height: FlcSpace.lg),
-              Text('Tickets', style: FlcTextStyles.h3),
+              const Text('Tickets', style: FlcTextStyles.h3),
               const SizedBox(height: FlcSpace.sm),
               ticketTypesAsync.when(
                 loading: () => const Padding(

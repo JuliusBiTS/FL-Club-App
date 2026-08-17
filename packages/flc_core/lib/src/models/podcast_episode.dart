@@ -7,7 +7,7 @@ part 'podcast_episode.g.dart';
 /// Function from the club's public RSS feed (briefing §9.8). Requires no
 /// account to read or play — it's a shop window.
 @freezed
-class PodcastEpisodeModel with _$PodcastEpisodeModel {
+abstract class PodcastEpisodeModel with _$PodcastEpisodeModel {
   const factory PodcastEpisodeModel({
     required String id,
     required String guid,

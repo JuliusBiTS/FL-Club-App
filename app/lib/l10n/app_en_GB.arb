@@ -1,0 +1,21 @@
+{
+  "@@locale": "en_GB",
+  "appTitle": "Frontline Club",
+  "@appTitle": { "description": "Shown in the OS task switcher / app title." },
+
+  "navEvents": "Events",
+  "navPodcast": "Podcast",
+  "navRead": "Read",
+  "navYou": "You",
+  "navScan": "Scan",
+
+  "eventsEmptyTitle": "No events scheduled right now — new events are usually announced a few weeks ahead",
+  "eventsEmptyAction": "Notify me",
+  "eventsOfflineBanner": "Showing saved events",
+
+  "becomeAMember": "Become a member",
+  "membershipCard": "Membership Card",
+
+  "genericRetry": "Retry",
+  "genericCouldNotLoad": "Couldn't load this right now."
+}

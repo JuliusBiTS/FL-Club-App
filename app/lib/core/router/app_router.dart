@@ -1,3 +1,4 @@
+import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -84,6 +85,6 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
 /// member/staff status changes rather than only on the next navigation.
 class _ProfileRefreshListenable extends ChangeNotifier {
   _ProfileRefreshListenable(Ref ref) {
-    ref.listen(currentProfileProvider, (_, __) => notifyListeners());
+    ref.listen(currentProfileProvider, (_, _) => notifyListeners());
   }
 }

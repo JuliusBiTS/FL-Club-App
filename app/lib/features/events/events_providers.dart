@@ -27,12 +27,10 @@ final Provider<EventsRepository> eventsRepositoryProvider = Provider<EventsRepos
 /// "any price the app displays comes from the API", no cached price
 /// arithmetic. autoDispose so a stale price list can never linger once the
 /// user leaves the screen.
-final FutureProvider.family<List<TicketTypeModel>, String> ticketTypesProvider =
-    FutureProvider.family<List<TicketTypeModel>, String>((ref, eventId) {
+final ticketTypesProvider = FutureProvider.autoDispose.family<List<TicketTypeModel>, String>((ref, eventId) {
   return ref.watch(eventsRepositoryProvider).getTicketTypes(eventId);
 });
 
-final FutureProvider.family<EventModel?, String> eventDetailProvider =
-    FutureProvider.family<EventModel?, String>((ref, slug) {
+final eventDetailProvider = FutureProvider.autoDispose.family<EventModel?, String>((ref, slug) {
   return ref.watch(eventsRepositoryProvider).getEventDetail(slug);
 });

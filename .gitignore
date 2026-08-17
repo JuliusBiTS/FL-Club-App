@@ -11,6 +11,7 @@
 **/ios/Flutter/Flutter.framework
 **/ios/Flutter/Flutter.podspec
 **/android/.gradle/
+**/android/.kotlin/
 **/android/local.properties
 **/android/key.properties
 **/*.g.dart
@@ -21,10 +22,18 @@
 # Generated localization
 **/lib/l10n/generated/
 
+# pubspec.lock is committed for the two apps (app/, admin/) per Flutter's
+# own recommendation for reproducible builds, but not for the flc_core
+# package — packages shouldn't pin their consumers' resolutions.
+packages/*/pubspec.lock
+
 # IDE
 .idea/
 .vscode/
 *.iml
+
+# Claude Code session state (not project content)
+.claude/
 
 # Secrets / env
 .env

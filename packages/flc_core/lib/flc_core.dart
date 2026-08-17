@@ -2,7 +2,7 @@
 /// admin console. See supabase/functions/_shared/ticket-crypto.ts — this
 /// package's crypto/ticket_crypto.dart mirrors it byte-for-byte and must
 /// stay in lock-step.
-library flc_core;
+library;
 
 export 'src/crypto/ticket_crypto.dart';
 export 'src/models/article.dart';

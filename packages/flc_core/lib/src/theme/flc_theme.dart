@@ -27,7 +27,7 @@ abstract final class FlcTheme {
       onSurface: isDark ? FlcColors.paper : FlcColors.ink,
     );
 
-    final TextTheme textTheme = TextTheme(
+    final TextTheme textTheme = const TextTheme(
       displayLarge: FlcTextStyles.display,
       headlineLarge: FlcTextStyles.h1,
       headlineMedium: FlcTextStyles.h2,

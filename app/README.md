@@ -4,14 +4,13 @@ Mobile app — see the root [README](../README.md) for the full monorepo picture
 
 ## First-time setup
 
-This `lib/` and `pubspec.yaml` were hand-written before `flutter create` had
-been run in this environment. Before the first `flutter run`:
+`android/` is already generated and committed (verified: `flutter build apk
+--debug` succeeds — see Troubleshooting below for what that took on
+Windows). `ios/` is not yet generated — that needs a Mac; from this
+directory run `flutter create --org com.frontlineclub --project-name
+frontline_club_app --platforms ios .` there when M10 starts.
 
 ```bash
-# From this directory (app/). Generates android/ and ios/ WITHOUT touching
-# pubspec.yaml or lib/ — flutter create only fills in missing platform folders.
-flutter create --org com.frontlineclub --project-name frontline_club_app --platforms android,ios .
-
 flutter pub get
 
 # Code generation: freezed models, Drift's AppDatabase, and ARB localization.
@@ -50,3 +49,22 @@ presentation/  (screens, Riverpod controllers)
 No Supabase calls inside widgets, ever. No client-side price arithmetic
 beyond `price × quantity`. Money is always integer minor units with a
 currency code, never a double.
+
+## Troubleshooting: Android build fails with "Inconsistent JVM Target Compatibility"
+
+Some plugins (`stripe_android`, `sentry_flutter` as of the versions pinned
+in `pubspec.yaml`) don't consistently pin their own Kotlin/Java compiler
+targets, so they inherit whatever JDK the Gradle daemon happens to default
+to. On a machine with a very new JDK on `PATH` (e.g. JDK 25) that produces
+exactly this error. `android/build.gradle.kts` already forces every
+subproject to target JVM 17 — that's committed and should be enough on its
+own. If it still fails on your machine:
+
+1. Stop any running Gradle daemon: `cd android && ./gradlew --stop`
+2. Pin a JDK 17+ LTS release (21 is what this was verified against) for
+   Gradle specifically, in your **user-level** `~/.gradle/gradle.properties`
+   (not this repo — that file is machine-specific and never committed):
+   ```
+   org.gradle.java.home=C:/Program Files/Java/jdk-21.0.11
+   ```
+3. Retry `flutter build apk --debug`.

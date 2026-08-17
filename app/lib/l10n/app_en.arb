@@ -1,5 +1,5 @@
 {
-  "@@locale": "en_GB",
+  "@@locale": "en",
   "appTitle": "Frontline Club",
   "@appTitle": { "description": "Shown in the OS task switcher / app title." },
 

@@ -16,7 +16,7 @@ enum MembershipKind { full, honorary, lifetime }
 /// verify-scan Edge Function responses, never through a general profile
 /// read (briefing §13.6).
 @freezed
-class ProfileModel with _$ProfileModel {
+abstract class ProfileModel with _$ProfileModel {
   const factory ProfileModel({
     required String id,
     required String email,

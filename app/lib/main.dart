@@ -12,7 +12,7 @@ Future<void> main() async {
 
   await Supabase.initialize(
     url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey, // the ONLY Supabase credential the client ever holds — briefing §7.3
+    publishableKey: Env.supabaseAnonKey, // the ONLY Supabase credential the client ever holds — briefing §7.3
   );
 
   // Sentry: sendDefaultPii disabled per briefing §15 — crash reports are

@@ -8,7 +8,7 @@ part 'ticket_type.g.dart';
 /// "never hard-code a price anywhere", "no client-side price arithmetic
 /// beyond price × quantity".
 @freezed
-class TicketTypeModel with _$TicketTypeModel {
+abstract class TicketTypeModel with _$TicketTypeModel {
   const factory TicketTypeModel({
     required String id,
     @JsonKey(name: 'event_id') required String eventId,

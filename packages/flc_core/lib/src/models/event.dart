@@ -8,7 +8,7 @@ part 'event.g.dart';
 /// read live, never cached as a display string here (briefing §8.2: never
 /// hard-code a price anywhere).
 @freezed
-class EventModel with _$EventModel {
+abstract class EventModel with _$EventModel {
   const factory EventModel({
     required String id,
     required String slug,
