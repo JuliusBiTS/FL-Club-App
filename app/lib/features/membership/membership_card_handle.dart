@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/profile_provider.dart';
+import 'presentation/membership_card_sheet.dart';
 
 /// The persistent handle above the bottom nav bar — briefing §9.6. "The
 /// single most important interaction in the app" per the client: reachable
@@ -59,23 +60,19 @@ class MembershipCardHandle extends ConsumerWidget {
   }
 
   void _openMembershipCardSheet(BuildContext context) {
-    // TODO(M6): the real card — photo, Code128 barcode + number, PIN, and
-    // the 30s-rotating HMAC-signed QR from
-    // packages/flc_core/lib/src/crypto/ticket_crypto.dart's
-    // currentMemberPayload(), fed by supabase/functions/get-member-card.
-    // FLAG_SECURE and forced max brightness both belong on that screen.
+    // FLAG_SECURE, forced max brightness, and the rotating QR's lifecycle
+    // all live inside MembershipCardSheet itself (tied to its own
+    // initState/dispose) rather than here, so they're guaranteed to be
+    // re-armed correctly however this sheet gets dismissed (swipe, back
+    // gesture, tap-outside — not just a single "close" button).
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: FlcColors.ink,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(FlcRadius.membershipCard)),
       ),
-      builder: (context) => const SizedBox(
-        height: 400,
-        child: Center(
-          child: Text('Membership card — M6', style: TextStyle(color: Colors.white70)),
-        ),
-      ),
+      builder: (context) => const MembershipCardSheet(),
     );
   }
 }

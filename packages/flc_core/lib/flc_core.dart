@@ -8,6 +8,7 @@ export 'src/crypto/ticket_crypto.dart';
 export 'src/models/article.dart';
 export 'src/models/event.dart';
 export 'src/models/podcast_episode.dart';
+export 'src/models/member_card.dart';
 export 'src/models/profile.dart';
 export 'src/models/scan_pack.dart';
 export 'src/models/scan_result.dart';

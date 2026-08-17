@@ -63,7 +63,7 @@ Ten milestones, each demonstrable end to end. See the full breakdown in the brie
 - [x] **M3** Payments (Stripe checkout) — built and live-tested end to end; only Stripe credentials remain, see `docs/STRIPE_SETUP.md`
 - [x] **M4** Tickets (rotating signed QR wallet) — built, deployed, and confirmed live end to end (real ticket, real rotating QR, FLAG_SECURE)
 - [x] **M5** Scanner (staff door mode, offline) — built, deployed, and confirmed live end to end (staff gate, offline pack download, membership lookup); real-camera QR detection relies on mobile_scanner (not independently re-tested against a physical code, see summary)
-- [ ] **M6** Membership (the card — see below)
+- [x] **M6** Membership (the card) — built, deployed, and confirmed live end to end (photo/barcode/PIN/rotating QR all render, FLAG_SECURE, cross-verified against the M5 staff scanner, guest interest form)
 - [ ] **M7** Loyalty
 - [ ] **M8** Content (podcast RSS, news, WordPress plugin)
 - [ ] **M9** Hardening & launch (Android)
