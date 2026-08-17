@@ -10,7 +10,10 @@ values
   ('membership-photos',  'membership-photos',  false,  5242880, array['image/jpeg', 'image/png'])
 on conflict (id) do nothing;
 
-alter table storage.objects enable row level security;
+-- storage.objects already has RLS enabled by the platform on hosted
+-- Supabase (the migration role doesn't own the table to re-enable it
+-- itself, which is why there's no `alter table ... enable row level
+-- security` here) — we only ever need to add policies to it.
 
 -- event-images: hero images, speaker photos, gallery — public content, admin-managed.
 create policy event_images_public_read on storage.objects
