@@ -202,7 +202,7 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
         if (card.membershipNumber != null) ...<Widget>[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: FlcSpace.sm),
+            padding: const EdgeInsets.symmetric(vertical: FlcSpace.sm, horizontal: FlcSpace.lg),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FlcRadius.card)),
             child: bw.BarcodeWidget(
               barcode: bw.Barcode.code128(),
