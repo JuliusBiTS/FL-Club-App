@@ -16,6 +16,7 @@ import '../../features/podcast/podcast_screen.dart';
 import '../../features/read/read_screen.dart';
 import '../../features/scanner/scanner_screen.dart';
 import '../../features/shell/app_shell.dart';
+import '../../features/tickets/presentation/ticket_detail_screen.dart';
 import '../../features/tickets/tickets_screen.dart';
 import '../auth/profile_provider.dart';
 
@@ -48,6 +49,13 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/events/:slug/checkout',
         builder: (context, state) => CheckoutScreen(args: state.extra! as CheckoutArgs),
+      ),
+      // Also outside the shell — briefing §9.4's rotating QR wants the
+      // whole screen with no shell chrome pulling focus, same reasoning
+      // as checkout above.
+      GoRoute(
+        path: '/you/tickets/:ticketId',
+        builder: (context, state) => TicketDetailScreen(ticket: state.extra! as TicketModel),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

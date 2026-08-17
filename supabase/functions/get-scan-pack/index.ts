@@ -52,7 +52,14 @@ Deno.serve(async (req) => {
     return errorResponse("This event has already finished.", 403);
   }
 
-  const eventScanKey = await deriveEventScanKey(requireEnv("MASTER_TICKET_KEY"), event.id);
+  let masterTicketKey: string;
+  try {
+    masterTicketKey = requireEnv("MASTER_TICKET_KEY");
+  } catch (err) {
+    console.error("get-scan-pack: MASTER_TICKET_KEY not set:", err);
+    return errorResponse("Ticket signing isn't configured on this server yet.", 503);
+  }
+  const eventScanKey = await deriveEventScanKey(masterTicketKey, event.id);
 
   const { data: tickets, error: ticketsErr } = await admin
     .from("tickets")

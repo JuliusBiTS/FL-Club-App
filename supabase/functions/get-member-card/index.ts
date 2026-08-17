@@ -34,8 +34,16 @@ Deno.serve(async (req) => {
     return errorResponse("Membership has expired.", 403);
   }
 
+  let masterMemberKey: string;
+  try {
+    masterMemberKey = requireEnv("MASTER_MEMBER_KEY");
+  } catch (err) {
+    console.error("get-member-card: MASTER_MEMBER_KEY not set:", err);
+    return errorResponse("Membership card signing isn't configured on this server yet.", 503);
+  }
+
   const period = currentMemberPeriod();
-  const memberScanKey = await deriveMemberScanKey(requireEnv("MASTER_MEMBER_KEY"), period);
+  const memberScanKey = await deriveMemberScanKey(masterMemberKey, period);
   const memberSecret = await deriveMemberSecret(memberScanKey, userId);
 
   let photoSignedUrl: string | null = null;

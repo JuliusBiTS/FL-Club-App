@@ -9,6 +9,7 @@ export 'src/models/article.dart';
 export 'src/models/event.dart';
 export 'src/models/podcast_episode.dart';
 export 'src/models/profile.dart';
+export 'src/models/ticket.dart';
 export 'src/models/ticket_type.dart';
 export 'src/theme/flc_colors.dart';
 export 'src/theme/flc_motion.dart';

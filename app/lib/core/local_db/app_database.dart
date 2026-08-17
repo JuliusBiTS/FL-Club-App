@@ -55,13 +55,40 @@ class CachedPodcastEpisodes extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [CachedEvents, CachedArticles, CachedPodcastEpisodes])
+/// Ticket display metadata only — briefing §9.4 "offline rendering from
+/// local secure storage" applies to the ticket_secret specifically, which
+/// deliberately does NOT live here. It's sensitive (it's what lets a device
+/// mint a valid rotating QR) while this table's contents are not — a stolen
+/// phone showing "Standard ticket, Thu 10 Sep" isn't a security problem the
+/// way a stolen ticket_secret would be. See tickets_repository.dart.
+class CachedTickets extends Table {
+  TextColumn get id => text()();
+  DateTimeColumn get eventStartsAt => dateTime()();
+  TextColumn get status => text()();
+  TextColumn get json => text()();
+  DateTimeColumn get cachedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [CachedEvents, CachedArticles, CachedPodcastEpisodes, CachedTickets])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(cachedTickets);
+          }
+        },
+      );
 
   Future<void> upsertEvents(List<(String id, String slug, DateTime startsAt, String status, String json)> rows) {
     return batch((batchBuilder) {
@@ -79,6 +106,29 @@ class AppDatabase extends _$AppDatabase {
         );
       }
     });
+  }
+
+  Future<void> replaceAllTickets(List<(String id, DateTime eventStartsAt, String status, String json)> rows) {
+    return transaction(() async {
+      await delete(cachedTickets).go();
+      await batch((batchBuilder) {
+        for (final row in rows) {
+          batchBuilder.insert(
+            cachedTickets,
+            CachedTicketsCompanion.insert(
+              id: row.$1,
+              eventStartsAt: row.$2,
+              status: row.$3,
+              json: row.$4,
+            ),
+          );
+        }
+      });
+    });
+  }
+
+  Future<List<CachedTicket>> allCachedTicketsSortedByStart() {
+    return (select(cachedTickets)..orderBy([(t) => OrderingTerm.asc(t.eventStartsAt)])).get();
   }
 
   Future<List<CachedEvent>> publishedEventsSortedByStart() {

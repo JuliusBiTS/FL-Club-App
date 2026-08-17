@@ -78,7 +78,13 @@ Deno.serve(async (req) => {
   if (!allowed) return errorResponse("Too many scans too fast — slow down.", 429);
 
   if (body.kind === "ticket") {
-    const masterTicketKey = requireEnv("MASTER_TICKET_KEY");
+    let masterTicketKey: string;
+    try {
+      masterTicketKey = requireEnv("MASTER_TICKET_KEY");
+    } catch (err) {
+      console.error("verify-scan: MASTER_TICKET_KEY not set:", err);
+      return errorResponse("Ticket signing isn't configured on this server yet.", 503);
+    }
     const results = [];
 
     for (const scan of body.scans) {
@@ -191,7 +197,13 @@ Deno.serve(async (req) => {
     profileId = profile?.id ?? null;
     result = profile ? "valid" : "not_found";
   } else {
-    const masterMemberKey = requireEnv("MASTER_MEMBER_KEY");
+    let masterMemberKey: string;
+    try {
+      masterMemberKey = requireEnv("MASTER_MEMBER_KEY");
+    } catch (err) {
+      console.error("verify-scan: MASTER_MEMBER_KEY not set:", err);
+      return errorResponse("Membership signing isn't configured on this server yet.", 503);
+    }
     const parsed = parseMemberPayload(body.payload);
     if (!parsed) {
       result = "invalid_signature";

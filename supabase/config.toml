@@ -54,6 +54,8 @@ verify_jwt = true
 verify_jwt = true
 [functions.get-member-card]
 verify_jwt = true
+[functions.get-my-tickets]
+verify_jwt = true
 [functions.get-scan-pack]
 verify_jwt = true
 [functions.verify-scan]
