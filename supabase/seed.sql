@@ -50,7 +50,7 @@ end $$;
 
 insert into events (
   id, slug, title, subtitle, summary, description_html, category, tags,
-  starts_at, ends_at, doors_at, venue_room, is_filmed, members_only,
+  starts_at, ends_at, doors_at, venue_room, hero_image_path, is_filmed, members_only,
   status, capacity_total, capacity_app, capacity_eventbrite, published_at, created_by
 ) values (
   '10000000-0000-0000-0000-000000000001',
@@ -64,7 +64,7 @@ insert into events (
   now() + interval '24 days' + interval '19 hours',
   now() + interval '24 days' + interval '20 hours 30 minutes',
   now() + interval '24 days' + interval '18 hours 30 minutes',
-  'The Forum', true, false,
+  'The Forum', 'https://picsum.photos/seed/flc-panel-conflict/900/500', true, false,
   'published', 120, 100, 20, now(), '00000000-0000-0000-0000-000000000104'
 ) on conflict (id) do nothing;
 
@@ -76,7 +76,7 @@ on conflict do nothing;
 
 insert into events (
   id, slug, title, subtitle, summary, description_html, category, tags,
-  starts_at, ends_at, doors_at, venue_room, is_filmed, members_only,
+  starts_at, ends_at, doors_at, venue_room, hero_image_path, is_filmed, members_only,
   status, capacity_total, capacity_app, capacity_eventbrite, published_at, created_by
 ) values (
   '10000000-0000-0000-0000-000000000002',
@@ -90,7 +90,7 @@ insert into events (
   now() + interval '10 days' + interval '19 hours',
   now() + interval '10 days' + interval '21 hours',
   now() + interval '10 days' + interval '18 hours 30 minutes',
-  'The Forum', true, true,
+  'The Forum', 'https://picsum.photos/seed/flc-screening-underfire/900/500', true, true,
   'published', 80, 80, 0, now(), '00000000-0000-0000-0000-000000000104'
 ) on conflict (id) do nothing;
 

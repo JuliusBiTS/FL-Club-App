@@ -6,16 +6,41 @@ import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/ui/membership_handle_visibility.dart';
 import '../read_providers.dart';
 
-class ArticleDetailScreen extends ConsumerWidget {
+/// Claims showMembershipHandleProvider for its lifetime — the "Read on the
+/// website" button at the bottom sits in the same spot as AppShell's
+/// persistent "Become a member" handle (briefing §9.6), same conflict/fix
+/// as event_detail_screen's "Get tickets" bar. See that provider's doc
+/// comment.
+class ArticleDetailScreen extends ConsumerStatefulWidget {
   const ArticleDetailScreen({required this.slug, super.key});
 
   final String slug;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final articleAsync = ref.watch(articleDetailProvider(slug));
+  ConsumerState<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+}
+
+class _ArticleDetailScreenState extends ConsumerState<ArticleDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(showMembershipHandleProvider.notifier).state = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    ref.read(showMembershipHandleProvider.notifier).state = true;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final articleAsync = ref.watch(articleDetailProvider(widget.slug));
 
     return Scaffold(
       body: articleAsync.when(

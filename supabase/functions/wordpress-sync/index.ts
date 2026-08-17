@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
           slug: post.slug,
           title: stripHtml(post.title?.rendered ?? ""),
           excerpt: stripHtml(post.excerpt?.rendered ?? ""),
-          content_html: sanitizeHtml(post.content?.rendered ?? "", {
+          content_html: sanitizeHtml(collapseSoftLineBreaks(post.content?.rendered ?? ""), {
             allowedTags: ALLOWED_TAGS,
             allowedAttributes: { a: ["href"], img: ["src", "alt"] },
           }),
@@ -97,6 +97,19 @@ function decodeHtmlEntities(text: string): string {
     if (entity.startsWith("#x")) return String.fromCodePoint(parseInt(entity.slice(2), 16));
     if (entity.startsWith("#")) return String.fromCodePoint(parseInt(entity.slice(1), 10));
     return match;
+  });
+}
+
+// WordPress posts pasted from a word processor often carry a literal <br>
+// after every line, hard-wrapped at desktop width — renders as a staircase
+// of short lines on a phone instead of reflowing. Real paragraph breaks in
+// this content use separate <p> tags or a run of 2+ <br>s; a lone <br>
+// between two words is always a soft wrap, never a real paragraph break,
+// so it's safe to fold into a space and let it reflow at any width.
+function collapseSoftLineBreaks(html: string): string {
+  return html.replace(/(?:<br\s*\/?>\s*)+/gi, (run) => {
+    const count = (run.match(/<br\s*\/?>/gi) ?? []).length;
+    return count === 1 ? " " : run;
   });
 }
 
