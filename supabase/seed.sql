@@ -15,14 +15,21 @@ declare
   v_admin_id  uuid := '00000000-0000-0000-0000-000000000104';
   v_password  text := crypt('FrontlineDemo2026!', gen_salt('bf'));
 begin
+  -- The four empty-string columns below aren't optional cosmetics: GoTrue
+  -- scans them into non-nullable Go strings on every sign-in, and a manual
+  -- insert (bypassing the Admin API, which always sets these) leaves them
+  -- NULL by default. That fails sign-in for exactly these demo accounts
+  -- with an opaque "Database error querying schema" — found the hard way
+  -- testing a demo build.
   insert into auth.users (
     instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-    created_at, updated_at, raw_app_meta_data, raw_user_meta_data
+    created_at, updated_at, raw_app_meta_data, raw_user_meta_data,
+    confirmation_token, recovery_token, email_change, email_change_token_new
   ) values
-    ('00000000-0000-0000-0000-000000000000', v_user_id,   'authenticated', 'authenticated', 'demo.user@frontlineclub.dev',   v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}'),
-    ('00000000-0000-0000-0000-000000000000', v_member_id, 'authenticated', 'authenticated', 'demo.member@frontlineclub.dev', v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}'),
-    ('00000000-0000-0000-0000-000000000000', v_staff_id,  'authenticated', 'authenticated', 'demo.staff@frontlineclub.dev',  v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}'),
-    ('00000000-0000-0000-0000-000000000000', v_admin_id,  'authenticated', 'authenticated', 'demo.admin@frontlineclub.dev',  v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}')
+    ('00000000-0000-0000-0000-000000000000', v_user_id,   'authenticated', 'authenticated', 'demo.user@frontlineclub.dev',   v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', ''),
+    ('00000000-0000-0000-0000-000000000000', v_member_id, 'authenticated', 'authenticated', 'demo.member@frontlineclub.dev', v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', ''),
+    ('00000000-0000-0000-0000-000000000000', v_staff_id,  'authenticated', 'authenticated', 'demo.staff@frontlineclub.dev',  v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', ''),
+    ('00000000-0000-0000-0000-000000000000', v_admin_id,  'authenticated', 'authenticated', 'demo.admin@frontlineclub.dev',  v_password, now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}', '', '', '', '')
   on conflict (id) do nothing;
 
   insert into auth.identities (
