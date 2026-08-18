@@ -59,8 +59,12 @@ class AppShell extends ConsumerWidget {
           // needs a network call (briefing §9.6) — sits just above the bar.
           // Hidden while a screen-specific bottom bar (e.g. event detail's
           // "Get tickets") claims the same space — see
-          // showMembershipHandleProvider's doc comment.
-          if (showHandle) const Positioned(left: 0, right: 0, bottom: 0, child: MembershipCardHandle()),
+          // showMembershipHandleProvider's doc comment. Positioned.fill (not
+          // just a bottom strip) so the drag-to-reveal card has the full
+          // height to expand into — MembershipCardHandle only actually
+          // paints/hit-tests within its own current extent, so this doesn't
+          // block taps on navigationShell above the collapsed handle.
+          if (showHandle) Positioned.fill(child: MembershipCardHandle(activeTabIndex: navigationShell.currentIndex)),
         ],
       ),
       bottomNavigationBar: NavigationBar(
