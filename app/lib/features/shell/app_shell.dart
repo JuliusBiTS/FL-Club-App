@@ -34,6 +34,11 @@ class AppShell extends ConsumerWidget {
         label: 'Podcast',
       ),
       const NavigationDestination(
+        icon: Icon(Icons.play_circle_outline),
+        selectedIcon: Icon(Icons.play_circle),
+        label: 'Media',
+      ),
+      const NavigationDestination(
         icon: Icon(Icons.article_outlined),
         selectedIcon: Icon(Icons.article),
         label: 'Read',

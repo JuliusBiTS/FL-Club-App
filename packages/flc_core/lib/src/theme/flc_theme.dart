@@ -74,6 +74,28 @@ abstract final class FlcTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(FlcRadius.sheet)),
         ),
       ),
+      // Brand identity, "very prominent, throughout the app": every app bar
+      // and the bottom nav are always FlcColors.brand with white content,
+      // in both themes — not just a light/dark-adapted primary colour.
+      appBarTheme: AppBarTheme(
+        backgroundColor: FlcColors.brand,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: FlcTextStyles.h2.copyWith(color: Colors.white),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: FlcColors.brand,
+        indicatorColor: Colors.white.withValues(alpha: 0.16),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(color: states.contains(WidgetState.selected) ? Colors.white : Colors.white70),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => FlcTextStyles.caption.copyWith(
+            color: states.contains(WidgetState.selected) ? Colors.white : Colors.white70,
+            fontWeight: states.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w400,
+          ),
+        ),
+      ),
       dividerColor: isDark ? Colors.white12 : FlcColors.line,
       splashFactory: InkSparkle.splashFactory,
     );

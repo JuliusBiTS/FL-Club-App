@@ -11,6 +11,7 @@ import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/events_feed_screen.dart';
 import '../../features/loyalty/loyalty_screen.dart';
+import '../../features/media/media_screen.dart';
 import '../../features/membership/membership_interest_screen.dart';
 import '../../features/podcast/podcast_screen.dart';
 import '../../features/read/presentation/article_detail_screen.dart';
@@ -77,6 +78,9 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: <RouteBase>[GoRoute(path: '/podcast', builder: (context, state) => const PodcastScreen())],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[GoRoute(path: '/media', builder: (context, state) => const MediaScreen())],
           ),
           StatefulShellBranch(
             routes: <RouteBase>[

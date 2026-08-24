@@ -14,6 +14,8 @@ Loyalty rules are fixed (see `DECISIONS.md`). Free member reservations are expli
 - [ ] **Podcast RSS** — canonical feed URL from Spotify for Creators (show settings; Apple Podcasts show id `1744425242`). **Blocks M8.**
 - [ ] **Membership inbox** — confirm `members@frontlineclub.com` as the destination for the `mailto:` interest flow. One email to the club. **Blocks M6.**
 - [ ] **SHEEP CRM API** — unknown whether one exists. Explicitly *not* a dependency (CSV import covers v1). Worth asking at some point, must never delay M6.
+- [ ] **YouTube Data API key** — channel confirmed: `youtube.com/@FrontlineClubLondon`. Needed for the Media tab's real sync (listing uploads/detecting a live broadcast) — `media_posts` is seeded by hand for the demo (see `supabase/seed.sql`). In-app playback itself needs no key, but several of the channel's own videos (and third-party reposts of its talks) have embedding disabled by the uploader (YouTube player error 153) — worth checking each video's embed permission in YouTube Studio before relying on it playing in-app. **Blocks the real Media feed**, not the demo.
+- [ ] **Instagram / Meta Business API access** — the club's own social feed merged into the Media tab needs a Meta Business/Creator account connected to a Meta Developer app, then Meta's app review for the read permissions. Not started; expect weeks, entirely on Meta's timeline. **Explicitly out of scope until this exists** — see the Media tab pitch in chat history, 2026-08-24.
 
 ## Brand — blocks M0's design tokens
 

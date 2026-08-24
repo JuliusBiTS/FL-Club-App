@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'event_card.dart';
 import 'events_feed_controller.dart';
 
-enum _FeedFilter { all, thisWeek, membersOnly, free }
+enum _FeedFilter { all, thisWeek, membersOnly, social, free }
 
 final StateProvider<_FeedFilter> _feedFilterProvider = StateProvider<_FeedFilter>((ref) => _FeedFilter.all);
 
@@ -73,6 +73,8 @@ class EventsFeedScreen extends ConsumerWidget {
         return events.where((e) => e.startsAt.isBefore(weekFromNow)).toList();
       case _FeedFilter.membersOnly:
         return events.where((e) => e.membersOnly).toList();
+      case _FeedFilter.social:
+        return events.where((e) => e.category?.toLowerCase() == 'social').toList();
       case _FeedFilter.free:
         return events; // needs ticket_types pricing — resolved once the feed carries a min price per event (M3)
     }
@@ -91,6 +93,7 @@ class _FilterChipsRow extends StatelessWidget {
       (_FeedFilter.all, 'All'),
       (_FeedFilter.thisWeek, 'This week'),
       (_FeedFilter.membersOnly, 'Members only'),
+      (_FeedFilter.social, 'Social'),
     ];
 
     return SizedBox(

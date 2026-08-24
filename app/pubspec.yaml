@@ -64,6 +64,7 @@ dependencies:
   # Content rendering
   flutter_widget_from_html_core: ^0.15.2
   cached_network_image: ^3.4.1
+  webview_flutter: ^4.10.0 # in-app YouTube playback for the Media tab
 
   # Utilities
   intl: ^0.20.3 # pinned by flutter_localizations' own constraint

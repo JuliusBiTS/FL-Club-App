@@ -47,7 +47,7 @@ class _GuestPill extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.xs),
         child: Material(
-          color: FlcColors.ink,
+          color: FlcColors.brand,
           borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
           child: InkWell(
             borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
@@ -151,7 +151,7 @@ class _MemberCardRevealSheetState extends State<_MemberCardRevealSheet> {
             builder: (context, scrollController) {
               final bool isRevealed = _controller.isAttached && _controller.size > _collapsedSize + _revealEpsilon;
               return Material(
-                color: FlcColors.ink,
+                color: FlcColors.brand,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(FlcRadius.membershipCard)),
                 child: SingleChildScrollView(
                   controller: scrollController,
@@ -166,7 +166,7 @@ class _MemberCardRevealSheetState extends State<_MemberCardRevealSheet> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              Icon(Icons.badge_outlined, size: 18, color: Theme.of(context).colorScheme.primary),
+                              const Icon(Icons.badge_outlined, size: 18, color: Colors.white),
                               const SizedBox(width: FlcSpace.xs),
                               Text(
                                 'Membership Card',

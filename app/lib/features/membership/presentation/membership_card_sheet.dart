@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../../../core/platform/secure_screen.dart';
 import '../../../core/supabase/supabase_providers.dart';
 import '../data/member_card_repository.dart';
 import '../membership_providers.dart';
+import 'membership_card_back.dart';
 
 /// The membership card itself — briefing §9.6/§13.4, and the three-tier
 /// trust model from DECISIONS.md:
@@ -29,7 +31,7 @@ class MembershipCardSheet extends ConsumerStatefulWidget {
   ConsumerState<MembershipCardSheet> createState() => _MembershipCardSheetState();
 }
 
-class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
+class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with SingleTickerProviderStateMixin {
   Timer? _tick;
   int? _lastCounter;
   String? _payload;
@@ -37,6 +39,12 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
   String? _photoPath;
   bool _loading = true;
   String? _error;
+
+  late final AnimationController _flipController = AnimationController(
+    duration: const Duration(milliseconds: 500),
+    vsync: this,
+  );
+  bool _showingBack = false;
 
   @override
   void initState() {
@@ -49,9 +57,19 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
   @override
   void dispose() {
     _tick?.cancel();
+    _flipController.dispose();
     unawaited(SecureScreen.disable());
     unawaited(SecureScreen.restoreBrightness());
     super.dispose();
+  }
+
+  void _toggleFlip() {
+    setState(() => _showingBack = !_showingBack);
+    if (_showingBack) {
+      _flipController.forward();
+    } else {
+      _flipController.reverse();
+    }
   }
 
   Future<void> _load() async {
@@ -112,11 +130,39 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // Only the loaded, real-card state is flippable — nothing to show on
+    // the back while loading or errored.
+    final flippable = !_loading && _card != null;
+
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(FlcSpace.lg, FlcSpace.md, FlcSpace.lg, FlcSpace.lg),
-        child: _buildBody(),
+        child: flippable
+            ? GestureDetector(
+                onTap: _toggleFlip,
+                child: AnimatedBuilder(
+                  animation: _flipController,
+                  builder: (context, child) {
+                    final angle = _flipController.value * math.pi;
+                    final showBack = angle > math.pi / 2;
+                    return Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.0015)
+                        ..rotateY(angle),
+                      child: showBack
+                          ? Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.identity()..rotateY(math.pi),
+                              child: const MembershipCardBack(),
+                            )
+                          : _buildBody(),
+                    );
+                  },
+                ),
+              )
+            : _buildBody(),
       ),
     );
   }
@@ -157,6 +203,14 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(FlcRadius.input),
+            child: Image.asset('assets/images/brand/frontline_logo.jpg', height: 32, fit: BoxFit.cover),
+          ),
+        ),
+        const SizedBox(height: FlcSpace.md),
         Row(
           children: <Widget>[
             _Photo(path: _photoPath),
@@ -219,6 +273,15 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> {
             'PIN  ${card.membershipPin}',
             style: FlcTextStyles.body.copyWith(color: Colors.white70, letterSpacing: 2),
           ),
+        const SizedBox(height: FlcSpace.lg),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Icon(Icons.sync_alt, size: 14, color: Colors.white38),
+            const SizedBox(width: FlcSpace.xxs),
+            Text('Tap for loyalty stamps', style: FlcTextStyles.caption.copyWith(color: Colors.white38)),
+          ],
+        ),
       ],
     );
   }

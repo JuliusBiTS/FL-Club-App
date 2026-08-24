@@ -9,6 +9,7 @@ export 'src/models/article.dart';
 export 'src/models/event.dart';
 export 'src/models/podcast_episode.dart';
 export 'src/models/loyalty.dart';
+export 'src/models/media_post.dart';
 export 'src/models/member_card.dart';
 export 'src/models/playback_progress.dart';
 export 'src/models/profile.dart';

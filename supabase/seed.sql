@@ -104,3 +104,18 @@ insert into events (
 insert into ticket_types (event_id, name, description, audience, price_minor, quantity, requires_member, requires_proof, sort_order) values
   ('10000000-0000-0000-0000-000000000002', 'Member', 'Members-only screening.', 'member', 500, 80, true, false, 0)
 on conflict do nothing;
+
+-- Demo media posts --------------------------------------------------------
+-- The club's real channel is youtube.com/@FrontlineClubLondon, but most of
+-- its individual uploads (and third-party reposts of its talks) have
+-- embedding disabled by the uploader (YouTube player error 153) — that's
+-- a per-video setting, not something a real media-sync integration could
+-- work around either. These IDs are Blender Foundation open-movie shorts
+-- (Creative Commons, embedding intentionally left on) standing in so the
+-- in-app player can actually be demoed end-to-end; swap in the channel's
+-- own video IDs once confirmed embeddable, or once real sync exists.
+insert into media_posts (source, external_id, title, description, thumbnail_url, published_at, is_live) values
+  ('youtube', 'aqz-KE-bpKQ', 'LIVE — Frontline Club Tenth Anniversary Tribute', 'Streaming now from the club.', 'https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg', now(), true),
+  ('youtube', 'R6MlUcmOul8', 'Unprepared, inexperienced and in a war zone', 'Frontline Club Talks: on the media covering conflict without proper preparation.', 'https://img.youtube.com/vi/R6MlUcmOul8/hqdefault.jpg', now() - interval '3 days', false),
+  ('youtube', 'TFbSDH6ytlk', 'Inside the Frontline Club', 'A look inside the club — the people, the room, the reason it exists.', 'https://img.youtube.com/vi/TFbSDH6ytlk/hqdefault.jpg', now() - interval '9 days', false)
+on conflict (source, external_id) do nothing;
