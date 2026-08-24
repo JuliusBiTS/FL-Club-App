@@ -137,7 +137,7 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(FlcSpace.lg, FlcSpace.md, FlcSpace.lg, FlcSpace.lg),
+        padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.sm, FlcSpace.md, FlcSpace.md),
         child: flippable
             ? GestureDetector(
                 onTap: _toggleFlip,
@@ -210,7 +210,7 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
             child: Image.asset('assets/images/brand/frontline_logo.jpg', height: 32, fit: BoxFit.cover),
           ),
         ),
-        const SizedBox(height: FlcSpace.md),
+        const SizedBox(height: FlcSpace.sm),
         Row(
           children: <Widget>[
             _Photo(path: _photoPath),
@@ -244,36 +244,36 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
             ),
           ],
         ),
-        const SizedBox(height: FlcSpace.lg),
+        const SizedBox(height: FlcSpace.md),
         _QrArea(payload: _payload),
-        const SizedBox(height: FlcSpace.xs),
+        const SizedBox(height: FlcSpace.xxs),
         Text(
           'Rotates every 30s — this is what a scanner verifies',
-          style: FlcTextStyles.bodySmall.copyWith(color: Colors.white54),
+          style: FlcTextStyles.caption.copyWith(color: Colors.white54),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: FlcSpace.lg),
+        const SizedBox(height: FlcSpace.md),
         if (card.membershipNumber != null) ...<Widget>[
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: FlcSpace.sm, horizontal: FlcSpace.lg),
+            padding: const EdgeInsets.symmetric(vertical: FlcSpace.xs, horizontal: FlcSpace.md),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FlcRadius.card)),
             child: bw.BarcodeWidget(
               barcode: bw.Barcode.code128(),
               data: card.membershipNumber!,
-              height: 56,
+              height: 40,
               drawText: true,
-              style: const TextStyle(color: Colors.black, fontSize: 13),
+              style: const TextStyle(color: Colors.black, fontSize: 12),
             ),
           ),
-          const SizedBox(height: FlcSpace.sm),
+          const SizedBox(height: FlcSpace.xs),
         ],
         if (card.membershipPin != null)
           Text(
             'PIN  ${card.membershipPin}',
-            style: FlcTextStyles.body.copyWith(color: Colors.white70, letterSpacing: 2),
+            style: FlcTextStyles.bodySmall.copyWith(color: Colors.white70, letterSpacing: 2),
           ),
-        const SizedBox(height: FlcSpace.lg),
+        const SizedBox(height: FlcSpace.sm),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -300,7 +300,7 @@ class _Photo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 64.0;
+    const size = 48.0;
     if (path == null) {
       return const CircleAvatar(
         radius: size / 2,
@@ -319,7 +319,7 @@ class _QrArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 200.0;
+    const size = 132.0;
     return Container(
       width: size,
       height: size,
@@ -327,7 +327,7 @@ class _QrArea extends StatelessWidget {
       child: Center(
         child: payload == null
             ? const CircularProgressIndicator()
-            : QrImageView(data: payload!, size: size - 32, backgroundColor: Colors.white),
+            : QrImageView(data: payload!, size: size - 20, backgroundColor: Colors.white),
       ),
     );
   }

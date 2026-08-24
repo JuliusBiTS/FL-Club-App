@@ -93,7 +93,12 @@ class _MemberCardRevealSheetState extends State<_MemberCardRevealSheet> {
   // collapsed state matches the handle's real pixel height exactly rather
   // than an eyeballed fraction — see didUpdateWidget for why it's cached.
   double _collapsedSize = 0.1;
-  static const double _expandedSize = 0.86;
+  // A genuine card, not a sheet that swallows the screen — Waterstones'
+  // own Plus card tops out around a third of the display; this leaves
+  // headroom for the photo/QR/barcode/PIN this card carries that theirs
+  // doesn't (briefing's three-tier trust model), but stays a floating
+  // card, not a takeover.
+  static const double _expandedSize = 0.52;
   static const double _revealEpsilon = 0.01;
 
   @override
@@ -150,48 +155,60 @@ class _MemberCardRevealSheetState extends State<_MemberCardRevealSheet> {
             snap: true,
             builder: (context, scrollController) {
               final bool isRevealed = _controller.isAttached && _controller.size > _collapsedSize + _revealEpsilon;
-              return Material(
-                color: FlcColors.brand,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(FlcRadius.membershipCard)),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      InkWell(
-                        onTap: _toggle,
-                        child: SizedBox(
-                          height: _kHandleHeight,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              const Icon(Icons.badge_outlined, size: 18, color: Colors.white),
-                              const SizedBox(width: FlcSpace.xs),
-                              Text(
-                                'Membership Card',
-                                style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(width: FlcSpace.xs),
-                              Icon(
-                                isRevealed ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                                size: 18,
-                                color: Colors.white70,
-                              ),
-                            ],
+              // The DraggableScrollableSheet's own box is always full-width
+              // and only resizable vertically — the horizontal margin here
+              // (and rounding all four corners, not just the top) is what
+              // makes this actually read as a floating card over the page
+              // rather than a full-bleed sheet, matching Waterstones' Plus
+              // card. The margin area stays transparent, so whatever's
+              // behind (the current tab's content) shows through either
+              // side, exactly like the reference.
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md),
+                child: Material(
+                  color: FlcColors.brand,
+                  borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
+                  clipBehavior: Clip.antiAlias,
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: _toggle,
+                          child: SizedBox(
+                            height: _kHandleHeight,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                const Icon(Icons.badge_outlined, size: 18, color: Colors.white),
+                                const SizedBox(width: FlcSpace.xs),
+                                Text(
+                                  'Membership Card',
+                                  style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                                ),
+                                const SizedBox(width: FlcSpace.xs),
+                                Icon(
+                                  isRevealed ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                                  size: 18,
+                                  color: Colors.white70,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      // Only actually mounted while revealed — this is what
-                      // arms/disarms FLAG_SECURE, forced max brightness and
-                      // the rotating-QR timer, via MembershipCardSheet's own
-                      // initState/dispose (briefing §9.4/§9.6). Keeping that
-                      // live for a card that isn't visibly on screen would
-                      // force max brightness and block screenshots app-wide
-                      // for as long as a member is signed in — not just
-                      // while the card is actually showing.
-                      if (isRevealed) const MembershipCardSheet() else SizedBox(height: bottomInset),
-                    ],
+                        // Only actually mounted while revealed — this is what
+                        // arms/disarms FLAG_SECURE, forced max brightness and
+                        // the rotating-QR timer, via MembershipCardSheet's own
+                        // initState/dispose (briefing §9.4/§9.6). Keeping that
+                        // live for a card that isn't visibly on screen would
+                        // force max brightness and block screenshots app-wide
+                        // for as long as a member is signed in — not just
+                        // while the card is actually showing.
+                        if (isRevealed) const MembershipCardSheet() else SizedBox(height: bottomInset),
+                      ],
+                    ),
                   ),
                 ),
               );

@@ -38,7 +38,7 @@ class MembershipCardBack extends ConsumerWidget {
                 Image.asset('assets/images/brand/frontline_logo.jpg', height: 28, fit: BoxFit.cover),
               ],
             ),
-            const SizedBox(height: FlcSpace.lg),
+            const SizedBox(height: FlcSpace.md),
             Text('Loyalty stamps', style: FlcTextStyles.h3.copyWith(color: Colors.white)),
             const SizedBox(height: FlcSpace.xxs),
             Text(
@@ -48,7 +48,7 @@ class MembershipCardBack extends ConsumerWidget {
               style: FlcTextStyles.bodySmall.copyWith(color: Colors.white70),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: FlcSpace.lg),
+            const SizedBox(height: FlcSpace.md),
             _StampGrid(filled: filled, total: threshold),
             const SizedBox(height: FlcSpace.md),
             Text(
@@ -103,7 +103,7 @@ class _Stamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 40.0;
+    const size = 34.0;
     return Container(
       width: size,
       height: size,
