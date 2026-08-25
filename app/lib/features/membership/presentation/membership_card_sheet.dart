@@ -14,6 +14,12 @@ import '../../../core/supabase/supabase_providers.dart';
 import '../data/member_card_repository.dart';
 import '../membership_providers.dart';
 import 'membership_card_back.dart';
+import 'membership_card_wordmark.dart';
+
+/// Photo and QR share this size — briefing feedback (2026-08-24): "photo
+/// on the left of it in the same size" as the QR, side by side in the
+/// scan panel rather than the QR alone with a small avatar up top.
+const double _kIdBlockSize = 104;
 
 /// The membership card itself — briefing §9.6/§13.4, and the three-tier
 /// trust model from DECISIONS.md:
@@ -203,77 +209,96 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(FlcRadius.input),
-            child: Image.asset('assets/images/brand/frontline_logo.jpg', height: 32, fit: BoxFit.cover),
+        const MembershipCardWordmark(),
+        const SizedBox(height: FlcSpace.xs),
+        Text(
+          card.fullName,
+          style: const TextStyle(
+            fontFamily: FlcFontFamily.serif,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: Colors.white,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        if (card.membershipKind != null || card.validTo != null) ...<Widget>[
+          const SizedBox(height: 2),
+          Text(
+            <String>[
+              if (card.membershipKind != null) '${_kindLabel(card.membershipKind!)} member',
+              if (card.validTo != null) 'Valid to ${dateFormat.format(card.validTo!)}',
+            ].join(' · '),
+            style: FlcTextStyles.caption.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
+        ],
+        const SizedBox(height: FlcSpace.md),
+        // The scan panel — photo and QR at matching size, side by side
+        // (briefing feedback, 2026-08-24), barcode + number underneath.
+        // One cream surface, not three separate floating blocks.
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(FlcSpace.sm, FlcSpace.sm, FlcSpace.sm, FlcSpace.xs),
+          decoration: BoxDecoration(color: const Color(0xFFFBF9F2), borderRadius: BorderRadius.circular(FlcRadius.card)),
+          child: Column(
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  _Photo(path: _photoPath),
+                  const SizedBox(width: FlcSpace.sm),
+                  _QrArea(payload: _payload),
+                ],
+              ),
+              if (card.membershipNumber != null) ...<Widget>[
+                const SizedBox(height: FlcSpace.sm),
+                const _DashedDivider(),
+                const SizedBox(height: FlcSpace.xs),
+                bw.BarcodeWidget(
+                  barcode: bw.Barcode.code128(),
+                  data: card.membershipNumber!,
+                  height: 36,
+                  drawText: false,
+                  color: const Color(0xFF202B08),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  card.membershipNumber!,
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 11, letterSpacing: 1, color: Color(0xFF202B08)),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: FlcSpace.sm),
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            _Photo(path: _photoPath),
-            const SizedBox(width: FlcSpace.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    card.fullName,
-                    style: FlcTextStyles.h3.copyWith(color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (card.membershipKind != null) ...<Widget>[
-                    const SizedBox(height: FlcSpace.xxs),
-                    Text(
-                      '${_kindLabel(card.membershipKind!)} member',
-                      style: FlcTextStyles.bodySmall.copyWith(color: Colors.white70),
-                    ),
-                  ],
-                  if (card.validTo != null) ...<Widget>[
-                    const SizedBox(height: FlcSpace.xxs),
-                    Text(
-                      'Valid to ${dateFormat.format(card.validTo!)}',
-                      style: FlcTextStyles.bodySmall.copyWith(color: Colors.white54),
-                    ),
-                  ],
-                ],
+            Container(
+              width: 5,
+              height: 5,
+              margin: const EdgeInsets.only(right: FlcSpace.xxs),
+              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFB7CC6C)),
+            ),
+            Flexible(
+              child: Text(
+                'QR rotates every 30s for staff to scan',
+                style: FlcTextStyles.caption.copyWith(color: Colors.white60),
+                textAlign: TextAlign.center,
               ),
             ),
           ],
         ),
-        const SizedBox(height: FlcSpace.md),
-        _QrArea(payload: _payload),
-        const SizedBox(height: FlcSpace.xxs),
-        Text(
-          'Rotates every 30s — this is what a scanner verifies',
-          style: FlcTextStyles.caption.copyWith(color: Colors.white54),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: FlcSpace.md),
-        if (card.membershipNumber != null) ...<Widget>[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: FlcSpace.xs, horizontal: FlcSpace.md),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FlcRadius.card)),
-            child: bw.BarcodeWidget(
-              barcode: bw.Barcode.code128(),
-              data: card.membershipNumber!,
-              height: 40,
-              drawText: true,
-              style: const TextStyle(color: Colors.black, fontSize: 12),
-            ),
-          ),
-          const SizedBox(height: FlcSpace.xs),
-        ],
-        if (card.membershipPin != null)
+        if (card.membershipPin != null) ...<Widget>[
+          const SizedBox(height: 2),
           Text(
             'PIN  ${card.membershipPin}',
-            style: FlcTextStyles.bodySmall.copyWith(color: Colors.white70, letterSpacing: 2),
+            style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600, letterSpacing: 3),
           ),
-        const SizedBox(height: FlcSpace.sm),
+        ],
+        const SizedBox(height: FlcSpace.xs),
         Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -300,15 +325,30 @@ class _Photo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 48.0;
+    final decoration = BoxDecoration(
+      borderRadius: BorderRadius.circular(FlcRadius.input),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: <Color>[Color(0xFFEDEAE0), Color(0xFFDFDBCC)],
+      ),
+    );
     if (path == null) {
-      return const CircleAvatar(
-        radius: size / 2,
-        backgroundColor: Colors.white24,
-        child: Icon(Icons.person, color: Colors.white70),
+      return Container(
+        width: _kIdBlockSize,
+        height: _kIdBlockSize,
+        decoration: decoration,
+        child: const Icon(Icons.person, color: Color(0xFFB9BEA3), size: 44),
       );
     }
-    return CircleAvatar(radius: size / 2, backgroundImage: FileImage(File(path!)));
+    return Container(
+      width: _kIdBlockSize,
+      height: _kIdBlockSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(FlcRadius.input),
+        image: DecorationImage(image: FileImage(File(path!)), fit: BoxFit.cover),
+      ),
+    );
   }
 }
 
@@ -319,16 +359,44 @@ class _QrArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 132.0;
     return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FlcRadius.card)),
-      child: Center(
-        child: payload == null
-            ? const CircularProgressIndicator()
-            : QrImageView(data: payload!, size: size - 20, backgroundColor: Colors.white),
-      ),
+      width: _kIdBlockSize,
+      height: _kIdBlockSize,
+      alignment: Alignment.center,
+      child: payload == null
+          ? const CircularProgressIndicator()
+          : QrImageView(data: payload!, size: _kIdBlockSize, backgroundColor: const Color(0xFFFBF9F2)),
+    );
+  }
+}
+
+/// A quiet stand-in for the mockup's dashed rule between the QR/photo pair
+/// and the barcode — Flutter has no built-in dashed border, so this draws
+/// one from a row of short segments rather than pulling in a package for a
+/// single hairline.
+class _DashedDivider extends StatelessWidget {
+  const _DashedDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dashWidth = 4.0;
+        const gap = 3.0;
+        final count = (constraints.maxWidth / (dashWidth + gap)).floor();
+        return SizedBox(
+          height: 1,
+          child: Row(
+            children: List<Widget>.generate(
+              count,
+              (_) => const Padding(
+                padding: EdgeInsets.only(right: gap),
+                child: SizedBox(width: dashWidth, height: 1, child: ColoredBox(color: Color(0xFFD8D2BE))),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

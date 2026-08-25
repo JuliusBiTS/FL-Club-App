@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../loyalty/loyalty_providers.dart';
+import 'membership_card_wordmark.dart';
 
 /// The card's back face — briefing feedback from the club's design lead,
 /// modelled directly on Waterstones Plus's stamp-grid back (10 stamps,
@@ -32,12 +33,7 @@ class MembershipCardBack extends ConsumerWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset('assets/images/brand/frontline_logo.jpg', height: 28, fit: BoxFit.cover),
-              ],
-            ),
+            const MembershipCardWordmark(compact: true),
             const SizedBox(height: FlcSpace.md),
             Text('Loyalty stamps', style: FlcTextStyles.h3.copyWith(color: Colors.white)),
             const SizedBox(height: FlcSpace.xxs),
@@ -109,10 +105,10 @@ class _Stamp extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: earned ? Colors.white : Colors.transparent,
-        border: Border.all(color: Colors.white54, width: 1.5),
+        color: earned ? const Color(0xFFFBF9F2) : Colors.white.withValues(alpha: 0.08),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
       ),
-      child: earned ? const Icon(Icons.close, size: 20, color: FlcColors.brand) : null,
+      child: earned ? const Icon(Icons.close, size: 18, color: Color(0xFF202B08)) : null,
     );
   }
 }
