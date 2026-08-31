@@ -106,16 +106,19 @@ insert into ticket_types (event_id, name, description, audience, price_minor, qu
 on conflict do nothing;
 
 -- Demo media posts --------------------------------------------------------
--- The club's real channel is youtube.com/@FrontlineClubLondon, but most of
--- its individual uploads (and third-party reposts of its talks) have
--- embedding disabled by the uploader (YouTube player error 153) — that's
--- a per-video setting, not something a real media-sync integration could
--- work around either. These IDs are Blender Foundation open-movie shorts
--- (Creative Commons, embedding intentionally left on) standing in so the
--- in-app player can actually be demoed end-to-end; swap in the channel's
--- own video IDs once confirmed embeddable, or once real sync exists.
+-- Real uploads from the club's actual channel, youtube.com/@FrontlineClubLondon
+-- (channel id UC_RRSAK5BsitIw0tV2dg9gw) — pulled straight from its public
+-- RSS feed (youtube.com/feeds/videos.xml?channel_id=...) rather than
+-- generic search results, which earlier turned up third-party reposts
+-- with embedding disabled by their uploader (YouTube player error 153).
+-- These are the channel's own uploads, so embedding follows YouTube's
+-- default (on) unless the club has explicitly turned it off. Hand-seeded
+-- for the demo; real sync still needs a YouTube Data API key to run on a
+-- schedule instead (docs/OPEN_QUESTIONS.md).
 insert into media_posts (source, external_id, title, description, thumbnail_url, published_at, is_live) values
-  ('youtube', 'aqz-KE-bpKQ', 'LIVE — Frontline Club Tenth Anniversary Tribute', 'Streaming now from the club.', 'https://img.youtube.com/vi/aqz-KE-bpKQ/hqdefault.jpg', now(), true),
-  ('youtube', 'R6MlUcmOul8', 'Unprepared, inexperienced and in a war zone', 'Frontline Club Talks: on the media covering conflict without proper preparation.', 'https://img.youtube.com/vi/R6MlUcmOul8/hqdefault.jpg', now() - interval '3 days', false),
-  ('youtube', 'TFbSDH6ytlk', 'Inside the Frontline Club', 'A look inside the club — the people, the room, the reason it exists.', 'https://img.youtube.com/vi/TFbSDH6ytlk/hqdefault.jpg', now() - interval '9 days', false)
+  ('youtube', 'qXZzQYP60-M', 'Lebanon on the Edge', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/qXZzQYP60-M/hqdefault.jpg', '2026-06-03T07:52:03Z', false),
+  ('youtube', 'Syw0GDQV6lw', 'AI Targeting and Palantir: Who Decides Who Lives or Dies?', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/Syw0GDQV6lw/hqdefault.jpg', '2026-05-15T09:33:10Z', false),
+  ('youtube', 'MGIrcA2cNFU', 'The Gulf at a Turning Point', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/MGIrcA2cNFU/hqdefault.jpg', '2026-05-07T10:14:41Z', false),
+  ('youtube', 'oq293zudVck', 'The Power of Humanising Conflict', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/oq293zudVck/hqdefault.jpg', '2026-04-30T13:33:53Z', false),
+  ('youtube', 'oFsSB07TJLQ', 'Why the US War Machine Will Lose in Iran', 'Panel discussion featuring Jeremy Corbyn, recorded at the club.', 'https://img.youtube.com/vi/oFsSB07TJLQ/hqdefault.jpg', '2026-04-01T08:07:02Z', false)
 on conflict (source, external_id) do nothing;
