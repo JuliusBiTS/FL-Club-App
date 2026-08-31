@@ -1,14 +1,21 @@
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'media_providers.dart';
-import 'presentation/media_player_screen.dart';
 import 'presentation/media_post_card.dart';
 
-/// Briefing feedback (2026-08-24): a feed of the club's own video content,
-/// watchable in-app. YouTube-only for now — see media_repository.dart and
+/// Briefing feedback (2026-08-24): a feed of the club's own video content.
+/// YouTube-only for now — see media_repository.dart and
 /// docs/OPEN_QUESTIONS.md for why Instagram isn't merged in yet.
+///
+/// Playback opens the real YouTube app rather than an in-app embedded
+/// player — a WebView-based iframe embed hit YouTube's own anti-scraping
+/// checks (error 152/153) with no reliable fix, regardless of that
+/// video's own embedding settings. Every real phone has the YouTube app
+/// (or falls back to the browser), so this is the more reliable choice,
+/// not just the simpler one.
 class MediaScreen extends ConsumerWidget {
   const MediaScreen({super.key});
 
@@ -31,8 +38,9 @@ class MediaScreen extends ConsumerWidget {
                 final post = posts[index];
                 return MediaPostCard(
                   post: post,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(builder: (context) => MediaPlayerScreen(post: post)),
+                  onTap: () => launchUrl(
+                    Uri.parse('https://www.youtube.com/watch?v=${post.externalId}'),
+                    mode: LaunchMode.externalApplication,
                   ),
                 );
               },

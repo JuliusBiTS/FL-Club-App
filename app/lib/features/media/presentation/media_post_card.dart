@@ -31,8 +31,10 @@ class MediaPostCard extends StatelessWidget {
                       ? ColoredBox(color: Theme.of(context).colorScheme.surfaceContainerHighest)
                       : CachedNetworkImage(imageUrl: post.thumbnailUrl!, fit: BoxFit.cover),
                 ),
-                const Center(
-                  child: Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
+                const Positioned.fill(
+                  child: Center(
+                    child: Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
+                  ),
                 ),
                 if (post.isLive)
                   Positioned(
