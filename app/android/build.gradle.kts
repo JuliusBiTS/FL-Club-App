@@ -42,6 +42,15 @@ subprojects {
     // already sets both targets to 17 directly).
     if (name == "app") return@subprojects
     afterEvaluate {
+        // Android lint's pre-release "vital" check has to resolve every
+        // transitive dependency's POM. flutter_stripe pulls in Stripe's
+        // push-provisioning module, which depends on
+        // com.google.android.gms:play-services-tapandpay — a Google artifact
+        // that isn't published to any public repository — so the check can
+        // never finish ("Could not find play-services-tapandpay:18.8.0").
+        // This app doesn't use that feature; it's skipped here, and for :app in
+        // app/build.gradle.kts, so `flutter build apk --release` completes.
+        tasks.matching { it.name.startsWith("lintVital") }.configureEach { enabled = false }
         tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
@@ -53,6 +62,13 @@ subprojects {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
             }
+            // Some plugins (file_picker and device_info_plus at the versions
+            // pinned in pubspec.lock) still compile against Android 34, but
+            // flutter_plugin_android_lifecycle now requires 36+, and the
+            // release build stops at "checkReleaseAarMetadata" otherwise.
+            // Only ever raises the level, never lowers a plugin's own choice.
+            val current = compileSdkVersion?.removePrefix("android-")?.toIntOrNull() ?: 0
+            if (current < 36) compileSdkVersion(36)
         }
     }
 }

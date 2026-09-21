@@ -29,11 +29,20 @@ android {
         versionName = flutter.versionName
     }
 
+    // See the note about play-services-tapandpay in ../build.gradle.kts: the
+    // release lint check can't resolve a Stripe sub-dependency that isn't on
+    // any public repository, so it is turned off for release builds.
+    lint {
+        checkReleaseBuilds = false
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // Extra keep/ignore rules for the release shrinker (R8) — see proguard-rules.pro.
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
