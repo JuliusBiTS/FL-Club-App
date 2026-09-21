@@ -6,6 +6,7 @@ import '../theme/flc_spacing.dart';
 import '../theme/flc_typography.dart';
 import '../util/london_time.dart';
 import '../widgets/event_badges.dart';
+import '../widgets/event_hero_fallback.dart';
 import 'event_admin_repository.dart';
 import 'event_editor_screen.dart';
 import 'event_preview.dart';
@@ -234,7 +235,7 @@ class _EventRow extends StatelessWidget {
                   width: 88,
                   height: 62,
                   child: event.heroImagePath == null
-                      ? ColoredBox(color: FlcColors.brand.withValues(alpha: 0.08), child: const Icon(Icons.image_outlined, color: FlcColors.slate))
+                      ? EventHeroFallback(category: event.category, showLabel: false)
                       : Image.network(event.heroImagePath!, fit: BoxFit.cover, errorBuilder: (BuildContext c, Object e, StackTrace? s) => const ColoredBox(color: FlcColors.line)),
                 ),
               ),

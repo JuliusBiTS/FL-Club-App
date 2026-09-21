@@ -42,3 +42,17 @@ See the HMAC ticket/membership signing scheme documented at the top of `supabase
 3. **Verification of person** — staff compares the on-screen member photo to the person in front of them.
 
 The member discount requires tier 2 **and** tier 3. A barcode and PIN are a username, not a password.
+
+## Event management (September 2026)
+
+Decided with the club's Head of Digital & Events Producer; built in `supabase/migrations/20260921000001_event_management.sql` and `packages/flc_core/lib/src/events_admin/`. How-to: [EVENT_MANAGEMENT.md](EVENT_MANAGEMENT.md).
+
+- **One editor, two surfaces.** The admin console (web) and the app's staff area use the same editor and list, shared from `flc_core`, so an event is authored identically anywhere.
+- **Staff vs admin, enforced in Postgres.** Staff create, edit, publish and send notifications. While an event is a *draft* staff can also set price and capacity; once it is *live*, changing price/capacity, adding ticket types, cancelling and deleting are admin-only. Capacity can never fall below tickets sold; a ticket type with sales can be withdrawn, never deleted.
+- **Notifications are available to staff without admin permission**, with rate limits (per person per hour; club-wide broadcasts per day) and an audit record of every send.
+- **Highlights are `FC Recommends`, `Staff pick`, `Special offer`, plus up to four free-text perks** (e.g. "Free drink with your ticket"). **"Selling fast" is derived, never stored** (75% or more sold, not sold out), so it can't go stale.
+- **Loyalty is switchable per event** (`loyalty_eligible`), applied by a trigger on ticket creation so the order functions are untouched. The scheme's rules (one point per person per event; free tickets never earn) are unchanged.
+- **Event times are London time, always.** The editor never reads or writes the device's time zone (`LondonTime`), because staff may not be in London.
+- **Descriptions are authored as light markdown** (`description_md`) and the sanitised HTML in `description_html` is generated from it on save — nobody types HTML, and nothing typed can inject markup.
+- **Every change to events and ticket types is audited by a database trigger**, not by client code, so it cannot be skipped.
+- **Push uses Firebase config from `--dart-define`**, not `google-services.json`, so enabling it needs no build-file changes. It is opt-in per person and asked for at the point of need, never at launch.

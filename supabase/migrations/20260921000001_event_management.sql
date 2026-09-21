@@ -118,15 +118,18 @@ create policy event_images_staff_insert on storage.objects
 create policy event_images_staff_update on storage.objects
   for update using (bucket_id = 'event-images' and is_staff(auth.uid()));
 
--- Callers that are not a signed-in end user (service_role, the SQL editor,
--- pg_cron) are trusted: they either are the platform or already ran their
--- own checks in an Edge Function.
+-- The platform itself is trusted: Edge Functions (service_role), and direct
+-- database sessions (the SQL editor, `supabase db push`, pg_cron), which
+-- connect as postgres / supabase_admin. An end user's request always arrives
+-- through PostgREST as the `authenticator` login — so a missing or anonymous
+-- login is NOT trusted; it just fails the row-level-security check first.
 create or replace function is_trusted_db_caller()
 returns boolean
 language sql
 stable
 as $$
-  select auth.role() = 'service_role' or auth.uid() is null;
+  select coalesce(auth.role(), '') = 'service_role'
+      or session_user in ('postgres', 'supabase_admin');
 $$;
 
 -- ---------------------------------------------------------------------------

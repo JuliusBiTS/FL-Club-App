@@ -1,24 +1,25 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 /// Briefing §9.1. Full member-price surfacing (struck-through standard
 /// price, live ticket-type-aware pricing) needs the event's ticket types,
 /// which the feed doesn't fetch per-card for cost/latency reasons — that
-/// richer version lands with checkout in M3. For now this shows the date,
-/// venue and a plain status chip, which is enough to make M1's "browse
-/// real events on a phone" demo land.
+/// richer version lands later. Today it shows the picture (or the brand
+/// fallback), date/venue in London time, and the promotional ribbons the
+/// club has chosen — FC Recommends / Special offer / perks — plus "Selling
+/// fast", which is derived from sales rather than set by hand.
 class EventCard extends StatelessWidget {
-  const EventCard({required this.event, required this.onTap, super.key});
+  const EventCard({required this.event, required this.onTap, this.sellingFast = false, super.key});
 
   final EventModel event;
   final VoidCallback onTap;
+  final bool sellingFast;
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('EEE d MMM, HH:mm'); // briefing §6: "Thu 3 Sep 2026" style, 24h/12h per device locale — TODO: respect device locale format instead of hard-coding EEE d MMM, HH:mm once l10n is wired up (§6)
-    final theme = Theme.of(context);
+    // Venue time, never device time (briefing §6/§7.3).
+    final String when = LondonTime.format(event.startsAt, pattern: 'EEE d MMM, HH:mm');
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -31,8 +32,13 @@ class EventCard extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: event.heroImagePath == null
-                  ? ColoredBox(color: theme.colorScheme.surfaceContainerHighest)
-                  : CachedNetworkImage(imageUrl: event.heroImagePath!, fit: BoxFit.cover),
+                  ? EventHeroFallback(category: event.category)
+                  : CachedNetworkImage(
+                      imageUrl: event.heroImagePath!,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => EventHeroFallback(category: event.category),
+                      errorWidget: (context, url, error) => EventHeroFallback(category: event.category),
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(FlcSpace.md),
@@ -47,12 +53,23 @@ class EventCard extends StatelessWidget {
                   Text(event.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3),
                   const SizedBox(height: FlcSpace.xxs),
                   Text(
-                    '${dateFormat.format(event.startsAt.toLocal())} · ${event.venueRoom ?? event.venueName}',
+                    '$when · ${event.venueRoom ?? event.venueName}${event.isOnline ? ' · Also online' : ''}',
                     style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
                   ),
-                  if (event.membersOnly) ...<Widget>[
+                  if (event.summary != null && event.summary!.trim().isNotEmpty) ...<Widget>[
                     const SizedBox(height: FlcSpace.xs),
-                    const _Chip(label: 'Members only'),
+                    Text(event.summary!, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.bodySmall),
+                  ],
+                  if (event.isPromoted || sellingFast || event.membersOnly) ...<Widget>[
+                    const SizedBox(height: FlcSpace.sm),
+                    Wrap(
+                      spacing: FlcSpace.xs,
+                      runSpacing: FlcSpace.xs,
+                      children: <Widget>[
+                        EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast, dense: true),
+                        if (event.membersOnly) const _MembersChip(),
+                      ],
+                    ),
                   ],
                 ],
               ),
@@ -64,20 +81,18 @@ class EventCard extends StatelessWidget {
   }
 }
 
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label});
-
-  final String label;
+class _MembersChip extends StatelessWidget {
+  const _MembersChip();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 3),
       decoration: BoxDecoration(
         color: FlcColors.brand.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(FlcRadius.input),
       ),
-      child: Text(label, style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600)),
+      child: Text('Members only', style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600)),
     );
   }
 }

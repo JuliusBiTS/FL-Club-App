@@ -34,3 +34,9 @@ final ticketTypesProvider = FutureProvider.autoDispose.family<List<TicketTypeMod
 final eventDetailProvider = FutureProvider.autoDispose.family<EventModel?, String>((ref, slug) {
   return ref.watch(eventsRepositoryProvider).getEventDetail(slug);
 });
+
+/// Which upcoming events are "selling fast". Fetched fresh each time the feed
+/// is shown; the feed simply omits the ribbon while this loads or if it fails.
+final sellingFastIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) {
+  return ref.watch(_eventsRemoteDataSourceProvider).fetchSellingFastIds();
+});

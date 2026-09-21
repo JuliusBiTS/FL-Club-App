@@ -203,7 +203,8 @@ class ScheduleSection extends StatelessWidget {
               decoration: const InputDecoration(
                 labelText: 'Livestream link',
                 hintText: 'https://…',
-                helperText: 'Ticket holders see this link on their ticket.',
+                helperText: 'A "Watch live" button appears on the event page from 15 minutes before it starts. For a paid stream, leave this empty and send the link to ticket holders yourself.',
+                helperMaxLines: 3,
               ),
               onChanged: (String v) {
                 d.livestreamUrl = v;

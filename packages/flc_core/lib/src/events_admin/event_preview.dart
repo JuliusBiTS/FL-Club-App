@@ -6,6 +6,7 @@ import '../theme/flc_colors.dart';
 import '../theme/flc_spacing.dart';
 import '../theme/flc_typography.dart';
 import '../widgets/event_badges.dart';
+import '../widgets/event_hero_fallback.dart';
 import 'event_draft.dart';
 
 /// The event as it will appear on a card in the app's Events tab — same
@@ -28,10 +29,7 @@ class EventPreviewCard extends StatelessWidget {
           AspectRatio(
             aspectRatio: 16 / 9,
             child: draft.heroImageUrl == null
-                ? ColoredBox(
-                    color: FlcColors.brand.withValues(alpha: 0.08),
-                    child: const Center(child: Icon(Icons.image_outlined, color: FlcColors.slate, size: 36)),
-                  )
+                ? EventHeroFallback(category: draft.category)
                 : Image.network(
                     draft.heroImageUrl!,
                     fit: BoxFit.cover,

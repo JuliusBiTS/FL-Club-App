@@ -14,7 +14,11 @@ frontline_club_app --platforms ios .` there when M10 starts.
 flutter pub get
 
 # Code generation: freezed models, Drift's AppDatabase, and ARB localization.
-dart run build_runner build --delete-conflicting-outputs
+# The generated *.g.dart / *.freezed.dart files are git-ignored, so this is
+# REQUIRED on a fresh clone — without it the app won't compile. The shared
+# models live in packages/flc_core, so generate there first.
+(cd ../packages/flc_core && dart run build_runner build)
+dart run build_runner build
 flutter gen-l10n
 ```
 
@@ -26,12 +30,24 @@ meaningless without RLS, which is the real gate — see
 `supabase/migrations/20260817000009_rls_policies.sql`), but they're
 per-environment, so they're passed at run time rather than hard-coded:
 
+Easiest: copy `dart_defines.example.json` to `dart_defines.json` (git-ignored),
+fill it in, and run
+
+```bash
+flutter run --dart-define-from-file=dart_defines.json
+```
+
+or pass them one by one:
+
 ```bash
 flutter run \
   --dart-define=SUPABASE_URL=https://<project-ref>.supabase.co \
   --dart-define=SUPABASE_ANON_KEY=<anon-key> \
   --dart-define=STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
+
+The four `FIREBASE_*` values switch on push notifications and are optional —
+see [docs/PUSH_SETUP.md](../docs/PUSH_SETUP.md).
 
 ## Architecture
 

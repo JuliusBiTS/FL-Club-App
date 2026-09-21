@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/env.dart';
+import 'core/push/push_service.dart';
 import 'features/podcast/audio/podcast_audio_handler.dart';
 import 'features/podcast/podcast_providers.dart';
 
@@ -28,6 +29,11 @@ Future<void> main() async {
     Stripe.publishableKey = Env.stripePublishableKey;
     await Stripe.instance.applySettings();
   }
+
+  // Push notifications (docs/PUSH_SETUP.md). Optional: with no Firebase config
+  // in --dart-define this is a no-op and the app runs exactly as before.
+  final PushService pushService = PushService(Supabase.instance.client);
+  await pushService.init();
 
   // Sets up the lock screen/notification media session for podcast
   // playback (briefing §9.8) — must happen before the widget tree exists,
@@ -52,7 +58,10 @@ Future<void> main() async {
     },
     appRunner: () => runApp(
       ProviderScope(
-        overrides: [podcastAudioHandlerProvider.overrideWithValue(audioHandler)],
+        overrides: [
+          podcastAudioHandlerProvider.overrideWithValue(audioHandler),
+          pushServiceProvider.overrideWithValue(pushService),
+        ],
         child: const FrontlineClubApp(),
       ),
     ),

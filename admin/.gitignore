@@ -49,3 +49,4 @@ app.*.map.json
 
 # Local dart-define config (real Supabase/Stripe keys) — never commit
 dart_defines*.json
+!dart_defines.example.json

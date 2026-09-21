@@ -3,17 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/auth/profile_provider.dart';
+import '../events_providers.dart';
 import 'event_card.dart';
 import 'events_feed_controller.dart';
 
-enum _FeedFilter { all, thisWeek, membersOnly, social, free }
+/// Which filter chip is selected. Fixed ones are plain ids; one chip per
+/// category actually present in the upcoming events is `cat:<name>` — so the
+/// row always matches what the club is really running, with no hard-coded
+/// category list to fall out of date.
+final StateProvider<String> _feedFilterProvider = StateProvider<String>((ref) => 'all');
 
-final StateProvider<_FeedFilter> _feedFilterProvider = StateProvider<_FeedFilter>((ref) => _FeedFilter.all);
+const List<(String, String)> _fixedFilters = <(String, String)>[
+  ('all', 'All'),
+  ('week', 'This week'),
+  ('offers', 'Offers'),
+  ('members', 'Members only'),
+];
 
-/// Briefing §9.1. Category-specific chips (Panels/Screenings/Book nights)
-/// need `category` values the club hasn't finalised yet, so this ships
-/// with the filters that don't depend on that vocabulary; the rest are a
-/// straightforward extension once it's confirmed.
+/// Briefing §9.1. Chips: All / This week / Offers / Members only, then one per
+/// category in the current programme. On "All", events the club has flagged
+/// FC Recommends are lifted into their own section at the top.
 class EventsFeedScreen extends ConsumerWidget {
   const EventsFeedScreen({super.key});
 
@@ -21,38 +31,65 @@ class EventsFeedScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(eventsFeedControllerProvider);
     final filter = ref.watch(_feedFilterProvider);
+    final sellingFast = ref.watch(sellingFastIdsProvider).valueOrNull ?? const <String>{};
+    final isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Events'),
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: 'Search',
-            onPressed: () {
-              // TODO(M1 polish): full-text search across title/summary/speakers/tags.
-            },
-          ),
+          if (isStaff)
+            IconButton(
+              icon: const Icon(Icons.edit_calendar_outlined),
+              tooltip: 'Manage events',
+              onPressed: () => context.push('/manage/events'),
+            ),
         ],
       ),
       body: Column(
         children: <Widget>[
-          _FilterChipsRow(selected: filter, onChanged: (f) => ref.read(_feedFilterProvider.notifier).state = f),
+          eventsAsync.maybeWhen(
+            data: (events) => _FilterChipsRow(
+              options: <(String, String)>[..._fixedFilters, ..._categoryFilters(events)],
+              selected: filter,
+              onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
+            ),
+            orElse: () => const SizedBox(height: 48),
+          ),
           Expanded(
             child: eventsAsync.when(
               loading: () => const _ShimmerList(),
               error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
               data: (events) {
                 final filtered = _applyFilter(events, filter);
-                if (filtered.isEmpty) return const _EmptyState();
+                if (filtered.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
+
+                final bool grouped = filter == 'all';
+                final recommended = grouped ? filtered.where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList() : const <EventModel>[];
+                final recommendedIds = recommended.map((e) => e.id).toSet();
+                final rest = filtered.where((e) => !recommendedIds.contains(e.id)).toList();
+
+                Widget card(EventModel e) => EventCard(
+                      event: e,
+                      sellingFast: sellingFast.contains(e.id),
+                      onTap: () => context.push('/events/${e.slug}'),
+                    );
+
                 return RefreshIndicator(
-                  onRefresh: () => ref.read(eventsFeedControllerProvider.notifier).refresh(),
-                  child: ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final event = filtered[index];
-                      return EventCard(event: event, onTap: () => context.push('/events/${event.slug}'));
-                    },
+                  onRefresh: () async {
+                    ref.invalidate(sellingFastIdsProvider);
+                    await ref.read(eventsFeedControllerProvider.notifier).refresh();
+                  },
+                  child: ListView(
+                    children: <Widget>[
+                      if (recommended.isNotEmpty) ...<Widget>[
+                        const _SectionHeader(title: 'FC Recommends', icon: Icons.verified_outlined),
+                        for (final e in recommended) card(e),
+                        if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
+                      ],
+                      for (final e in rest) card(e),
+                      const SizedBox(height: FlcSpace.xl),
+                    ],
                   ),
                 );
               },
@@ -63,39 +100,63 @@ class EventsFeedScreen extends ConsumerWidget {
     );
   }
 
-  List<EventModel> _applyFilter(List<EventModel> events, _FeedFilter filter) {
+  List<(String, String)> _categoryFilters(List<EventModel> events) {
+    final seen = <String>[];
+    for (final e in events) {
+      final c = e.category;
+      if (c != null && c.isNotEmpty && !seen.contains(c)) seen.add(c);
+    }
+    return <(String, String)>[for (final c in seen.take(8)) ('cat:$c', c)];
+  }
+
+  List<EventModel> _applyFilter(List<EventModel> events, String filter) {
+    if (filter.startsWith('cat:')) {
+      final name = filter.substring(4);
+      return events.where((e) => e.category == name).toList();
+    }
     switch (filter) {
-      case _FeedFilter.all:
-        return events;
-      case _FeedFilter.thisWeek:
-        final now = DateTime.now();
-        final weekFromNow = now.add(const Duration(days: 7));
+      case 'week':
+        final weekFromNow = DateTime.now().add(const Duration(days: 7));
         return events.where((e) => e.startsAt.isBefore(weekFromNow)).toList();
-      case _FeedFilter.membersOnly:
+      case 'offers':
+        return events.where((e) => e.highlight == EventHighlight.specialOffer || e.perks.isNotEmpty).toList();
+      case 'members':
         return events.where((e) => e.membersOnly).toList();
-      case _FeedFilter.social:
-        return events.where((e) => e.category?.toLowerCase() == 'social').toList();
-      case _FeedFilter.free:
-        return events; // needs ticket_types pricing — resolved once the feed carries a min price per event (M3)
+      default:
+        return events;
     }
   }
 }
 
-class _FilterChipsRow extends StatelessWidget {
-  const _FilterChipsRow({required this.selected, required this.onChanged});
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.icon});
 
-  final _FeedFilter selected;
-  final ValueChanged<_FeedFilter> onChanged;
+  final String title;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    const options = <(_FeedFilter, String)>[
-      (_FeedFilter.all, 'All'),
-      (_FeedFilter.thisWeek, 'This week'),
-      (_FeedFilter.membersOnly, 'Members only'),
-      (_FeedFilter.social, 'Social'),
-    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.md, FlcSpace.md, FlcSpace.xxs),
+      child: Row(
+        children: <Widget>[
+          if (icon != null) ...<Widget>[Icon(icon, size: 18, color: FlcColors.brand), const SizedBox(width: FlcSpace.xs)],
+          Text(title.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.brand)),
+        ],
+      ),
+    );
+  }
+}
 
+class _FilterChipsRow extends StatelessWidget {
+  const _FilterChipsRow({required this.options, required this.selected, required this.onChanged});
+
+  final List<(String, String)> options;
+  final String selected;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       height: 48,
       child: ListView(
@@ -137,7 +198,10 @@ class _ShimmerList extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({required this.filtered});
+
+  /// True when there ARE events, just none matching the chosen chip.
+  final bool filtered;
 
   @override
   Widget build(BuildContext context) {
@@ -149,18 +213,20 @@ class _EmptyState extends StatelessWidget {
           children: <Widget>[
             const Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.slate),
             const SizedBox(height: FlcSpace.sm),
-            const Text(
-              'No events scheduled right now — new events are usually announced a few weeks ahead',
+            Text(
+              filtered
+                  ? 'Nothing matches that filter right now.'
+                  : 'No events scheduled right now — new events are usually announced a few weeks ahead',
               textAlign: TextAlign.center,
               style: FlcTextStyles.body,
             ),
-            const SizedBox(height: FlcSpace.md),
-            FilledButton(
-              onPressed: () {
-                // TODO(M9): enable push and subscribe to "new events" notifications.
-              },
-              child: const Text('Notify me'),
-            ),
+            if (!filtered) ...<Widget>[
+              const SizedBox(height: FlcSpace.md),
+              FilledButton(
+                onPressed: () => context.push('/you/notifications'),
+                child: const Text('Notify me'),
+              ),
+            ],
           ],
         ),
       ),

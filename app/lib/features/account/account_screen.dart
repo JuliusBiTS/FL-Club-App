@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/profile_provider.dart';
+import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_providers.dart';
 
 /// The "You" tab — briefing §9.10. Signed out: a sign-in prompt, never a
@@ -99,8 +100,29 @@ class _SignedInBody extends ConsumerWidget {
           leading: const Icon(Icons.notifications_outlined),
           title: const Text('Notifications'),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming in M9.'))),
+          onTap: () => context.push('/you/notifications'),
         ),
+        if (profileAsync.valueOrNull?.isStaff ?? false) ...<Widget>[
+          const Divider(height: 1),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.md, FlcSpace.md, FlcSpace.xxs),
+            child: Text('STAFF', style: FlcTextStyles.overline),
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_calendar_outlined),
+            title: const Text('Manage events'),
+            subtitle: const Text('Create, edit, publish and promote events'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/manage/events'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.campaign_outlined),
+            title: const Text('Send a notification'),
+            subtitle: const Text('Announcements, and what has gone out'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/manage/notifications'),
+          ),
+        ],
         const Divider(height: 1),
         ListTile(
           leading: const Icon(Icons.help_outline),
@@ -116,7 +138,12 @@ class _SignedInBody extends ConsumerWidget {
         ListTile(
           leading: const Icon(Icons.logout),
           title: const Text('Sign out'),
-          onTap: () => ref.read(authRepositoryProvider).signOut(),
+          onTap: () async {
+            // Detach this phone from the account first, so the next person to use it
+            // doesn't receive this person's notifications.
+            await ref.read(pushServiceProvider).forgetThisDevice();
+            await ref.read(authRepositoryProvider).signOut();
+          },
         ),
         ListTile(
           leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),

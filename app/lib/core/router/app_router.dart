@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/account/account_screen.dart';
 import '../../features/account/presentation/delete_account_screen.dart';
+import '../../features/account/presentation/notification_settings_screen.dart';
 import '../../features/account/presentation/sign_in_screen.dart';
 import '../../features/checkout/domain/checkout_args.dart';
 import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/events_feed_screen.dart';
+import '../../features/events_admin/manage_screens.dart';
 import '../../features/loyalty/loyalty_screen.dart';
 import '../../features/media/media_screen.dart';
 import '../../features/membership/membership_interest_screen.dart';
@@ -36,7 +38,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: _ProfileRefreshListenable(ref),
     redirect: (context, state) {
       final isStaff = ref.read(currentProfileProvider).valueOrNull?.isStaff ?? false;
-      if (state.matchedLocation == '/scan' && !isStaff) {
+      if ((state.matchedLocation == '/scan' || state.matchedLocation.startsWith('/manage')) && !isStaff) {
         return '/events';
       }
       return null;
@@ -59,6 +61,10 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
         path: '/you/tickets/:ticketId',
         builder: (context, state) => TicketDetailScreen(ticket: state.extra! as TicketModel),
       ),
+      // Staff area — full-screen, outside the shell, like checkout. Guarded above
+      // for UX; Postgres RLS is the real gate.
+      GoRoute(path: '/manage/events', builder: (context, state) => const ManageEventsScreen()),
+      GoRoute(path: '/manage/notifications', builder: (context, state) => const ManageNotificationsScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[
@@ -104,6 +110,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
                 routes: <RouteBase>[
                   GoRoute(path: 'tickets', builder: (context, state) => const TicketsScreen()),
                   GoRoute(path: 'loyalty', builder: (context, state) => const LoyaltyScreen()),
+                  GoRoute(path: 'notifications', builder: (context, state) => const NotificationSettingsScreen()),
                   GoRoute(path: 'become-a-member', builder: (context, state) => const MembershipInterestScreen()),
                   GoRoute(path: 'delete-account', builder: (context, state) => const DeleteAccountScreen()),
                 ],

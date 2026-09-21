@@ -27,6 +27,18 @@ class EventsRemoteDataSource {
     return EventModel.fromJson(row);
   }
 
+  /// Ids of events that are 75%+ sold (derived in Postgres by
+  /// events_selling_fast(); only ids leave the database, never counts).
+  /// Failure is silent — a missing ribbon is better than a broken feed.
+  Future<Set<String>> fetchSellingFastIds() async {
+    try {
+      final dynamic rows = await _client.rpc('events_selling_fast');
+      return <String>{for (final dynamic id in (rows as List<dynamic>)) id as String};
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
   Future<List<TicketTypeModel>> fetchTicketTypes(String eventId) async {
     final rows = await _client
         .from('ticket_types')
