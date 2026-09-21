@@ -134,5 +134,5 @@ Setup is in [PUSH_SETUP.md](PUSH_SETUP.md).
   starts. For a *paid* stream, leave the link empty and send it to ticket holders yourself.
 - Scheduled *notifications* aren't built yet (only scheduled *publishing*).
 - Editing an event here does not change it on Eventbrite; the sync only pulls sold counts.
-- The Source Serif 4 / Inter brand fonts still need adding (see `docs/OPEN_QUESTIONS.md`),
-  so text uses the phone's default font until then.
+- The brand fonts (Source Serif 4 and Inter, SIL Open Font License) are bundled in `app/assets/fonts` and `admin/assets/fonts`;
+  the licence texts sit beside them.

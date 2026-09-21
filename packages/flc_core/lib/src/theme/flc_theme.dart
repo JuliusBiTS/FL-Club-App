@@ -43,6 +43,10 @@ abstract final class FlcTheme {
 
     return ThemeData(
       useMaterial3: true,
+      // The base family for every style not set explicitly in the textTheme
+      // below (buttons, chips, list tiles, dialogs, form labels…), so nothing
+      // silently falls back to the phone's default font.
+      fontFamily: FlcFontFamily.sans,
       brightness: brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: isDark ? FlcColors.surfaceDark : FlcColors.paper,

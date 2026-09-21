@@ -3,14 +3,14 @@ import 'package:flutter/widgets.dart';
 /// Type scale — briefing §16.2. A serif for headlines, a clean sans for UI,
 /// reading as editorial to match the club's journalistic character.
 ///
-/// Font family names below assume `Source Serif 4` (headings) and `Inter`
-/// (UI/body) — the brief's pre-approved free substitutes if the site's own
-/// typefaces turn out not to be licensed for app embedding [CONFIRM], see
-/// docs/OPEN_QUESTIONS.md. Font FILES are not bundled in this scaffold: add
-/// the .ttf/.otf files under app/assets/fonts/ (and admin/assets/fonts/)
-/// and register them in each app's pubspec.yaml `fonts:` section. Until
-/// then Flutter silently falls back to the platform default font, so the
-/// app still runs — it just won't look like itself yet.
+/// The families are `Source Serif 4` (headings) and `Inter` (UI/body) — the
+/// brief's pre-approved free substitutes for the website's own typefaces,
+/// both under the SIL Open Font License, so cleared for embedding in the app
+/// (see docs/OPEN_QUESTIONS.md if the club later licenses its own). The font
+/// FILES (weights 400, 600, 700) and their licence texts live in
+/// app/assets/fonts/ and admin/assets/fonts/, registered in each pubspec.yaml
+/// `fonts:` section. If a family is ever missing, Flutter falls back to the
+/// platform default font, so the app still runs.
 abstract final class FlcFontFamily {
   static const String serif = 'Source Serif 4';
   static const String sans = 'Inter';
