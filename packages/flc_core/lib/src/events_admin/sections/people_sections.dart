@@ -199,71 +199,99 @@ class LinksSection extends StatelessWidget {
           : Column(
               children: <Widget>[
                 for (final LinkDraft link in d.links)
-                  Padding(
-                    key: ObjectKey(link),
-                    padding: const EdgeInsets.only(bottom: FlcSpace.sm),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        SizedBox(
-                          width: 120,
-                          child: DropdownButtonFormField<String>(
-                            initialValue: link.kind,
-                            isExpanded: true,
-                            decoration: const InputDecoration(labelText: 'Type', isDense: true),
-                            items: <DropdownMenuItem<String>>[
-                              for (final String k in EventLinkKind.all)
-                                DropdownMenuItem<String>(value: k, child: Text(EventLinkKind.label(k))),
-                            ],
-                            onChanged: enabled
-                                ? (String? v) {
-                                    link.kind = v ?? EventLinkKind.link;
-                                    controller.touch();
-                                  }
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(width: FlcSpace.xs),
-                        Expanded(
-                          flex: 2,
-                          child: TextFormField(
-                            initialValue: link.label,
-                            enabled: enabled,
-                            decoration: const InputDecoration(labelText: 'Button text', hintText: 'Buy the book', isDense: true),
-                            onChanged: (String v) {
-                              link.label = v;
-                              controller.touch();
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: FlcSpace.xs),
-                        Expanded(
-                          flex: 3,
-                          child: TextFormField(
-                            initialValue: link.url,
-                            enabled: enabled,
-                            keyboardType: TextInputType.url,
-                            decoration: const InputDecoration(labelText: 'Web address', hintText: 'https://…', isDense: true),
-                            onChanged: (String v) {
-                              link.url = v;
-                              controller.touch();
-                            },
-                          ),
-                        ),
-                        if (enabled)
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            tooltip: 'Remove',
-                            onPressed: () {
-                              d.links.remove(link);
-                              controller.touch();
-                            },
-                          ),
-                      ],
-                    ),
-                  ),
+                  _LinkRow(key: ObjectKey(link), controller: controller, link: link, enabled: enabled),
               ],
             ),
+    );
+  }
+}
+
+/// One link: type · button text · address on a wide screen; stacked on a phone.
+class _LinkRow extends StatelessWidget {
+  const _LinkRow({required this.controller, required this.link, required this.enabled, super.key});
+
+  final EventEditorController controller;
+  final LinkDraft link;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget kind = DropdownButtonFormField<String>(
+      initialValue: link.kind,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Type', isDense: true),
+      items: <DropdownMenuItem<String>>[
+        for (final String k in EventLinkKind.all) DropdownMenuItem<String>(value: k, child: Text(EventLinkKind.label(k))),
+      ],
+      onChanged: enabled
+          ? (String? v) {
+              link.kind = v ?? EventLinkKind.link;
+              controller.touch();
+            }
+          : null,
+    );
+    final Widget label = TextFormField(
+      initialValue: link.label,
+      enabled: enabled,
+      decoration: const InputDecoration(labelText: 'Button text', hintText: 'Buy the book', isDense: true),
+      onChanged: (String v) {
+        link.label = v;
+        controller.touch();
+      },
+    );
+    final Widget url = TextFormField(
+      initialValue: link.url,
+      enabled: enabled,
+      keyboardType: TextInputType.url,
+      decoration: const InputDecoration(labelText: 'Web address', hintText: 'https://…', isDense: true),
+      onChanged: (String v) {
+        link.url = v;
+        controller.touch();
+      },
+    );
+    final Widget remove = enabled
+        ? IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Remove',
+            onPressed: () {
+              controller.draft.links.remove(link);
+              controller.touch();
+            },
+          )
+        : const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: FlcSpace.sm),
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (constraints.maxWidth >= 620) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(width: 130, child: kind),
+                const SizedBox(width: FlcSpace.xs),
+                Expanded(flex: 2, child: label),
+                const SizedBox(width: FlcSpace.xs),
+                Expanded(flex: 3, child: url),
+                remove,
+              ],
+            );
+          }
+          return Container(
+            padding: const EdgeInsets.all(FlcSpace.sm),
+            decoration: BoxDecoration(border: Border.all(color: FlcColors.line), borderRadius: BorderRadius.circular(FlcRadius.card)),
+            child: Column(
+              children: <Widget>[
+                Row(children: <Widget>[Expanded(child: kind), remove]),
+                const SizedBox(height: FlcSpace.xs),
+                label,
+                const SizedBox(height: FlcSpace.xs),
+                url,
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -25,7 +26,10 @@ class FrontlineClubAdminApp extends StatelessWidget {
     return MaterialApp(
       title: 'Frontline Club — Admin',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(useMaterial3: true, colorSchemeSeed: const Color(0xFF33460C)), // real brand olive, sampled from frontlineclub.com's logo/nav
+      // The same brand theme as the mobile app (brand olive #33460C, editorial
+      // type scale, hairline cards) so the console reads as the same product.
+      theme: FlcTheme.light(),
+      darkTheme: FlcTheme.dark(),
       home: const AdminAuthGate(),
     );
   }

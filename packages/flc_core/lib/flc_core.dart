@@ -25,6 +25,7 @@ export 'src/events_admin/event_draft.dart';
 export 'src/events_admin/event_editor_screen.dart';
 export 'src/events_admin/event_preview.dart';
 export 'src/events_admin/events_manager_screen.dart';
+export 'src/events_admin/notifications_screen.dart';
 export 'src/theme/flc_colors.dart';
 export 'src/theme/flc_motion.dart';
 export 'src/theme/flc_spacing.dart';

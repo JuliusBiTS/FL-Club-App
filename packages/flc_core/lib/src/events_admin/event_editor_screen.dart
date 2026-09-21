@@ -12,6 +12,7 @@ import 'sections/commerce_sections.dart';
 import 'sections/content_sections.dart';
 import 'sections/people_sections.dart';
 import 'sections/promotion_sections.dart';
+import 'sections/push_composer.dart';
 
 /// The one event editor, used by the admin console (web) and by staff inside
 /// the mobile app. Wide screens get a live preview + checklist beside the
@@ -194,7 +195,7 @@ class _EditorViewState extends State<_EditorView> {
       action: 'Write notification',
     );
     if (tell && mounted) {
-      final String when = c.draft.startsAt == null ? '' : DateFormatShort.format(c.draft.startsAt!);
+      final String when = c.draft.startsAt == null ? '' : shortWhen(c.draft.startsAt!);
       await _showComposer(
         kind: 'event_update',
         title: _clip('Update: ${c.draft.title.trim()}', 65),
@@ -214,7 +215,7 @@ class _EditorViewState extends State<_EditorView> {
         content: SizedBox(
           width: 520,
           child: SingleChildScrollView(
-            child: PushComposer(controller: c, initialKind: kind, initialTitle: title, initialBody: body),
+            child: PushComposer(repository: c.repository, draft: c.draft, eventIsLive: c.isLive, initialKind: kind, initialTitle: title, initialBody: body),
           ),
         ),
         actions: <Widget>[TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Done'))],
@@ -433,6 +434,8 @@ class _EditorViewState extends State<_EditorView> {
                 );
                 if (!wide) return form;
                 return Row(
+                  // Stretch so the preview sits at the top of its column, not floating mid-page.
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     Expanded(child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 820), child: form))),
                     const VerticalDivider(width: 1),

@@ -3,10 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'shell/admin_shell.dart';
 
-/// Minimal email/password sign-in, then a live check that the signed-in
-/// user is actually an admin (RLS enforces this everywhere else too, but
-/// failing fast here with a clear message beats a console full of silently
-/// empty tables). See supabase/migrations/20260817000008 is_admin().
+enum AdminRole { none, staff, admin }
+
+/// Minimal email/password sign-in, then a live check of what the signed-in
+/// user is allowed to do: admins see the whole console, staff see Events and
+/// Notifications, everyone else is turned away. (RLS and the Edge Functions
+/// enforce the same limits server-side — failing fast here just beats a
+/// console full of silently empty tables.) See is_admin() / is_staff() in
+/// supabase/migrations/20260817000008.
 class AdminAuthGate extends StatefulWidget {
   const AdminAuthGate({super.key});
 
@@ -25,19 +29,24 @@ class _AdminAuthGateState extends State<AdminAuthGate> {
     final session = Supabase.instance.client.auth.currentSession;
     if (session == null) return _buildSignIn();
 
-    return FutureBuilder<bool>(
-      future: _isAdmin(session.user.id),
+    return FutureBuilder<AdminRole>(
+      future: _role(session.user.id),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        if (snapshot.data == true) return const AdminShell();
-        return _buildNotAuthorised();
+        return switch (snapshot.data!) {
+          AdminRole.admin => const AdminShell(isAdmin: true),
+          AdminRole.staff => const AdminShell(isAdmin: false),
+          AdminRole.none => _buildNotAuthorised(),
+        };
       },
     );
   }
 
-  Future<bool> _isAdmin(String userId) async {
-    final result = await Supabase.instance.client.rpc('is_admin', params: {'p_uid': userId});
-    return result == true;
+  Future<AdminRole> _role(String userId) async {
+    final client = Supabase.instance.client;
+    if (await client.rpc('is_admin', params: {'p_uid': userId}) == true) return AdminRole.admin;
+    if (await client.rpc('is_staff', params: {'p_uid': userId}) == true) return AdminRole.staff;
+    return AdminRole.none;
   }
 
   Widget _buildSignIn() {
@@ -83,9 +92,15 @@ class _AdminAuthGateState extends State<AdminAuthGate> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Text("This account doesn't have admin access."),
+            const Text("This account doesn't have staff or admin access."),
             const SizedBox(height: 12),
-            TextButton(onPressed: () => Supabase.instance.client.auth.signOut(), child: const Text('Sign out')),
+            TextButton(
+              onPressed: () async {
+                await Supabase.instance.client.auth.signOut();
+                if (mounted) setState(() {});
+              },
+              child: const Text('Sign out'),
+            ),
           ],
         ),
       ),

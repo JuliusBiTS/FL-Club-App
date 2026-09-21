@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// One placeholder per briefing §9.12 admin console section. Events is
-/// first up for real implementation (it unblocks the mobile app's M1 feed
-/// having anything to show beyond seed data) — the rest follow roughly in
-/// README milestone order. Each of these becomes its own file with a real
-/// data table / form once its milestone starts; kept together here for now
-/// purely to avoid a wall of near-empty files before there's anything to
-/// put in them.
+/// One placeholder per briefing §9.12 admin console section. Events and
+/// Notifications are now real (see flc_core's events_admin folder, shared
+/// with the mobile app); the rest follow roughly in README milestone order.
+/// Each of these becomes its own file with a real data table / form once
+/// its milestone starts; kept together here for now purely to avoid a wall
+/// of near-empty files before there's anything to put in them.
 class AdminSectionPlaceholder extends StatelessWidget {
   const AdminSectionPlaceholder({required this.title, required this.description, super.key});
 
@@ -34,10 +33,6 @@ const dashboardSection = AdminSectionPlaceholder(
   description: 'Upcoming events, tickets sold today, revenue this month, pending membership applications, recent failed payments.',
 );
 
-const eventsSection = AdminSectionPlaceholder(
-  title: 'Events',
-  description: 'Create/edit/publish/cancel events, manage ticket types, split capacity between app and Eventbrite, duplicate a recurring format.',
-);
 
 const attendeesSection = AdminSectionPlaceholder(
   title: 'Attendees',
