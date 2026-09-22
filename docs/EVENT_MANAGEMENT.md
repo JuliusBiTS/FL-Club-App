@@ -61,7 +61,7 @@ tap the eye icon.
 - **Pictures** — the main picture (16:9) and a gallery. With no picture the app
   shows the olive category artwork, so nothing looks broken.
 - **About this event** — the description, with bold / italic / heading / list / link
-  buttons and a **Preview** button. Accessibility notes and the filming notice go here too.
+  buttons and a **Preview** button. The filming notice goes here too.
 - **Speakers** — name, role, bio, photo, in the order they should appear.
 - **Links** — buttons on the event page, e.g. *Buy the book*, *Watch the trailer*, *Donate*.
 - **Tickets & capacity** — total seats, how many are sold in the app and how many

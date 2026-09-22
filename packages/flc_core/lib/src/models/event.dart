@@ -114,7 +114,6 @@ abstract class EventModel with _$EventModel {
     @JsonKey(unknownEnumValue: EventHighlight.none) @Default(EventHighlight.none) EventHighlight highlight,
     @Default(<String>[]) List<String> perks,
     @JsonKey(name: 'loyalty_eligible') @Default(true) bool loyaltyEligible,
-    @JsonKey(name: 'accessibility_notes') String? accessibilityNotes,
     @JsonKey(name: 'publish_at') DateTime? publishAt,
     @Default('draft') String status,
     @JsonKey(name: 'capacity_total') @Default(0) int capacityTotal,

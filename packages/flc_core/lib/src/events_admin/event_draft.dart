@@ -184,7 +184,6 @@ class EventDraft {
     this.loyaltyEligible = true,
     this.highlight = EventHighlight.none,
     List<String>? perks,
-    this.accessibilityNotes = '',
     this.capacityTotal = 0,
     this.capacityApp = 0,
     this.capacityEventbrite = 0,
@@ -231,7 +230,6 @@ class EventDraft {
   bool loyaltyEligible;
   EventHighlight highlight;
   List<String> perks;
-  String accessibilityNotes;
 
   int capacityTotal;
   int capacityApp;
@@ -284,7 +282,6 @@ class EventDraft {
       loyaltyEligible: e.loyaltyEligible,
       highlight: e.highlight,
       perks: List<String>.of(e.perks),
-      accessibilityNotes: e.accessibilityNotes ?? '',
       capacityTotal: e.capacityTotal,
       capacityApp: e.capacityApp,
       capacityEventbrite: e.capacityEventbrite,
@@ -324,7 +321,6 @@ class EventDraft {
       loyaltyEligible: loyaltyEligible,
       highlight: EventHighlight.none,
       perks: List<String>.of(perks),
-      accessibilityNotes: accessibilityNotes,
       capacityTotal: capacityTotal,
       capacityApp: capacityApp,
       capacityEventbrite: 0,
@@ -374,7 +370,6 @@ class EventDraft {
       'loyalty_eligible': loyaltyEligible,
       'highlight': highlight.wireName,
       'perks': perks,
-      'accessibility_notes': nullIfBlank(accessibilityNotes),
       'capacity_total': capacityTotal,
       'capacity_app': capacityApp,
       'capacity_eventbrite': capacityEventbrite,

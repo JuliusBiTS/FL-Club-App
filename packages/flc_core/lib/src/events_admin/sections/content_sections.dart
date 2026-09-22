@@ -293,7 +293,7 @@ class MediaSection extends StatelessWidget {
   }
 }
 
-/// The long description, accessibility note, filming notice.
+/// The long description and filming notice.
 class AboutSection extends StatelessWidget {
   const AboutSection({required this.controller, super.key});
 
@@ -319,22 +319,6 @@ class AboutSection extends StatelessWidget {
             },
           ),
           const SizedBox(height: FlcSpace.md),
-          TextFormField(
-            initialValue: d.accessibilityNotes,
-            enabled: enabled,
-            maxLines: 3,
-            minLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Accessibility & content notes',
-              hintText: 'Step-free access, captioning, distressing footage…',
-              alignLabelWithHint: true,
-            ),
-            onChanged: (String v) {
-              d.accessibilityNotes = v;
-              controller.touch();
-            },
-          ),
-          const SizedBox(height: FlcSpace.xs),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('This event will be filmed'),

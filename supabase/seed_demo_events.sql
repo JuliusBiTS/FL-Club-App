@@ -44,7 +44,7 @@ insert into events (
   id, slug, title, subtitle, summary, description_md, category, tags,
   starts_at, ends_at, doors_at, venue_room, is_online, livestream_url,
   speakers, links, highlight, perks, loyalty_eligible, members_only, is_filmed,
-  accessibility_notes, capacity_total, capacity_app, capacity_eventbrite,
+  capacity_total, capacity_app, capacity_eventbrite,
   eventbrite_sold, eventbrite_synced_at, status, publish_at
 ) values
 
@@ -62,7 +62,6 @@ insert into events (
    {"name":"Elena Voss","role":"Chair","bio":"Journalist and broadcaster. (Fictional.)"}]',
  '[{"label":"Read the reading list","url":"https://example.com/reading-list","kind":"article"}]',
  'fc_recommends', ARRAY['Free drink with your ticket'], true, false, true,
- 'Step-free access via the side entrance. Live captions are available on request.',
  120, 100, 20, 0, now(), 'published', null),
 
 -- 2. Book talk with a special offer -----------------------------------------
@@ -76,7 +75,7 @@ insert into events (
  '[{"name":"Helena Marsh","role":"Author, The Last Correspondent","bio":"Former newspaper editor turned novelist. (Fictional.)"}]',
  '[{"label":"Buy the book","url":"https://example.com/the-last-correspondent","kind":"book"}]',
  'special_offer', ARRAY['Signed copies available'], true, false, true,
- null, 80, 80, 0, 0, null, 'published', null),
+ 80, 80, 0, 0, null, 'published', null),
 
 -- 3. Members-only screening --------------------------------------------------
 ('d0000000-0000-4000-8000-000000000003', 'demo-the-fixers-screening',
@@ -90,7 +89,6 @@ insert into events (
    {"name":"Farah Qasim","role":"Fixer and producer","bio":"Has worked with reporters from thirty countries. (Fictional.)"}]',
  '[{"label":"Watch the trailer","url":"https://example.com/the-fixers-trailer","kind":"film"}]',
  'staff_pick', ARRAY[]::text[], true, true, true,
- 'Captioned screening. Step-free access via the side entrance.',
  80, 80, 0, 0, null, 'published', null),
 
 -- 4. Online talk ---------------------------------------------------------------
@@ -104,7 +102,7 @@ insert into events (
  '[{"name":"Marcus Oyelaran","role":"Open-source investigator","bio":"Teaches verification to newsrooms. (Fictional.)"}]',
  '[{"label":"Free verification toolkit","url":"https://example.com/toolkit","kind":"link"}]',
  'none', ARRAY[]::text[], true, false, true,
- 'Live captions on the stream.', 300, 300, 0, 0, null, 'published', null),
+ 300, 300, 0, 0, null, 'published', null),
 
 -- 5. Workshop -------------------------------------------------------------------
 ('d0000000-0000-4000-8000-000000000005', 'demo-safety-basics-for-freelancers',
@@ -117,7 +115,6 @@ insert into events (
  '[{"name":"Ingrid Solberg","role":"Safety trainer","bio":"Ran hostile-environment courses for ten years. (Fictional.)"}]',
  '[]',
  'staff_pick', ARRAY['Lunch included'], false, false, false,
- 'Step-free access. Tell us about any dietary needs when you book.',
  24, 24, 0, 0, null, 'published', null),
 
 -- 6. Members' social -------------------------------------------------------
@@ -130,7 +127,7 @@ insert into events (
  public._demo_at_london(18, 19), public._demo_at_london(18, 21, 30), public._demo_at_london(18, 18, 30), 'The Forum', false, null,
  '[]', '[]',
  'none', ARRAY['Free drink with your ticket', 'Prizes for the winning team'], false, true, false,
- null, 80, 80, 0, 0, null, 'published', null),
+ 80, 80, 0, 0, null, 'published', null),
 
 -- 7. Nearly sold out ("Selling fast" appears on its own) --------------------
 ('d0000000-0000-4000-8000-000000000007', 'demo-the-age-of-the-algorithm',
@@ -144,7 +141,7 @@ insert into events (
    {"name":"Dr Amira Haddad","role":"Conflict analyst","bio":"Studies how wars are reported. (Fictional.)"}]',
  '[]',
  'none', ARRAY[]::text[], true, false, true,
- null, 100, 20, 80, 78, now(), 'published', null),
+ 100, 20, 80, 78, now(), 'published', null),
 
 -- 8. Free exhibition evening --------------------------------------------------
 ('d0000000-0000-4000-8000-000000000008', 'demo-faces-of-the-frontline',
@@ -157,7 +154,7 @@ insert into events (
  '[{"name":"Tomas Reyes","role":"Photojournalist","bio":"Documents daily life in places the news has moved on from. (Fictional.)"}]',
  '[]',
  'none', ARRAY['Free welcome drink'], true, false, true,
- 'Step-free access throughout.', 60, 60, 0, 0, null, 'published', null),
+ 60, 60, 0, 0, null, 'published', null),
 
 -- 9. Scheduled: goes live on its own in two days ------------------------------
 ('d0000000-0000-4000-8000-000000000009', 'demo-frontline-awards-night',
@@ -170,7 +167,7 @@ insert into events (
  '[]',
  '[{"label":"Donate","url":"https://example.com/donate","kind":"donate"}]',
  'fc_recommends', ARRAY[]::text[], false, false, true,
- null, 150, 150, 0, 0, null, 'draft', now() + interval '2 days'),
+ 150, 150, 0, 0, null, 'draft', now() + interval '2 days'),
 
 -- 10. A plain draft -------------------------------------------------------------
 ('d0000000-0000-4000-8000-000000000010', 'demo-untitled-documentary-draft',
@@ -182,7 +179,7 @@ insert into events (
  public._demo_at_london(30, 19), null, null, 'The Forum', false, null,
  '[]', '[]',
  'none', ARRAY[]::text[], true, false, true,
- null, 80, 80, 0, 0, null, 'draft', null),
+ 80, 80, 0, 0, null, 'draft', null),
 
 -- 11. A past event (shows under "Past" in the manager) ------------------------
 ('d0000000-0000-4000-8000-000000000011', 'demo-notes-from-the-field',
@@ -194,7 +191,7 @@ insert into events (
  public._demo_at_london(-12, 19), public._demo_at_london(-12, 20, 30), public._demo_at_london(-12, 18, 30), 'The Forum', false, null,
  '[{"name":"Helena Marsh","role":"Author","bio":"(Fictional.)"}]', '[]',
  'none', ARRAY[]::text[], true, false, true,
- null, 80, 80, 0, 0, null, 'published', null)
+ 80, 80, 0, 0, null, 'published', null)
 
 on conflict (id) do nothing;
 

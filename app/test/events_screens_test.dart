@@ -127,7 +127,6 @@ void main() {
       category: 'Book talk',
       highlight: EventHighlight.specialOffer,
       perks: <String>['Signed copies available'],
-      accessibilityNotes: 'Step-free access via the side entrance.',
       speakers: <EventSpeaker>[const EventSpeaker(name: 'Helena Marsh', role: 'Author', bio: 'Writes about the people behind the byline.')],
       links: <EventLink>[const EventLink(label: 'Buy the book', url: 'https://example.com/book', kind: 'book')],
       tags: <String>['Fiction'],
@@ -166,7 +165,6 @@ void main() {
       expect(find.textContaining('Doors 18:30 · Starts 19:00 – 21:00'), findsOneWidget);
       expect(find.text('Special offer'), findsOneWidget);
       expect(find.text('Signed copies available'), findsOneWidget);
-      expect(find.textContaining('Step-free access'), findsOneWidget);
       expect(find.text('Helena Marsh'), findsOneWidget);
       expect(find.text('Author'), findsOneWidget);
       expect(find.widgetWithText(OutlinedButton, 'Buy the book'), findsOneWidget);

@@ -15,7 +15,7 @@ import 'events_feed_controller.dart';
 
 /// Briefing §9.2. Everything the club can enter in the event editor shows up
 /// here: picture, ribbons, date/venue in London time, description, speakers,
-/// links, accessibility notes and the ticket options, with the sticky
+/// links and the ticket options, with the sticky
 /// "Get tickets" bar once a ticket type is chosen. Still deferred: the
 /// Eventbrite fallback button (needs eventbrite_sold to matter).
 class EventDetailScreen extends ConsumerStatefulWidget {
@@ -199,8 +199,6 @@ class _EventDetailBody extends ConsumerWidget {
                     icon: Icons.videocam_outlined,
                     text: 'This event will be filmed. Footage may be used publicly and commercially.',
                   ),
-                if (event.accessibilityNotes != null && event.accessibilityNotes!.trim().isNotEmpty)
-                  _InfoRow(icon: Icons.accessible_outlined, text: event.accessibilityNotes!.trim()),
                 if ((event.descriptionHtml ?? '').trim().isNotEmpty) ...<Widget>[
                   const SizedBox(height: FlcSpace.md),
                   const Text('About', style: FlcTextStyles.h3),

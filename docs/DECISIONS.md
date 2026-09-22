@@ -72,3 +72,11 @@ Decided with the club's Head of Digital & Events Producer; built in `supabase/mi
   human to check (an uncertain date, a guessed category).
 - **Model choice belongs to whoever is paying** — defaults to `claude-opus-5` rather than
   a cheaper model, per Anthropic's own guidance not to auto-downgrade for cost.
+
+## Accessibility notes removed (September 2026)
+
+Added in the event-management work above, removed shortly after: the club can't
+reliably offer this today, "now or in the future," per direct instruction. Rather
+than leave a field nobody can vouch for, it's gone entirely — the column
+(`events.accessibility_notes`), the editor field, and the display on the event page.
+See `supabase/migrations/20260923000001_remove_event_accessibility_notes.sql`.
