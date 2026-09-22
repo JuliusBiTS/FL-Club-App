@@ -137,3 +137,27 @@ several of these touch the same files.
   substitute for the same brand feel. The native Android launch background
   was also changed from white to brand olive, so there's no colour flash
   before the animated splash takes over.
+
+## Post-demo bug fixes (September 2026)
+
+Feedback after the first APK install of the round above.
+
+- **The demo APK's broken login and a "vanished" event were a build mistake,
+  not a code bug.** It was built with a plain `flutter build apk --release`
+  instead of `--dart-define-from-file=dart_defines.json`
+  ([ANDROID_DEMO.md](ANDROID_DEMO.md) already documented the right command —
+  this build just didn't follow it). `Env.assertConfigured()`'s check is an
+  `assert`, which is stripped in release mode, so it shipped silently with an
+  empty Supabase URL: sign-in failed outright, and everything else ran on
+  whatever was last cached — including the events feed, which is deliberately
+  stale-while-revalidate (see `EventsFeedController`), so a newly-added event
+  that arrived after the last successful sync just wasn't in that cache yet.
+- **"FC Recommends" renamed to "FC Highlights"** everywhere it's shown.
+  Collapsed a duplicated hardcoded copy of the label in `EventBadges` down to
+  `EventHighlight.badgeLabel`, the one place the editor's picker already read
+  it from — two copies of the same string is exactly how it went stale.
+- **Every article now shows a picture**, even with no hero image set —
+  `ArticleHeroFallback` (the club's logo on brand olive), matching what
+  `EventHeroFallback` already does for events.
+- **The merged Podcast+Media tab is labelled "Media"**, not "Listen" — it
+  carries video too, and the tab name should say so.
