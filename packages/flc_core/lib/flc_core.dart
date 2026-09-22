@@ -21,6 +21,7 @@ export 'src/util/event_text.dart';
 export 'src/util/london_time.dart';
 export 'src/widgets/event_badges.dart';
 export 'src/widgets/event_hero_fallback.dart';
+export 'src/widgets/staff_pick_bubble.dart';
 export 'src/events_admin/event_admin_repository.dart';
 export 'src/events_admin/event_autofill.dart';
 export 'src/events_admin/event_draft.dart';

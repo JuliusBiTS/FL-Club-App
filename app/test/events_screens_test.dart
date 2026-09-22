@@ -168,7 +168,7 @@ void main() {
       expect(find.text('Helena Marsh'), findsOneWidget);
       expect(find.text('Author'), findsOneWidget);
       expect(find.widgetWithText(OutlinedButton, 'Buy the book'), findsOneWidget);
-      expect(find.text('Paid tickets earn a loyalty point.'), findsOneWidget);
+      expect(find.text('Earns a loyalty point'), findsOneWidget);
       expect(find.text('Standard'), findsOneWidget);
     });
 

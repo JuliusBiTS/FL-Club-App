@@ -164,53 +164,67 @@ class _EventDetailBody extends ConsumerWidget {
                 if (!bookable) _StatusBanner(status: event.status),
                 if (event.isPromoted || sellingFast) ...<Widget>[
                   EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast),
+                  const SizedBox(height: FlcSpace.sm),
+                ],
+                if (event.hasPick) ...<Widget>[
+                  StaffPickBubble(name: event.pickByName!.trim(), quote: event.pickQuote!, photoUrl: event.pickByPhotoUrl),
                   const SizedBox(height: FlcSpace.md),
                 ],
                 if (event.subtitle != null && event.subtitle!.isNotEmpty) ...<Widget>[
                   Text(event.subtitle!, style: FlcTextStyles.body.copyWith(color: FlcColors.slate)),
                   const SizedBox(height: FlcSpace.md),
                 ],
-                _InfoRow(icon: Icons.event_outlined, text: LondonTime.format(startsAt, pattern: 'EEEE d MMMM yyyy')),
-                _InfoRow(icon: Icons.schedule_outlined, text: timeLine),
-                _InfoRow(
-                  icon: Icons.place_outlined,
-                  text: '${event.venueRoom == null || event.venueRoom!.isEmpty ? event.venueName : '${event.venueRoom}, ${event.venueName}'}\n${event.venueAddress}',
+                // One bordered block for the practical facts — grouping these
+                // instead of a bare stack of icon rows is what actually reads
+                // as "designed" rather than a wall of text.
+                Container(
+                  padding: const EdgeInsets.all(FlcSpace.md),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: FlcColors.line),
+                    borderRadius: BorderRadius.circular(FlcRadius.card),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      _InfoRow(icon: Icons.event_outlined, text: LondonTime.format(startsAt, pattern: 'EEEE d MMMM yyyy')),
+                      _InfoRow(icon: Icons.schedule_outlined, text: timeLine),
+                      _InfoRow(
+                        icon: Icons.place_outlined,
+                        text: '${event.venueRoom == null || event.venueRoom!.isEmpty ? event.venueName : '${event.venueRoom}, ${event.venueName}'}\n${event.venueAddress}',
+                        last: !event.isOnline && !event.membersOnly && !event.isFilmed,
+                      ),
+                      if (event.isOnline) const _InfoRow(icon: Icons.live_tv_outlined, text: 'Also streamed online'),
+                      if (event.membersOnly)
+                        _InfoRow(
+                          icon: Icons.badge_outlined,
+                          text: (profile?.isActiveMember ?? false) ? 'Members only — you can book' : 'Members only to book',
+                          last: !event.isFilmed,
+                        ),
+                      if (event.isFilmed)
+                        const _InfoRow(icon: Icons.videocam_outlined, text: 'Filmed — may be shared publicly', caption: true, last: true),
+                    ],
+                  ),
                 ),
-                if (event.isOnline) const _InfoRow(icon: Icons.live_tv_outlined, text: 'Also streamed online'),
-                if (watchWindowOpen)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: FlcSpace.sm),
-                    child: FilledButton.icon(
-                      onPressed: () => _openWebLink(event.livestreamUrl!),
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('Watch live'),
-                    ),
+                if (watchWindowOpen) ...<Widget>[
+                  const SizedBox(height: FlcSpace.sm),
+                  FilledButton.icon(
+                    onPressed: () => _openWebLink(event.livestreamUrl!),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Watch live'),
                   ),
-                if (event.membersOnly)
-                  _InfoRow(
-                    icon: Icons.badge_outlined,
-                    text: (profile?.isActiveMember ?? false)
-                        ? 'Members only — you\'re a member, so you can book.'
-                        : 'Members only — booking needs an active membership.',
-                  ),
-                if (event.loyaltyEligible) const _InfoRow(icon: Icons.loyalty_outlined, text: 'Paid tickets earn a loyalty point.'),
-                if (event.isFilmed)
-                  const _InfoRow(
-                    icon: Icons.videocam_outlined,
-                    text: 'This event will be filmed. Footage may be used publicly and commercially.',
-                  ),
+                ],
                 if ((event.descriptionHtml ?? '').trim().isNotEmpty) ...<Widget>[
-                  const SizedBox(height: FlcSpace.md),
+                  const SizedBox(height: FlcSpace.lg),
                   const Text('About', style: FlcTextStyles.h3),
                   const SizedBox(height: FlcSpace.sm),
                   HtmlWidget(
                     event.descriptionHtml!,
-                    textStyle: FlcTextStyles.body,
+                    textStyle: FlcTextStyles.body.copyWith(height: 1.5),
                     onTapUrl: _openWebLink,
                   ),
                 ] else if ((event.summary ?? '').trim().isNotEmpty) ...<Widget>[
-                  const SizedBox(height: FlcSpace.md),
-                  Text(event.summary!, style: FlcTextStyles.body),
+                  const SizedBox(height: FlcSpace.lg),
+                  Text(event.summary!, style: FlcTextStyles.body.copyWith(height: 1.5)),
                 ],
                 if (event.speakers.isNotEmpty) ...<Widget>[
                   const SizedBox(height: FlcSpace.lg),
@@ -270,6 +284,16 @@ class _EventDetailBody extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (event.loyaltyEligible) ...<Widget>[
+                    const SizedBox(height: FlcSpace.xs),
+                    Row(
+                      children: <Widget>[
+                        const Icon(Icons.loyalty_outlined, size: 14, color: FlcColors.slate),
+                        const SizedBox(width: 4),
+                        Text('Earns a loyalty point', style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
+                      ],
+                    ),
+                  ],
                 ],
               ]),
             ),
@@ -453,21 +477,30 @@ class _BuyBar extends ConsumerWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.text});
+  const _InfoRow({required this.icon, required this.text, this.caption = false, this.last = false});
 
   final IconData icon;
   final String text;
 
+  /// The filming notice: smaller and lighter than the practical facts above
+  /// it, so it reads as a footnote rather than another equally-weighted line.
+  final bool caption;
+
+  /// True for the last row in the bordered block, so it doesn't carry a
+  /// trailing gap the block's own padding already provides.
+  final bool last;
+
   @override
   Widget build(BuildContext context) {
+    final TextStyle style = caption ? FlcTextStyles.caption.copyWith(color: FlcColors.slate) : FlcTextStyles.body;
     return Padding(
-      padding: const EdgeInsets.only(bottom: FlcSpace.sm),
+      padding: EdgeInsets.only(bottom: last ? 0 : FlcSpace.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, size: 20, color: FlcColors.slate),
+          Icon(icon, size: caption ? 15 : 20, color: FlcColors.slate),
           const SizedBox(width: FlcSpace.xs),
-          Expanded(child: Text(text, style: FlcTextStyles.body)),
+          Expanded(child: Text(text, style: style)),
         ],
       ),
     );

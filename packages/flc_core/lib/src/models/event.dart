@@ -114,6 +114,9 @@ abstract class EventModel with _$EventModel {
     @JsonKey(unknownEnumValue: EventHighlight.none) @Default(EventHighlight.none) EventHighlight highlight,
     @Default(<String>[]) List<String> perks,
     @JsonKey(name: 'loyalty_eligible') @Default(true) bool loyaltyEligible,
+    @JsonKey(name: 'pick_by_name') String? pickByName,
+    @JsonKey(name: 'pick_by_photo_url') String? pickByPhotoUrl,
+    @JsonKey(name: 'pick_quote') String? pickQuote,
     @JsonKey(name: 'publish_at') DateTime? publishAt,
     @Default('draft') String status,
     @JsonKey(name: 'capacity_total') @Default(0) int capacityTotal,
@@ -143,4 +146,8 @@ extension EventModelAvailability on EventModel {
   bool get isScheduled => status == 'draft' && publishAt != null;
 
   bool get isPromoted => highlight != EventHighlight.none || perks.isNotEmpty;
+
+  /// A quote is independent of which ribbon (if any) is chosen — only its
+  /// own content decides whether the speech bubble shows.
+  bool get hasPick => pickQuote != null && pickQuote!.trim().isNotEmpty;
 }

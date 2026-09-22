@@ -5,6 +5,7 @@ import '../../theme/flc_colors.dart';
 import '../../theme/flc_spacing.dart';
 import '../../theme/flc_typography.dart';
 import '../../util/london_time.dart';
+import '../../widgets/staff_pick_bubble.dart';
 import '../event_draft.dart';
 import '../event_editor_controller.dart';
 import '../widgets/editor_widgets.dart';
@@ -87,6 +88,72 @@ class PromotionSection extends StatelessWidget {
               ),
             ],
           ),
+          const Divider(height: FlcSpace.xl),
+          Text('A staff member\'s pick', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(
+            'Optional, and independent of the ribbon above — a personal note from someone on the team about why this one\'s worth going to.',
+            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+          ),
+          const SizedBox(height: FlcSpace.sm),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              SizedBox(
+                width: 72,
+                child: ImageSlot(
+                  repository: controller.repository,
+                  url: d.pickByPhotoUrl,
+                  aspectRatio: 1,
+                  label: 'Photo',
+                  enabled: enabled,
+                  onChanged: (String? url) {
+                    d.pickByPhotoUrl = url;
+                    controller.touch();
+                  },
+                ),
+              ),
+              const SizedBox(width: FlcSpace.sm),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    TextFormField(
+                      initialValue: d.pickByName,
+                      enabled: enabled,
+                      decoration: const InputDecoration(labelText: 'Their name', isDense: true),
+                      onChanged: (String v) {
+                        d.pickByName = v;
+                        controller.touch();
+                      },
+                    ),
+                    const SizedBox(height: FlcSpace.xs),
+                    TextFormField(
+                      initialValue: d.pickQuote,
+                      enabled: enabled,
+                      minLines: 2,
+                      maxLines: 4,
+                      maxLength: 280,
+                      decoration: const InputDecoration(
+                        labelText: 'Their quote',
+                        hintText: 'e.g. "One of my favourite panels this year."',
+                        alignLabelWithHint: true,
+                      ),
+                      onChanged: (String v) {
+                        d.pickQuote = v;
+                        controller.touch();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (d.pickQuote.trim().isNotEmpty && d.pickByName.trim().isNotEmpty) ...<Widget>[
+            const SizedBox(height: FlcSpace.sm),
+            Text('How it will look', style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
+            const SizedBox(height: FlcSpace.xxs),
+            StaffPickBubble(name: d.pickByName.trim(), quote: d.pickQuote, photoUrl: d.pickByPhotoUrl),
+          ],
           if (!controller.isLive) ...<Widget>[
             const Divider(height: FlcSpace.xl),
             DateTimeField(

@@ -184,6 +184,9 @@ class EventDraft {
     this.loyaltyEligible = true,
     this.highlight = EventHighlight.none,
     List<String>? perks,
+    this.pickByName = '',
+    this.pickByPhotoUrl,
+    this.pickQuote = '',
     this.capacityTotal = 0,
     this.capacityApp = 0,
     this.capacityEventbrite = 0,
@@ -230,6 +233,12 @@ class EventDraft {
   bool loyaltyEligible;
   EventHighlight highlight;
   List<String> perks;
+
+  /// A staff member's personal quote, shown as a speech bubble — independent
+  /// of [highlight]. Blank [pickQuote] means no bubble, whatever the ribbon.
+  String pickByName;
+  String? pickByPhotoUrl;
+  String pickQuote;
 
   int capacityTotal;
   int capacityApp;
@@ -282,6 +291,9 @@ class EventDraft {
       loyaltyEligible: e.loyaltyEligible,
       highlight: e.highlight,
       perks: List<String>.of(e.perks),
+      pickByName: e.pickByName ?? '',
+      pickByPhotoUrl: e.pickByPhotoUrl,
+      pickQuote: e.pickQuote ?? '',
       capacityTotal: e.capacityTotal,
       capacityApp: e.capacityApp,
       capacityEventbrite: e.capacityEventbrite,
@@ -370,6 +382,9 @@ class EventDraft {
       'loyalty_eligible': loyaltyEligible,
       'highlight': highlight.wireName,
       'perks': perks,
+      'pick_by_name': nullIfBlank(pickByName),
+      'pick_by_photo_url': pickByPhotoUrl,
+      'pick_quote': nullIfBlank(pickQuote),
       'capacity_total': capacityTotal,
       'capacity_app': capacityApp,
       'capacity_eventbrite': capacityEventbrite,
@@ -449,6 +464,11 @@ class EventDraft {
       if (l.label.trim().isEmpty) errors.add('Every link needs a label (what the button says).');
       if (!isValidUrl(l.url)) errors.add('"${l.label.trim().isEmpty ? l.url : l.label}" needs a link starting with https://');
     }
+
+    if (pickQuote.trim().isNotEmpty && pickByName.trim().isEmpty) {
+      errors.add('Add the staff member\'s name for the quote, or remove the quote.');
+    }
+    if (pickQuote.trim().length > 280) errors.add('Keep the staff quote under 280 characters.');
 
     if (perks.length > kMaxPerks) errors.add('Add at most $kMaxPerks perks.');
     for (final String p in perks) {

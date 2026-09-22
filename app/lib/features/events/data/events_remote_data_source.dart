@@ -21,6 +21,19 @@ class EventsRemoteDataSource {
     return rows.map(EventModel.fromJson).toList();
   }
 
+  /// Most-recently-finished first — the standard "past events" order, and
+  /// the same direction the admin console's own Past filter uses.
+  Future<List<EventModel>> fetchPastPublished({int limit = 60}) async {
+    final rows = await _client
+        .from('events')
+        .select()
+        .eq('status', 'published')
+        .lt('starts_at', DateTime.now().toUtc().toIso8601String())
+        .order('starts_at', ascending: false)
+        .limit(limit);
+    return rows.map(EventModel.fromJson).toList();
+  }
+
   Future<EventModel?> fetchBySlug(String slug) async {
     final row = await _client.from('events').select().eq('slug', slug).maybeSingle();
     if (row == null) return null;

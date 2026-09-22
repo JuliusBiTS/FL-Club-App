@@ -19,11 +19,14 @@ const List<(String, String)> _fixedFilters = <(String, String)>[
   ('week', 'This week'),
   ('offers', 'Offers'),
   ('members', 'Members only'),
+  ('past', 'Past'),
 ];
 
-/// Briefing §9.1. Chips: All / This week / Offers / Members only, then one per
-/// category in the current programme. On "All", events the club has flagged
-/// FC Recommends are lifted into their own section at the top.
+/// Briefing §9.1. Chips: All / This week / Offers / Members only / Past,
+/// then one per category in the current programme. On "All", events the
+/// club has flagged FC Recommends are lifted into their own section at the
+/// top. Everything reads chronologically: soonest-first for every upcoming
+/// filter, most-recent-first for Past.
 class EventsFeedScreen extends ConsumerWidget {
   const EventsFeedScreen({super.key});
 
@@ -33,6 +36,7 @@ class EventsFeedScreen extends ConsumerWidget {
     final filter = ref.watch(_feedFilterProvider);
     final sellingFast = ref.watch(sellingFastIdsProvider).valueOrNull ?? const <String>{};
     final isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
+    final bool showingPast = filter == 'past';
 
     return Scaffold(
       appBar: AppBar(
@@ -57,43 +61,45 @@ class EventsFeedScreen extends ConsumerWidget {
             orElse: () => const SizedBox(height: 48),
           ),
           Expanded(
-            child: eventsAsync.when(
-              loading: () => const _ShimmerList(),
-              error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
-              data: (events) {
-                final filtered = _applyFilter(events, filter);
-                if (filtered.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
+            child: showingPast
+                ? _PastEventsList(onTap: (slug) => context.push('/events/$slug'))
+                : eventsAsync.when(
+                    loading: () => const _ShimmerList(),
+                    error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
+                    data: (events) {
+                      final filtered = _applyFilter(events, filter);
+                      if (filtered.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
 
-                final bool grouped = filter == 'all';
-                final recommended = grouped ? filtered.where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList() : const <EventModel>[];
-                final recommendedIds = recommended.map((e) => e.id).toSet();
-                final rest = filtered.where((e) => !recommendedIds.contains(e.id)).toList();
+                      final bool grouped = filter == 'all';
+                      final recommended = grouped ? filtered.where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList() : const <EventModel>[];
+                      final recommendedIds = recommended.map((e) => e.id).toSet();
+                      final rest = filtered.where((e) => !recommendedIds.contains(e.id)).toList();
 
-                Widget card(EventModel e) => EventCard(
-                      event: e,
-                      sellingFast: sellingFast.contains(e.id),
-                      onTap: () => context.push('/events/${e.slug}'),
-                    );
+                      Widget card(EventModel e) => EventCard(
+                            event: e,
+                            sellingFast: sellingFast.contains(e.id),
+                            onTap: () => context.push('/events/${e.slug}'),
+                          );
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(sellingFastIdsProvider);
-                    await ref.read(eventsFeedControllerProvider.notifier).refresh();
-                  },
-                  child: ListView(
-                    children: <Widget>[
-                      if (recommended.isNotEmpty) ...<Widget>[
-                        const _SectionHeader(title: 'FC Recommends', icon: Icons.verified_outlined),
-                        for (final e in recommended) card(e),
-                        if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
-                      ],
-                      for (final e in rest) card(e),
-                      const SizedBox(height: FlcSpace.xl),
-                    ],
+                      return RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(sellingFastIdsProvider);
+                          await ref.read(eventsFeedControllerProvider.notifier).refresh();
+                        },
+                        child: ListView(
+                          children: <Widget>[
+                            if (recommended.isNotEmpty) ...<Widget>[
+                              const _SectionHeader(title: 'FC Recommends', icon: Icons.verified_outlined),
+                              for (final e in recommended) card(e),
+                              if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
+                            ],
+                            for (final e in rest) card(e),
+                            const SizedBox(height: FlcSpace.xl),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),
@@ -125,6 +131,40 @@ class EventsFeedScreen extends ConsumerWidget {
       default:
         return events;
     }
+  }
+}
+
+class _PastEventsList extends ConsumerWidget {
+  const _PastEventsList({required this.onTap});
+
+  final ValueChanged<String> onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pastAsync = ref.watch(pastEventsProvider);
+    return pastAsync.when(
+      loading: () => const _ShimmerList(),
+      error: (error, stackTrace) => _ErrorState(onRetry: () => ref.invalidate(pastEventsProvider)),
+      data: (events) {
+        if (events.isEmpty) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(FlcSpace.lg),
+              child: Text('No past events yet.', style: FlcTextStyles.body, textAlign: TextAlign.center),
+            ),
+          );
+        }
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(pastEventsProvider),
+          child: ListView(
+            children: <Widget>[
+              for (final e in events) EventCard(event: e, onTap: () => onTap(e.slug)),
+              const SizedBox(height: FlcSpace.xl),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

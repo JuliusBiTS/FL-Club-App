@@ -40,3 +40,11 @@ final eventDetailProvider = FutureProvider.autoDispose.family<EventModel?, Strin
 final sellingFastIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) {
   return ref.watch(_eventsRemoteDataSourceProvider).fetchSellingFastIds();
 });
+
+/// Past events, most recent first — fetched only when the "Past" filter is
+/// actually selected (autoDispose), not cached offline: unlike the upcoming
+/// feed, nothing time-sensitive depends on this being available with no
+/// connection.
+final pastEventsProvider = FutureProvider.autoDispose<List<EventModel>>((ref) {
+  return ref.watch(_eventsRemoteDataSourceProvider).fetchPastPublished();
+});
