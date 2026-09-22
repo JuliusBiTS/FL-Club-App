@@ -70,6 +70,16 @@ about 5x cheaper per call. It's a one-line change; quality may be slightly less 
 on messier or more oddly-formatted text, but for a clearly-written paste it should still
 do a good job.
 
+## Troubleshooting
+
+- **"This API key is not scoped to a workspace..."** — the key was created at the
+  account's general level rather than inside one specific workspace. Fix: in the
+  Console, open a **Workspace** (sidebar) → that workspace's own **API Keys** tab →
+  **Create Key** there instead, and replace the secret with the new value.
+- Anything else: check **Supabase dashboard → Edge Functions → extract-event-details →
+  Logs** — the real error is logged there even though the app only shows a generic
+  message.
+
 ## Limits
 
 - Best on a well-written source (an email, a press release). Very short or vague text

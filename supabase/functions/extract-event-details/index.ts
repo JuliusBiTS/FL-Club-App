@@ -10,7 +10,11 @@
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.127.0";
 import { zodOutputFormat } from "npm:@anthropic-ai/sdk@0.127.0/helpers/zod";
-import { z } from "npm:zod@3.25.76";
+// v4, not v3: the SDK's zodOutputFormat() helper calls zod's own v4
+// to-json-schema code internally, which only understands v4-shaped schema
+// objects. A v3 schema (e.g. zod@3.25.76, used elsewhere in this repo)
+// crashes it with "Cannot read properties of undefined (reading 'def')".
+import { z } from "npm:zod@4.6.5";
 import { handlePreflight } from "../_shared/cors.ts";
 import { jsonResponse, errorResponse } from "../_shared/response.ts";
 import { createAdminClient, createCallerClient, requireEnv } from "../_shared/supabase-clients.ts";
