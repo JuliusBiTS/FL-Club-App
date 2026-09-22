@@ -80,3 +80,60 @@ reliably offer this today, "now or in the future," per direct instruction. Rathe
 than leave a field nobody can vouch for, it's gone entirely — the column
 (`events.accessibility_notes`), the editor field, and the display on the event page.
 See `supabase/migrations/20260923000001_remove_event_accessibility_notes.sql`.
+
+## UX polish and bug fixes (September 2026)
+
+A round of feedback after the first hands-on pass with the app: too much text,
+poor contrast on the membership handle, and a real bug where it could vanish
+for the rest of a session. Fixed in one pass rather than piecemeal, since
+several of these touch the same files.
+
+- **Past events are now browsable.** `EventsRemoteDataSource.fetchPastPublished`
+  + a dedicated `pastEventsProvider`, surfaced as a `Past` filter chip on the
+  events feed (`events_feed_screen.dart`) — a plain reverse-chronological list,
+  deliberately with none of the FC-Recommends grouping the upcoming feed has,
+  since "what's next" and "what happened" are different questions.
+- **The event detail page is quieter.** Practical facts (date, time, venue,
+  online/members-only/filmed) now sit in one bordered block instead of a bare
+  stack of icon rows; the filming disclaimer is a one-line caption ("Filmed —
+  may be shared publicly") instead of a full sentence; the loyalty line moved
+  out of the facts block to sit by the Tickets header, where it's relevant.
+  Body text got `height: 1.5` — the actual "hard to read" complaint was
+  line-height, not font size.
+- **Staff picks are a quote, not just a tag** (`StaffPickBubble` in
+  `packages/flc_core/lib/src/widgets/`), Waterstones-style: a staff photo,
+  name, and a short reason the event is worth attending
+  (`events.pick_by_name` / `pick_by_photo_url` / `pick_quote`, ≤280 chars —
+  see `supabase/migrations/20260924000001_event_staff_quotes.sql`).
+  Deliberately independent of `highlight`/ribbons — any event can carry a
+  quote regardless of whether it's also FC Recommends or a special offer.
+- **The membership handle's "disappears quite often" bug is fixed at the
+  root, not patched.** The old code set a boolean to `false` the first time
+  any podcast episode ever played and relied on remembering to set it back —
+  unsafe the moment the screen holding that logic lives in a
+  `StatefulShellRoute` branch that's never disposed (which the podcast/media
+  tab did). Replaced with `MembershipHandleMode` (`full` / `dot` / `hidden`),
+  computed fresh every build in `AppShell` from live state — current tab,
+  whether audio is loaded, and whether a pushed screen (ticket bar, article,
+  scanner) has claimed the strip — so there's nothing to forget to reset.
+- **The handle got visible contours** (border + shadow, see
+  `_kHandleBorder`/`_kHandleShadow` in `membership_card_handle.dart`) so it
+  reads as a control sitting on top of the app rather than blending into the
+  brand-olive bars above and below it — plus a minimised "just a dot" mode,
+  user-toggleable from the You tab (`alwaysShowDotProvider`, backed by
+  `shared_preferences` — a UI preference, not sensitive data).
+- **A hardcoded membership card entry lives permanently on the You tab**
+  (`_MembershipCardTile` in `account_screen.dart`), independent of the
+  drag-handle — one guaranteed way in that never moves or disappears.
+- **Podcast and video merged into one "Listen" tab**
+  (`features/listen/listen_screen.dart`), filterable by type and, for
+  podcasts, by season — two browsing tabs for what's fundamentally one
+  content feed was the actual complaint, not that video existed.
+- **A splash animation was added** (`features/splash/splash_overlay.dart`):
+  the club's logo flips into the strapline "The home of independent
+  journalism" over ~2s, then fades into the app. Set in **Jost**
+  (SIL OFL, bundled as `assets/fonts/Jost-Variable.ttf`) rather than Futura,
+  which is commercially licensed — Jost is a widely-used free geometric
+  substitute for the same brand feel. The native Android launch background
+  was also changed from white to brand olive, so there's no colour flash
+  before the animated splash takes over.
