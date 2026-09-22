@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/profile_provider.dart';
+import '../../core/preferences/membership_card_preferences.dart';
 import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_providers.dart';
+import '../membership/presentation/membership_card_sheet.dart';
 
 /// The "You" tab — briefing §9.10. Signed out: a sign-in prompt, never a
 /// wall. Signed in: header, tickets/loyalty/membership, and the settings/
@@ -77,6 +79,10 @@ class _SignedInBody extends ConsumerWidget {
           ),
           data: (profile) => _ProfileHeader(name: profile?.displayName ?? profile?.fullName, email: user.email ?? '', isMember: profile?.isActiveMember ?? false),
         ),
+        const Padding(
+          padding: EdgeInsets.fromLTRB(FlcSpace.md, 0, FlcSpace.md, FlcSpace.sm),
+          child: _MembershipCardTile(),
+        ),
         const Divider(height: 1),
         ListTile(
           leading: const Icon(Icons.confirmation_number_outlined),
@@ -123,6 +129,14 @@ class _SignedInBody extends ConsumerWidget {
             onTap: () => context.push('/manage/notifications'),
           ),
         ],
+        const Divider(height: 1),
+        SwitchListTile(
+          secondary: const Icon(Icons.circle_outlined),
+          title: const Text('Minimise the membership button'),
+          subtitle: const Text('Show it as a small dot instead of the full bar'),
+          value: ref.watch(alwaysShowDotProvider),
+          onChanged: (value) => setAlwaysShowDot(ref, value),
+        ),
         const Divider(height: 1),
         ListTile(
           leading: const Icon(Icons.help_outline),
@@ -189,6 +203,57 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A hardcoded, always-there entry point to the membership card — briefing
+/// feedback: "include a hard coded membership slide / card in the user
+/// menu that is always there and can be clicked on." Unlike the drag
+/// handle (which can be minimised to a dot, or hidden while a pushed
+/// screen claims the strip), this tile never moves and never disappears —
+/// it's the one guaranteed way in, from a tab that's never mid-animation.
+class _MembershipCardTile extends StatelessWidget {
+  const _MembershipCardTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: FlcColors.brand,
+      borderRadius: BorderRadius.circular(FlcRadius.card),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(FlcRadius.card),
+        onTap: () => MembershipCardSheet.showModal(context),
+        child: Container(
+          padding: const EdgeInsets.all(FlcSpace.md),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(FlcRadius.card),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+          ),
+          child: Row(
+            children: <Widget>[
+              const Icon(Icons.qr_code_2, color: Colors.white, size: 28),
+              const SizedBox(width: FlcSpace.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Membership card',
+                      style: FlcTextStyles.body.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      'Tap to show your QR, barcode and loyalty stamps',
+                      style: FlcTextStyles.caption.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.white70),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,11 +1,17 @@
-import 'package:flc_core/flc_core.dart';
+import 'package:flc_core/flc_core.dart'; // isStaff is an extension getter — needs the declaring library in scope
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/profile_provider.dart';
+import '../../core/preferences/membership_card_preferences.dart';
 import '../../core/ui/membership_handle_visibility.dart';
 import '../membership/membership_card_handle.dart';
+import '../podcast/podcast_providers.dart';
+
+/// Fixed regardless of staff/non-staff — Scan is only ever appended at the
+/// end, never inserted before this — see app_router.dart's branch order.
+const int _kListenTabIndex = 1;
 
 /// Bottom navigation shell — briefing §9.0. Four tabs for everyone, a
 /// fifth (Scan) that's simply omitted from the visible destinations for
@@ -20,7 +26,20 @@ class AppShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
-    final bool showHandle = ref.watch(showMembershipHandleProvider);
+
+    // Computed fresh every build from live signals, never an imperative
+    // set/reset flag — see membership_handle_visibility.dart for why that
+    // distinction is what actually fixes the old "gone for the rest of the
+    // session" bug (it can't get stuck, because nothing is ever "left set").
+    final bool modalClaimsWholeBar = !ref.watch(showMembershipHandleProvider);
+    final bool onListenTabWithAudio =
+        navigationShell.currentIndex == _kListenTabIndex && ref.watch(currentMediaItemProvider).valueOrNull != null;
+    final bool userPrefersDot = ref.watch(alwaysShowDotProvider);
+    final MembershipHandleMode handleMode = modalClaimsWholeBar
+        ? MembershipHandleMode.hidden
+        : (onListenTabWithAudio || userPrefersDot)
+            ? MembershipHandleMode.dot
+            : MembershipHandleMode.full;
 
     final destinations = <NavigationDestination>[
       const NavigationDestination(
@@ -31,12 +50,7 @@ class AppShell extends ConsumerWidget {
       const NavigationDestination(
         icon: Icon(Icons.graphic_eq_outlined),
         selectedIcon: Icon(Icons.graphic_eq),
-        label: 'Podcast',
-      ),
-      const NavigationDestination(
-        icon: Icon(Icons.play_circle_outline),
-        selectedIcon: Icon(Icons.play_circle),
-        label: 'Media',
+        label: 'Listen',
       ),
       const NavigationDestination(
         icon: Icon(Icons.article_outlined),
@@ -62,14 +76,12 @@ class AppShell extends ConsumerWidget {
           navigationShell,
           // Reachable from anywhere in one gesture, opens in <300ms, never
           // needs a network call (briefing §9.6) — sits just above the bar.
-          // Hidden while a screen-specific bottom bar (e.g. event detail's
-          // "Get tickets") claims the same space — see
-          // showMembershipHandleProvider's doc comment. Positioned.fill (not
-          // just a bottom strip) so the drag-to-reveal card has the full
-          // height to expand into — MembershipCardHandle only actually
-          // paints/hit-tests within its own current extent, so this doesn't
-          // block taps on navigationShell above the collapsed handle.
-          if (showHandle) Positioned.fill(child: MembershipCardHandle(activeTabIndex: navigationShell.currentIndex)),
+          // Positioned.fill (not just a bottom strip) so the drag-to-reveal
+          // card has the full height to expand into — MembershipCardHandle
+          // only actually paints/hit-tests within its own current extent
+          // (or nothing, in hidden mode), so this doesn't block taps on
+          // navigationShell above it.
+          Positioned.fill(child: MembershipCardHandle(activeTabIndex: navigationShell.currentIndex, mode: handleMode)),
         ],
       ),
       bottomNavigationBar: NavigationBar(

@@ -33,6 +33,19 @@ const double _kIdBlockSize = 104;
 class MembershipCardSheet extends ConsumerStatefulWidget {
   const MembershipCardSheet({super.key});
 
+  /// Opens the card as a standalone modal — used wherever there's no
+  /// drag-to-reveal handle to peek it out of (the minimised dot, and the
+  /// You tab's always-there entry point).
+  static Future<void> showModal(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: FlcColors.brand,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(FlcRadius.sheet))),
+      isScrollControlled: true,
+      builder: (BuildContext context) => const MembershipCardSheet(),
+    );
+  }
+
   @override
   ConsumerState<MembershipCardSheet> createState() => _MembershipCardSheetState();
 }

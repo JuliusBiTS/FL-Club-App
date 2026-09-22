@@ -47,6 +47,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2 # small on-device preferences (e.g. "always show the membership card as a dot")
 
   # Push
   firebase_core: ^3.8.0
@@ -124,3 +125,13 @@ flutter:
           weight: 600
         - asset: assets/fonts/Inter-Bold.ttf
           weight: 700
+    # Splash screen only ("the home of independent journalism"). Free (SIL
+    # OFL), designed as an open alternative to Futura — see docs/DECISIONS.md.
+    # A single variable-font file, referenced twice for two weights: Flutter
+    # resolves each `weight:` to the matching static instance within it.
+    - family: Jost
+      fonts:
+        - asset: assets/fonts/Jost-Variable.ttf
+          weight: 400
+        - asset: assets/fonts/Jost-Variable.ttf
+          weight: 600

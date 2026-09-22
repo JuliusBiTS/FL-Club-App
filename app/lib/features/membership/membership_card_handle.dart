@@ -4,7 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/profile_provider.dart';
+import '../../core/ui/membership_handle_visibility.dart';
 import 'presentation/membership_card_sheet.dart';
+
+/// A border + shadow every state of the handle shares — this, not a colour
+/// change, is what gives it "contour" against the also-brand-olive app bar
+/// and bottom nav it sits between, so it reads as its own floating object
+/// rather than blending into either.
+const BoxShadow _kHandleShadow = BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 3));
+final Border _kHandleBorder = Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2);
 
 /// The persistent handle above the bottom nav bar — briefing §9.6,
 /// modelled on Waterstones' Plus card: "the single most important
@@ -15,8 +23,12 @@ import 'presentation/membership_card_sheet.dart';
 /// (accessibility, and plain habit). Guests have no card to peek at, so
 /// they keep the simple tap-through pill straight to the sign-up flow —
 /// briefing §9.6: never render an empty/greyed-out card for a non-member.
+///
+/// [mode] is computed by AppShell every build (see
+/// core/ui/membership_handle_visibility.dart) — this widget only ever
+/// renders whatever it's told, it never decides on its own to hide.
 class MembershipCardHandle extends ConsumerWidget {
-  const MembershipCardHandle({required this.activeTabIndex, super.key});
+  const MembershipCardHandle({required this.activeTabIndex, required this.mode, super.key});
 
   /// AppShell's navigationShell.currentIndex — watched only so the card
   /// can auto-collapse the instant the user switches tabs mid-drag. Left
@@ -24,16 +36,64 @@ class MembershipCardHandle extends ConsumerWidget {
   /// they just switched to.
   final int activeTabIndex;
 
+  final MembershipHandleMode mode;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (mode == MembershipHandleMode.hidden) return const SizedBox.shrink();
+
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final bool isActiveMember = profile?.isActiveMember ?? false;
+
+    if (mode == MembershipHandleMode.dot) {
+      return Align(
+        alignment: Alignment.bottomRight,
+        child: _HandleDot(isActiveMember: isActiveMember),
+      );
+    }
 
     if (!isActiveMember) {
       return const Align(alignment: Alignment.bottomCenter, child: _GuestPill());
     }
 
     return _MemberCardRevealSheet(activeTabIndex: activeTabIndex);
+  }
+}
+
+/// The minimised form — a small circle in the bottom-right corner, always
+/// reachable, never overlapping a full-width bar (mini-player or a
+/// screen's own bottom bar) the way the full pill/card would.
+class _HandleDot extends StatelessWidget {
+  const _HandleDot({required this.isActiveMember});
+
+  final bool isActiveMember;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.only(right: FlcSpace.md, bottom: FlcSpace.sm),
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: FlcColors.brand,
+            shape: BoxShape.circle,
+            border: _kHandleBorder,
+            boxShadow: const <BoxShadow>[_kHandleShadow],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => isActiveMember ? MembershipCardSheet.showModal(context) : context.push('/you/become-a-member'),
+              child: Icon(isActiveMember ? Icons.badge_outlined : Icons.person_add_alt_1_outlined, color: Colors.white, size: 20),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -46,24 +106,32 @@ class _GuestPill extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.xs),
-        child: Material(
-          color: FlcColors.brand,
-          borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
-          child: InkWell(
+        child: Container(
+          decoration: BoxDecoration(
+            color: FlcColors.brand,
             borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
-            onTap: () => context.push('/you/become-a-member'),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.sm),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Icon(Icons.badge_outlined, size: 18, color: Colors.white70),
-                  const SizedBox(width: FlcSpace.xs),
-                  Text('Become a member', style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
-                  const SizedBox(width: FlcSpace.xs),
-                  const Icon(Icons.keyboard_arrow_up, size: 18, color: Colors.white70),
-                ],
+            border: _kHandleBorder,
+            boxShadow: const <BoxShadow>[_kHandleShadow],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
+              onTap: () => context.push('/you/become-a-member'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.sm),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Icon(Icons.badge_outlined, size: 18, color: Colors.white70),
+                    const SizedBox(width: FlcSpace.xs),
+                    Text('Become a member', style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: FlcSpace.xs),
+                    const Icon(Icons.keyboard_arrow_up, size: 18, color: Colors.white70),
+                  ],
+                ),
               ),
             ),
           ),
@@ -165,49 +233,56 @@ class _MemberCardRevealSheetState extends State<_MemberCardRevealSheet> {
               // side, exactly like the reference.
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md),
-                child: Material(
-                  color: FlcColors.brand,
-                  borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
-                  clipBehavior: Clip.antiAlias,
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        InkWell(
-                          onTap: _toggle,
-                          child: SizedBox(
-                            height: _kHandleHeight,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                const Icon(Icons.badge_outlined, size: 18, color: Colors.white),
-                                const SizedBox(width: FlcSpace.xs),
-                                Text(
-                                  'Membership Card',
-                                  style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(width: FlcSpace.xs),
-                                Icon(
-                                  isRevealed ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                                  size: 18,
-                                  color: Colors.white70,
-                                ),
-                              ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
+                    border: _kHandleBorder,
+                    boxShadow: const <BoxShadow>[_kHandleShadow],
+                  ),
+                  child: Material(
+                    color: FlcColors.brand,
+                    borderRadius: BorderRadius.circular(FlcRadius.membershipCard),
+                    clipBehavior: Clip.antiAlias,
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      physics: const ClampingScrollPhysics(),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          InkWell(
+                            onTap: _toggle,
+                            child: SizedBox(
+                              height: _kHandleHeight,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  const Icon(Icons.badge_outlined, size: 18, color: Colors.white),
+                                  const SizedBox(width: FlcSpace.xs),
+                                  Text(
+                                    'Membership Card',
+                                    style: FlcTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(width: FlcSpace.xs),
+                                  Icon(
+                                    isRevealed ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                                    size: 18,
+                                    color: Colors.white70,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        // Only actually mounted while revealed — this is what
-                        // arms/disarms FLAG_SECURE, forced max brightness and
-                        // the rotating-QR timer, via MembershipCardSheet's own
-                        // initState/dispose (briefing §9.4/§9.6). Keeping that
-                        // live for a card that isn't visibly on screen would
-                        // force max brightness and block screenshots app-wide
-                        // for as long as a member is signed in — not just
-                        // while the card is actually showing.
-                        if (isRevealed) const MembershipCardSheet() else SizedBox(height: bottomInset),
-                      ],
+                          // Only actually mounted while revealed — this is what
+                          // arms/disarms FLAG_SECURE, forced max brightness and
+                          // the rotating-QR timer, via MembershipCardSheet's own
+                          // initState/dispose (briefing §9.4/§9.6). Keeping that
+                          // live for a card that isn't visibly on screen would
+                          // force max brightness and block screenshots app-wide
+                          // for as long as a member is signed in — not just
+                          // while the card is actually showing.
+                          if (isRevealed) const MembershipCardSheet() else SizedBox(height: bottomInset),
+                        ],
+                      ),
                     ),
                   ),
                 ),

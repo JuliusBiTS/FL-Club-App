@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,6 +32,16 @@ final Provider<PodcastRepository> podcastRepositoryProvider = Provider<PodcastRe
 /// in place.
 final Provider<PodcastAudioHandler> podcastAudioHandlerProvider = Provider<PodcastAudioHandler>((ref) {
   throw UnimplementedError('podcastAudioHandlerProvider must be overridden with the AudioService.init() result');
+});
+
+/// The currently-loaded episode, if any — watched by AppShell to decide
+/// whether the membership handle should shrink to a dot (so it doesn't sit
+/// under the Listen tab's own mini-player bar). A StreamProvider, not an
+/// imperative flag: it reflects reality on its own, so switching away from
+/// the Listen tab (or stopping playback) can never leave a stale "shrunk"
+/// state behind the way a manually set/reset boolean could.
+final StreamProvider<MediaItem?> currentMediaItemProvider = StreamProvider<MediaItem?>((ref) {
+  return ref.watch(podcastAudioHandlerProvider).mediaItem;
 });
 
 final FutureProvider<Map<String, PlaybackProgressModel>> playbackProgressProvider =
