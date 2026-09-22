@@ -12,10 +12,9 @@ import '../../features/checkout/presentation/checkout_screen.dart';
 import '../../features/events/presentation/event_detail_screen.dart';
 import '../../features/events/presentation/events_feed_screen.dart';
 import '../../features/events_admin/manage_screens.dart';
+import '../../features/listen/listen_screen.dart';
 import '../../features/loyalty/loyalty_screen.dart';
-import '../../features/media/media_screen.dart';
 import '../../features/membership/membership_interest_screen.dart';
-import '../../features/podcast/podcast_screen.dart';
 import '../../features/read/presentation/article_detail_screen.dart';
 import '../../features/read/read_screen.dart';
 import '../../features/scanner/scanner_screen.dart';
@@ -82,11 +81,12 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          // Merged Podcast + Media (briefing feedback) — index 1, fixed
+          // regardless of staff/non-staff (Scan is only ever appended at
+          // the end), which is what lets AppShell hard-code the index it
+          // compares navigationShell.currentIndex against.
           StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: '/podcast', builder: (context, state) => const PodcastScreen())],
-          ),
-          StatefulShellBranch(
-            routes: <RouteBase>[GoRoute(path: '/media', builder: (context, state) => const MediaScreen())],
+            routes: <RouteBase>[GoRoute(path: '/listen', builder: (context, state) => const ListenScreen())],
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
