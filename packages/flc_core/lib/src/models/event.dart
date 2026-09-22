@@ -21,7 +21,7 @@ extension EventHighlightLabels on EventHighlight {
   /// Shown on ribbons in the app and in the editor's picker. Null = no ribbon.
   String? get badgeLabel => switch (this) {
         EventHighlight.none => null,
-        EventHighlight.fcRecommends => 'FC Recommends',
+        EventHighlight.fcRecommends => 'FC Highlights',
         EventHighlight.staffPick => 'Staff pick',
         EventHighlight.specialOffer => 'Special offer',
       };

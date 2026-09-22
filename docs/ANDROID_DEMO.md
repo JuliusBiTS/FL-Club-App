@@ -42,7 +42,7 @@ OneDrive…) — allow it → **Install**. If **Play Protect** says the app is u
 
 ## What works in the demo build
 
-Works: browsing events (ribbons, FC Recommends, speakers, links), filters, sign-in with the
+Works: browsing events (ribbons, FC Highlights, speakers, links), filters, sign-in with the
 demo accounts, the membership card, the staff tools (**You → Staff**), creating and editing events.
 
 Not yet: **payments** (Stripe isn't connected — checkout says so), and **push notifications**

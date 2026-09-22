@@ -24,7 +24,7 @@ const List<(String, String)> _fixedFilters = <(String, String)>[
 
 /// Briefing §9.1. Chips: All / This week / Offers / Members only / Past,
 /// then one per category in the current programme. On "All", events the
-/// club has flagged FC Recommends are lifted into their own section at the
+/// club has flagged FC Highlights are lifted into their own section at the
 /// top. Everything reads chronologically: soonest-first for every upcoming
 /// filter, most-recent-first for Past.
 class EventsFeedScreen extends ConsumerWidget {
@@ -89,7 +89,7 @@ class EventsFeedScreen extends ConsumerWidget {
                         child: ListView(
                           children: <Widget>[
                             if (recommended.isNotEmpty) ...<Widget>[
-                              const _SectionHeader(title: 'FC Recommends', icon: Icons.verified_outlined),
+                              const _SectionHeader(title: 'FC Highlights', icon: Icons.verified_outlined),
                               for (final e in recommended) card(e),
                               if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
                             ],

@@ -105,17 +105,18 @@ class _TextFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: FlcSpace.xl),
+      padding: EdgeInsets.symmetric(horizontal: FlcSpace.lg),
       child: Text(
         'THE HOME OF\nINDEPENDENT JOURNALISM',
         textAlign: TextAlign.center,
         style: TextStyle(
           fontFamily: 'Jost',
           fontWeight: FontWeight.w600,
-          fontSize: 20,
+          fontSize: 25,
           height: 1.4,
           letterSpacing: 1.6,
           color: Colors.white,
+          decoration: TextDecoration.none, // explicit: no underline, whatever the ambient style is
         ),
       ),
     );

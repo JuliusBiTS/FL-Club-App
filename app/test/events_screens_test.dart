@@ -59,10 +59,10 @@ Future<void> _pumpFeed(WidgetTester tester, {UserRole? role}) async {
 
 void main() {
   group('Events feed', () {
-    testWidgets('lifts FC Recommends into its own section at the top', (tester) async {
+    testWidgets('lifts FC Highlights into its own section at the top', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.text('FC RECOMMENDS'), findsOneWidget); // section header
+      expect(find.text('FC HIGHLIGHTS'), findsOneWidget); // section header
       expect(find.text('COMING UP'), findsOneWidget);
 
       final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
@@ -70,10 +70,10 @@ void main() {
       expect(recommendedY, lessThan(panelY), reason: 'the recommended event is listed first even though it is later in date');
     });
 
-    testWidgets('shows ribbons: FC Recommends, a perk, and a derived "Selling fast"', (tester) async {
+    testWidgets('shows ribbons: FC Highlights, a perk, and a derived "Selling fast"', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.text('FC Recommends'), findsOneWidget); // the badge (header is upper-case)
+      expect(find.text('FC Highlights'), findsOneWidget); // the badge (header is upper-case)
       expect(find.text('Free drink with your ticket'), findsOneWidget);
       expect(find.text('Selling fast'), findsOneWidget);
       expect(find.text('Members only'), findsWidgets);

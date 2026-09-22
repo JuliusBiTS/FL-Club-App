@@ -48,9 +48,9 @@ class AppShell extends ConsumerWidget {
         label: 'Events',
       ),
       const NavigationDestination(
-        icon: Icon(Icons.graphic_eq_outlined),
-        selectedIcon: Icon(Icons.graphic_eq),
-        label: 'Listen',
+        icon: Icon(Icons.perm_media_outlined),
+        selectedIcon: Icon(Icons.perm_media),
+        label: 'Media',
       ),
       const NavigationDestination(
         icon: Icon(Icons.article_outlined),

@@ -177,17 +177,17 @@ void main() {
     expect(find.byTooltip('Remove ticket type'), findsNothing);
   });
 
-  testWidgets('choosing FC Recommends and a perk shows both on the preview card', (WidgetTester tester) async {
+  testWidgets('choosing FC Highlights and a perk shows both on the preview card', (WidgetTester tester) async {
     await _pumpEditor(tester, repo: FakeEventRepo(), copyOf: EventDraft(title: 'World Briefing', startsAt: DateTime(2027, 1, 1, 19)));
-    await tester.scrollUntilVisible(find.text('FC Recommends'), 500, scrollable: find.byType(Scrollable).first);
+    await tester.scrollUntilVisible(find.text('FC Highlights'), 500, scrollable: find.byType(Scrollable).first);
 
-    await tester.tap(find.widgetWithText(ChoiceChip, 'FC Recommends'));
+    await tester.tap(find.widgetWithText(ChoiceChip, 'FC Highlights'));
     await tester.pump();
     await tester.tap(find.widgetWithText(ActionChip, 'Free drink with your ticket'));
     await tester.pump();
 
     // One chip on the picker, one badge on the preview card.
-    expect(find.text('FC Recommends'), findsNWidgets(2));
+    expect(find.text('FC Highlights'), findsNWidgets(2));
     expect(find.text('Free drink with your ticket'), findsWidgets);
   });
 

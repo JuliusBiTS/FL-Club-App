@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/ui/membership_handle_visibility.dart';
 import '../read_providers.dart';
+import 'article_hero_fallback.dart';
 
 /// Claims showMembershipHandleProvider for its lifetime — the "Read on the
 /// website" button at the bottom sits in the same spot as AppShell's
@@ -68,11 +69,15 @@ class _ArticleDetailBody extends StatelessWidget {
       slivers: <Widget>[
         SliverAppBar(
           pinned: true,
-          expandedHeight: article.heroImageUrl != null ? 220 : kToolbarHeight,
+          expandedHeight: 220,
           flexibleSpace: FlexibleSpaceBar(
             background: article.heroImageUrl == null
-                ? null
-                : CachedNetworkImage(imageUrl: article.heroImageUrl!, fit: BoxFit.cover),
+                ? const ArticleHeroFallback()
+                : CachedNetworkImage(
+                    imageUrl: article.heroImageUrl!,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => const ArticleHeroFallback(),
+                  ),
           ),
         ),
         SliverPadding(

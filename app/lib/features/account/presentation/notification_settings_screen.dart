@@ -135,7 +135,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
           ),
           _TopicTile(
             title: 'Recommendations & offers',
-            subtitle: 'FC Recommends, special offers and club news.',
+            subtitle: 'FC Highlights, special offers and club news.',
             value: prefs.recommendations,
             enabled: on,
             onChanged: (v) => _savePrefs(prefs.copyWith(recommendations: v)),

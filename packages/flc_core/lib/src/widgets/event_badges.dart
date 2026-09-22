@@ -5,7 +5,7 @@ import '../theme/flc_colors.dart';
 import '../theme/flc_spacing.dart';
 import '../theme/flc_typography.dart';
 
-/// The promotional ribbons on an event: FC Recommends / Staff pick / Special
+/// The promotional ribbons on an event: FC Highlights / Staff pick / Special
 /// offer (chosen by staff), "Selling fast" (derived from sales), and any
 /// perks such as "Free drink with your ticket". One widget so the app's feed,
 /// the event page and the editor's live preview always look identical.
@@ -57,10 +57,13 @@ class EventBadges extends StatelessWidget {
   }
 
   Widget _highlightChip() {
+    // Label text comes from EventHighlight.badgeLabel — the single source of
+    // truth also used by the editor's picker — so there's only ever one
+    // place to rename a ribbon, not two copies that can drift apart.
     switch (highlight) {
       case EventHighlight.fcRecommends:
         return _BadgeChip(
-          label: 'FC Recommends',
+          label: highlight.badgeLabel!,
           icon: Icons.verified_outlined,
           background: FlcColors.brand,
           foreground: Colors.white,
@@ -68,7 +71,7 @@ class EventBadges extends StatelessWidget {
         );
       case EventHighlight.staffPick:
         return _BadgeChip(
-          label: 'Staff pick',
+          label: highlight.badgeLabel!,
           icon: Icons.star_outline,
           background: FlcColors.brand.withValues(alpha: 0.10),
           foreground: FlcColors.brand,
@@ -76,7 +79,7 @@ class EventBadges extends StatelessWidget {
         );
       case EventHighlight.specialOffer:
         return _BadgeChip(
-          label: 'Special offer',
+          label: highlight.badgeLabel!,
           icon: Icons.local_offer_outlined,
           background: FlcColors.warning.withValues(alpha: 0.14),
           foreground: const Color(0xFF7A5900), // warning tone, darkened to keep AA contrast on the tint

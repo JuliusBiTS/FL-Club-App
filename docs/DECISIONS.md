@@ -50,7 +50,7 @@ Decided with the club's Head of Digital & Events Producer; built in `supabase/mi
 - **One editor, two surfaces.** The admin console (web) and the app's staff area use the same editor and list, shared from `flc_core`, so an event is authored identically anywhere.
 - **Staff vs admin, enforced in Postgres.** Staff create, edit, publish and send notifications. While an event is a *draft* staff can also set price and capacity; once it is *live*, changing price/capacity, adding ticket types, cancelling and deleting are admin-only. Capacity can never fall below tickets sold; a ticket type with sales can be withdrawn, never deleted.
 - **Notifications are available to staff without admin permission**, with rate limits (per person per hour; club-wide broadcasts per day) and an audit record of every send.
-- **Highlights are `FC Recommends`, `Staff pick`, `Special offer`, plus up to four free-text perks** (e.g. "Free drink with your ticket"). **"Selling fast" is derived, never stored** (75% or more sold, not sold out), so it can't go stale.
+- **Highlights are `FC Highlights`, `Staff pick`, `Special offer`, plus up to four free-text perks** (e.g. "Free drink with your ticket"). **"Selling fast" is derived, never stored** (75% or more sold, not sold out), so it can't go stale.
 - **Loyalty is switchable per event** (`loyalty_eligible`), applied by a trigger on ticket creation so the order functions are untouched. The scheme's rules (one point per person per event; free tickets never earn) are unchanged.
 - **Event times are London time, always.** The editor never reads or writes the device's time zone (`LondonTime`), because staff may not be in London.
 - **Descriptions are authored as light markdown** (`description_md`) and the sanitised HTML in `description_html` is generated from it on save — nobody types HTML, and nothing typed can inject markup.
@@ -106,7 +106,7 @@ several of these touch the same files.
   (`events.pick_by_name` / `pick_by_photo_url` / `pick_quote`, ≤280 chars —
   see `supabase/migrations/20260924000001_event_staff_quotes.sql`).
   Deliberately independent of `highlight`/ribbons — any event can carry a
-  quote regardless of whether it's also FC Recommends or a special offer.
+  quote regardless of whether it's also FC Highlights or a special offer.
 - **The membership handle's "disappears quite often" bug is fixed at the
   root, not patched.** The old code set a boolean to `false` the first time
   any podcast episode ever played and relied on remembering to set it back —

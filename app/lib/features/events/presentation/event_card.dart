@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// which the feed doesn't fetch per-card for cost/latency reasons — that
 /// richer version lands later. Today it shows the picture (or the brand
 /// fallback), date/venue in London time, and the promotional ribbons the
-/// club has chosen — FC Recommends / Special offer / perks — plus "Selling
+/// club has chosen — FC Highlights / Special offer / perks — plus "Selling
 /// fast", which is derived from sales rather than set by hand.
 class EventCard extends StatelessWidget {
   const EventCard({required this.event, required this.onTap, this.sellingFast = false, super.key});

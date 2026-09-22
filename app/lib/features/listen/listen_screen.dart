@@ -103,7 +103,7 @@ class _ListenScreenState extends ConsumerState<ListenScreen> {
     ]..sort((a, b) => b.publishedAt.compareTo(a.publishedAt));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Listen & Watch')),
+      appBar: AppBar(title: const Text('Media')),
       body: Column(
         children: <Widget>[
           _FilterRow(

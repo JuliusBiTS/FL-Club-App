@@ -6,7 +6,7 @@ import '../theme/flc_typography.dart';
 
 /// A staff member's personal reason an event is worth attending — a speech
 /// bubble with their photo, name and a short quote, Waterstones-style.
-/// Independent of the FC Recommends / Staff pick / Special offer ribbon:
+/// Independent of the FC Highlights / Staff pick / Special offer ribbon:
 /// any event can carry one, or none.
 class StaffPickBubble extends StatelessWidget {
   const StaffPickBubble({required this.name, required this.quote, this.photoUrl, this.dense = false, super.key});

@@ -10,7 +10,7 @@ import '../widgets/editor_widgets.dart';
 
 const Map<String, String> pushKindLabels = <String, String>{
   'new_event': 'New event announcement',
-  'recommendation': 'FC Recommends / offer',
+  'recommendation': 'FC Highlights / offer',
   'announcement': 'General announcement',
   'event_update': 'Update for ticket holders',
 };
@@ -77,7 +77,7 @@ class _PushComposerState extends State<PushComposer> {
     return _clip(
       switch (kind) {
         'new_event' => 'New at the Frontline Club: $t',
-        'recommendation' => 'FC Recommends: $t',
+        'recommendation' => 'FC Highlights: $t',
         'event_update' => 'Update: $t',
         _ => t,
       },

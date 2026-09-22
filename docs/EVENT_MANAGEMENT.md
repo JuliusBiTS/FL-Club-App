@@ -89,7 +89,7 @@ at that time (checked every minute).
 
 ## Promoting an event
 
-- **Highlight**: *FC Recommends* (also lifts the event into its own section at the
+- **Highlight**: *FC Highlights* (also lifts the event into its own section at the
   top of the app's Events tab), *Staff pick*, or *Special offer*.
 - **Perks**: up to four short labels, e.g. *Free drink with your ticket*, *Signed
   copies available*. Suggestions are one tap.

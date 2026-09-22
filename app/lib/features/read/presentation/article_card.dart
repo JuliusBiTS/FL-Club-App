@@ -3,6 +3,8 @@ import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'article_hero_fallback.dart';
+
 class ArticleCard extends StatelessWidget {
   const ArticleCard({required this.article, required this.onTap, super.key});
 
@@ -12,7 +14,6 @@ class ArticleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('EEE d MMM yyyy');
-    final theme = Theme.of(context);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -25,8 +26,12 @@ class ArticleCard extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: article.heroImageUrl == null
-                  ? ColoredBox(color: theme.colorScheme.surfaceContainerHighest)
-                  : CachedNetworkImage(imageUrl: article.heroImageUrl!, fit: BoxFit.cover),
+                  ? const ArticleHeroFallback()
+                  : CachedNetworkImage(
+                      imageUrl: article.heroImageUrl!,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => const ArticleHeroFallback(),
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(FlcSpace.md),
