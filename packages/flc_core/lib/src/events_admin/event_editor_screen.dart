@@ -8,6 +8,7 @@ import 'event_admin_repository.dart';
 import 'event_draft.dart';
 import 'event_editor_controller.dart';
 import 'event_preview.dart';
+import 'sections/autofill_section.dart';
 import 'sections/commerce_sections.dart';
 import 'sections/content_sections.dart';
 import 'sections/people_sections.dart';
@@ -419,6 +420,7 @@ class _EditorViewState extends State<_EditorView> {
                           child: Text('This event was cancelled. Only an admin can change it.'),
                         ),
                       ),
+                    if (!c.readOnly) AutoFillSection(controller: c),
                     BasicsSection(controller: c),
                     ScheduleSection(controller: c),
                     MediaSection(controller: c),

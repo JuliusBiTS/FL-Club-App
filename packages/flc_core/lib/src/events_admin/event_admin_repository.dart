@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/event.dart';
 import '../models/ticket_type.dart';
 import '../util/event_text.dart';
+import 'event_autofill.dart';
 import 'event_draft.dart';
 
 /// A failure already phrased for a person to read (briefing §16.4 tone).
@@ -226,6 +227,26 @@ class EventAdminRepository {
       }
     }
     return CancelResult(refunded: refunded, failures: failures);
+  }
+
+  // -------------------------------------------------------------- auto-fill
+
+  /// Sends pasted free text (an email, a press release) to the server, which
+  /// asks Claude to guess as many event fields as it reasonably can. Never
+  /// returns a price, capacity, or ticket type — those aren't fields the
+  /// server's schema allows the model to fill in, by construction, not by
+  /// instruction. Staff-only server-side; throws [EventAdminException] with a
+  /// plain-English message on quota/config/parse failures.
+  Future<ExtractedEventFields> extractEventDetails(String text) async {
+    final response = await _client.functions.invoke(
+      'extract-event-details',
+      body: <String, dynamic>{'text': text},
+    );
+    final dynamic data = response.data;
+    if (data is! Map || data['fields'] is! Map) {
+      throw EventAdminException('The auto-fill service gave an unexpected answer.');
+    }
+    return ExtractedEventFields.fromJson(Map<String, dynamic>.from(data['fields'] as Map));
   }
 
   // ----------------------------------------------------------------- images

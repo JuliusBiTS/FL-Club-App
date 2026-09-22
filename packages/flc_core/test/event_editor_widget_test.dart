@@ -108,8 +108,10 @@ void main() {
 
   testWidgets('"Use the club\'s standard tickets" fills in the three template rows', (WidgetTester tester) async {
     await _pumpEditor(tester, repo: FakeEventRepo());
-    await tester.scrollUntilVisible(find.text('Use the club\'s standard tickets'), 400, scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.text('Use the club\'s standard tickets'));
+    await tester.scrollUntilVisible(find.text('Use the club\'s standard tickets'), 600, scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(find.text('Use the club\'s standard tickets'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Use the club\'s standard tickets'), warnIfMissed: false);
     await tester.pumpAndSettle();
 
     expect(_fieldWithValue('Standard'), findsOneWidget);

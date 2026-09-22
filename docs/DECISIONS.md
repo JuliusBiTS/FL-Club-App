@@ -56,3 +56,19 @@ Decided with the club's Head of Digital & Events Producer; built in `supabase/mi
 - **Descriptions are authored as light markdown** (`description_md`) and the sanitised HTML in `description_html` is generated from it on save — nobody types HTML, and nothing typed can inject markup.
 - **Every change to events and ticket types is audited by a database trigger**, not by client code, so it cannot be skipped.
 - **Push uses Firebase config from `--dart-define`**, not `google-services.json`, so enabling it needs no build-file changes. It is opt-in per person and asked for at the point of need, never at launch.
+
+## Event auto-fill from pasted text (September 2026)
+
+- **A new paid dependency, flagged per the rule above.** "Paste details to auto-fill"
+  (`supabase/functions/extract-event-details/`) calls the Claude API to turn a pasted
+  email/press release into a first-draft set of event fields. This is genuinely a paid
+  third-party call, unlike everything else added so far — roughly 2-3 US cents per use
+  (`claude-opus-5`, ~2,500 input + ~500 output tokens). Setup: [AUTOFILL_SETUP.md](AUTOFILL_SETUP.md).
+- **Safe by construction, not by instruction.** Price, capacity, and ticket type are
+  simply not fields in the response schema — there is no way for the model to return
+  one, however the pasted text is worded.
+- **Never overwrites.** Only fills fields that are currently blank on the draft; always
+  shows a summary of what it filled, what it left alone, and anything it flagged for a
+  human to check (an uncertain date, a guessed category).
+- **Model choice belongs to whoever is paying** — defaults to `claude-opus-5` rather than
+  a cheaper model, per Anthropic's own guidance not to auto-downgrade for cost.
