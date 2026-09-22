@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#33460C</color>
+    <!-- Also the native splash background — see drawable/launch_background.xml -->
+    <color name="launch_background_olive">#FF33460C</color>
 </resources>
