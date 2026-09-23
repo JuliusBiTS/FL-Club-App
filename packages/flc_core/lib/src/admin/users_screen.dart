@@ -329,6 +329,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       actions: <Widget>[
         TextButton(onPressed: _saving ? null : () => Navigator.pop(context, false), child: const Text('Cancel')),
         FilledButton(
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
           onPressed: _saving ? null : _save,
           child: _saving ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Save'),
         ),

@@ -19,6 +19,8 @@ export 'src/models/ticket.dart';
 export 'src/models/ticket_type.dart';
 export 'src/admin/media_admin_repository.dart';
 export 'src/admin/media_content_screen.dart';
+export 'src/admin/article_admin_repository.dart';
+export 'src/admin/articles_manager_screen.dart';
 export 'src/admin/user_admin_repository.dart';
 export 'src/admin/users_screen.dart';
 export 'src/util/event_text.dart';

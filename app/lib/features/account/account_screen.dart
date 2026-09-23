@@ -177,9 +177,16 @@ class _SignedInBody extends ConsumerWidget {
             onTap: () => context.push('/manage/notifications'),
           ),
           ListTile(
+            leading: const Icon(Icons.article_outlined),
+            title: const Text('Stories & articles'),
+            subtitle: const Text('Write, edit and publish blog posts'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/manage/articles'),
+          ),
+          ListTile(
             leading: const Icon(Icons.video_library_outlined),
             title: const Text('Manage media'),
-            subtitle: const Text('Sync the podcast/articles, add or remove a video'),
+            subtitle: const Text('Sync the podcast, add or remove videos and episodes'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/manage/media'),
           ),

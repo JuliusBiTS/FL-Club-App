@@ -102,47 +102,8 @@ class MediaAdminRepository {
     await _client.from('podcast_episodes').delete().eq('id', id).like('guid', 'manual:%');
   }
 
-  Future<List<ManualItem>> listManualArticles() async {
-    final rows = await _client
-        .from('articles')
-        .select('id, title, published_at')
-        .isFilter('wp_post_id', null)
-        .order('published_at', ascending: false);
-    return rows.map(ManualItem.fromRow).toList();
-  }
-
-  Future<void> addArticle({
-    required String title,
-    required String body,
-    String? excerpt,
-    String? heroImageUrl,
-    String? authorName,
-    String? linkUrl,
-    required DateTime publishedAt,
-  }) async {
-    final String slug = '${_slugify(title)}-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
-    await _client.from('articles').insert(<String, dynamic>{
-      'slug': slug,
-      'title': title.trim(),
-      'excerpt': _blankToNull(excerpt),
-      'content_html': _paragraphs(body),
-      'hero_image_url': _blankToNull(heroImageUrl),
-      'author_name': _blankToNull(authorName),
-      'canonical_url': _blankToNull(linkUrl) ?? 'https://www.frontlineclub.com',
-      'published_at': publishedAt.toUtc().toIso8601String(),
-    });
-  }
-
-  Future<void> deleteArticle(String id) async {
-    await _client.from('articles').delete().eq('id', id).isFilter('wp_post_id', null);
-  }
-
   static String? _blankToNull(String? s) => (s == null || s.trim().isEmpty) ? null : s.trim();
 
-  static String _slugify(String s) {
-    final String slug = s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
-    return slug.isEmpty ? 'post' : (slug.length > 60 ? slug.substring(0, 60) : slug);
-  }
 
   /// Plain text in, minimal safe HTML out: escaped, blank line = new paragraph.
   static String? _paragraphs(String? text) {

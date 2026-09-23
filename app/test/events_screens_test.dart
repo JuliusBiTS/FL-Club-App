@@ -73,7 +73,7 @@ void main() {
     testWidgets('every other filter is plain chronological, with no grouping', (tester) async {
       await _pumpFeed(tester);
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.tap(find.text('Filter'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ListTile, 'In the next 7 days'));
       await tester.pumpAndSettle();
@@ -96,7 +96,7 @@ void main() {
     testWidgets('the filter button opens a sheet with one row per category, and filters by it', (tester) async {
       await _pumpFeed(tester);
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.tap(find.text('Filter'));
       await tester.pumpAndSettle();
       expect(find.widgetWithText(ListTile, 'Panel discussion'), findsOneWidget);
       expect(find.widgetWithText(ListTile, 'Book talk'), findsOneWidget);
@@ -105,13 +105,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Book talk: The Last Correspondent'), findsOneWidget);
       expect(find.text('Afghanistan 2026'), findsNothing);
-      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsOneWidget); // always says "Filter", never the active filter's name
+      expect(find.text('Filter'), findsOneWidget); // always says "Filter", never the active filter's name
     });
 
     testWidgets('the Offers filter shows events with a special offer or perks', (tester) async {
       await _pumpFeed(tester);
 
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.tap(find.text('Filter'));
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(ListTile, 'Offers'));
       await tester.pumpAndSettle();
@@ -121,11 +121,11 @@ void main() {
 
     testWidgets('the Past toggle shows past events and hides the filter button', (tester) async {
       await _pumpFeed(tester);
-      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsOneWidget);
+      expect(find.text('Filter'), findsOneWidget);
 
       await tester.tap(find.text('Past'));
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsNothing);
+      expect(find.text('Filter'), findsNothing);
     });
 
     testWidgets('only staff see the "Manage events" button', (tester) async {

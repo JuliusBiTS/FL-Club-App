@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth_gate.dart';
-import '../sections/admin_sections.dart';
+import '../sections/audit_log_section.dart';
+import '../sections/dashboard_section.dart';
 import '../sections/orders_section.dart';
 
 /// Desktop-first console shell — briefing §9.12. Wide NavigationRail
@@ -26,56 +27,40 @@ class _AdminShellState extends State<AdminShell> {
   int _selectedIndex = 0;
 
   late final EventAdminRepository _events = EventAdminRepository(Supabase.instance.client);
+  late final ArticleAdminRepository _articles = ArticleAdminRepository(Supabase.instance.client);
   late final UserAdminRepository _users = UserAdminRepository(Supabase.instance.client);
-  late final MediaAdminRepository _media =MediaAdminRepository(Supabase.instance.client);
+  late final MediaAdminRepository _media = MediaAdminRepository(Supabase.instance.client);
 
+  // Admins get the full menu; staff get Events and Notifications only.
+  // (Attendees, Loyalty and Applications used to be empty placeholders and
+  // are gone: attendee lists live with each event, "applied to join" is a
+  // filter under People, and Users/Members/Staff are one People screen.)
   late final List<(String, IconData, Widget)> _sections = <(String, IconData, Widget)>[
-    if (widget.isAdmin) ('Dashboard', Icons.dashboard_outlined, dashboardSection),
+    if (widget.isAdmin) ('Dashboard', Icons.dashboard_outlined, const DashboardSection()),
     ('Events', Icons.event_outlined, EventsManagerScreen(repository: _events, isAdmin: widget.isAdmin, embedded: true)),
     if (widget.isAdmin) ('Orders', Icons.receipt_long_outlined, const OrdersSection()),
-    if (widget.isAdmin) ('Attendees', Icons.groups_outlined, attendeesSection),
     if (widget.isAdmin)
       (
-        'Users',
+        'People',
         Icons.people_outline,
         UsersScreen(
           repository: _users,
           embedded: true,
-          title: 'Users',
+          title: 'People',
           description:
-              'Everyone who has registered, member or not. Open a person to make them a member, staff or an admin.',
+              'Everyone who has registered. Open a person to make them a member, staff or an admin — they need to have registered first. '
+              'Use the filters for members, staff and admins, and people who have applied to join.',
         ),
       ),
     if (widget.isAdmin)
       (
-        'Members',
-        Icons.badge_outlined,
-        UsersScreen(
-          repository: _users,
-          embedded: true,
-          title: 'Members',
-          initialFilter: UserFilter.members,
-          description: 'People with an active membership. Change a membership type, number or expiry here.',
-        ),
+        'Articles',
+        Icons.article_outlined,
+        ArticlesManagerScreen(repository: _articles, imageRepository: _events, embedded: true),
       ),
-    if (widget.isAdmin) ('Applications', Icons.mark_email_unread_outlined, applicationsSection),
-    if (widget.isAdmin) ('Loyalty', Icons.loyalty_outlined, loyaltySection),
-    if (widget.isAdmin)
-      (
-        'Staff',
-        Icons.admin_panel_settings_outlined,
-        UsersScreen(
-          repository: _users,
-          embedded: true,
-          title: 'Staff',
-          initialFilter: UserFilter.staff,
-          description:
-              'Staff and admins. To add someone, find them under Users (they need to have registered first) and set their access.',
-        ),
-      ),
+    if (widget.isAdmin) ('Media', Icons.video_library_outlined, MediaContentScreen(repository: _media, embedded: true)),
     ('Notifications', Icons.notifications_outlined, NotificationsScreen(repository: _events, embedded: true)),
-    if (widget.isAdmin) ('Content', Icons.sync_outlined, MediaContentScreen(repository: _media, embedded: true)),
-    if (widget.isAdmin) ('Audit log', Icons.history_outlined, auditLogSection),
+    if (widget.isAdmin) ('Audit log', Icons.history_outlined, const AuditLogSection()),
   ];
 
   Future<void> _signOut() async {

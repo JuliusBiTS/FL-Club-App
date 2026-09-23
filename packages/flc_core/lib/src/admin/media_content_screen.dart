@@ -105,7 +105,7 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
       padding: EdgeInsets.all(gutter),
       children: <Widget>[
         if (widget.embedded) ...<Widget>[
-          Text('Content', style: Theme.of(context).textTheme.headlineMedium),
+          Text('Media', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: FlcSpace.md),
         ],
         Align(
@@ -123,6 +123,7 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
                     runSpacing: FlcSpace.sm,
                     children: <Widget>[
                       OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: FlcColors.accent(context)),
                         onPressed: _syncingPodcast ? null : _syncPodcast,
                         icon: _syncingPodcast
                             ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
@@ -130,6 +131,7 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
                         label: const Text('Sync podcast now'),
                       ),
                       OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: FlcColors.accent(context)),
                         onPressed: _syncingArticles ? null : _syncArticles,
                         icon: _syncingArticles
                             ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
@@ -143,7 +145,7 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
                 Row(
                   children: <Widget>[
                     const Expanded(child: Text('Videos', style: FlcTextStyles.h3)),
-                    FilledButton.icon(onPressed: _addVideo, icon: const Icon(Icons.add, size: 18), label: const Text('Add video')),
+                    FilledButton.icon(style: FilledButton.styleFrom(minimumSize: const Size(0, 44)), onPressed: _addVideo, icon: const Icon(Icons.add, size: 18), label: const Text('Add video')),
                   ],
                 ),
                 const SizedBox(height: FlcSpace.xs),
@@ -199,16 +201,6 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
                   remove: widget.repository.deletePodcastEpisode,
                   dialogBuilder: (BuildContext c) => AddPodcastDialog(repository: widget.repository),
                 ),
-                const SizedBox(height: FlcSpace.xl),
-                ManualSection(
-                  title: 'Blog articles',
-                  hint: 'Articles from the website sync on their own. Write one here for anything that isn\'t on the website. Only articles added here can be removed here.',
-                  addLabel: 'Add article',
-                  emptyText: 'No hand-written articles.',
-                  load: widget.repository.listManualArticles,
-                  remove: widget.repository.deleteArticle,
-                  dialogBuilder: (BuildContext c) => AddArticleDialog(repository: widget.repository),
-                ),
               ],
             ),
           ),
@@ -218,7 +210,7 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
 
     if (widget.embedded) return body;
     return Scaffold(
-      appBar: AppBar(title: const Text('Content')),
+      appBar: AppBar(title: const Text('Media')),
       body: body,
     );
   }
@@ -343,6 +335,7 @@ class _AddVideoDialogState extends State<_AddVideoDialog> {
       actions: <Widget>[
         TextButton(onPressed: _saving ? null : () => Navigator.pop(context, false), child: const Text('Cancel')),
         FilledButton(
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
           onPressed: _saving ? null : _save,
           child: _saving
               ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))

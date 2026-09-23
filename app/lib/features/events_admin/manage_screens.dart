@@ -39,3 +39,16 @@ class ManageMediaScreen extends ConsumerWidget {
     return MediaContentScreen(repository: ref.watch(mediaAdminRepositoryProvider));
   }
 }
+
+/// Staff area: write and manage stories and blog articles.
+class ManageArticlesScreen extends ConsumerWidget {
+  const ManageArticlesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ArticlesManagerScreen(
+      repository: ref.watch(articleAdminRepositoryProvider),
+      imageRepository: ref.watch(eventAdminRepositoryProvider),
+    );
+  }
+}

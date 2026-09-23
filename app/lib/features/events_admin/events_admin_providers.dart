@@ -14,3 +14,8 @@ final Provider<EventAdminRepository> eventAdminRepositoryProvider = Provider<Eve
 final Provider<MediaAdminRepository> mediaAdminRepositoryProvider = Provider<MediaAdminRepository>((ref) {
   return MediaAdminRepository(ref.watch(supabaseClientProvider));
 });
+
+/// Stories and blog articles — written, drafted and published by staff.
+final Provider<ArticleAdminRepository> articleAdminRepositoryProvider = Provider<ArticleAdminRepository>((ref) {
+  return ArticleAdminRepository(ref.watch(supabaseClientProvider));
+});

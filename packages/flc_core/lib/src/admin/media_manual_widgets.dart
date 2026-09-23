@@ -72,7 +72,7 @@ class _ManualSectionState extends State<ManualSection> {
         Row(
           children: <Widget>[
             Expanded(child: Text(widget.title, style: FlcTextStyles.h3)),
-            FilledButton.icon(onPressed: _add, icon: const Icon(Icons.add, size: 18), label: Text(widget.addLabel)),
+            FilledButton.icon(style: FilledButton.styleFrom(minimumSize: const Size(0, 44)), onPressed: _add, icon: const Icon(Icons.add, size: 18), label: Text(widget.addLabel)),
           ],
         ),
         const SizedBox(height: FlcSpace.xs),
@@ -190,6 +190,7 @@ class _AddDialogBaseState extends State<_AddDialogBase> {
       actions: <Widget>[
         TextButton(onPressed: _saving ? null : () => Navigator.pop(context, false), child: const Text('Cancel')),
         FilledButton(
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
           onPressed: _saving ? null : _save,
           child: _saving ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Add'),
         ),
@@ -263,70 +264,3 @@ class _AddPodcastDialogState extends State<AddPodcastDialog> {
   }
 }
 
-class AddArticleDialog extends StatefulWidget {
-  const AddArticleDialog({required this.repository, super.key});
-
-  final MediaAdminRepository repository;
-
-  @override
-  State<AddArticleDialog> createState() => _AddArticleDialogState();
-}
-
-class _AddArticleDialogState extends State<AddArticleDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _title = TextEditingController();
-  final _excerpt = TextEditingController();
-  final _body = TextEditingController();
-  final _image = TextEditingController();
-  final _author = TextEditingController();
-  final _link = TextEditingController();
-
-  @override
-  void dispose() {
-    _title.dispose();
-    _excerpt.dispose();
-    _body.dispose();
-    _image.dispose();
-    _author.dispose();
-    _link.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return _AddDialogBase(
-      title: 'Add a blog article',
-      formKey: _formKey,
-      onSave: (DateTime published) => widget.repository.addArticle(
-        title: _title.text,
-        body: _body.text,
-        excerpt: _excerpt.text,
-        heroImageUrl: _image.text,
-        authorName: _author.text,
-        linkUrl: _link.text,
-        publishedAt: published,
-      ),
-      fields: (DateTime published, VoidCallback pick) => <Widget>[
-        TextFormField(controller: _title, decoration: const InputDecoration(labelText: 'Title'), validator: _required),
-        const SizedBox(height: FlcSpace.sm),
-        TextFormField(controller: _excerpt, decoration: const InputDecoration(labelText: 'Short summary (optional)'), minLines: 1, maxLines: 3),
-        const SizedBox(height: FlcSpace.sm),
-        TextFormField(
-          controller: _body,
-          decoration: const InputDecoration(labelText: 'Article text', helperText: 'Leave a blank line between paragraphs.'),
-          minLines: 5,
-          maxLines: 12,
-          validator: _required,
-        ),
-        const SizedBox(height: FlcSpace.sm),
-        TextFormField(controller: _image, decoration: const InputDecoration(labelText: 'Picture link (optional)', hintText: 'https://…')),
-        const SizedBox(height: FlcSpace.sm),
-        TextFormField(controller: _author, decoration: const InputDecoration(labelText: 'Author (optional)')),
-        const SizedBox(height: FlcSpace.sm),
-        TextFormField(controller: _link, decoration: const InputDecoration(labelText: 'Link to the original (optional)', hintText: 'https://…')),
-        const SizedBox(height: FlcSpace.sm),
-        _dateRow(published, pick),
-      ],
-    );
-  }
-}

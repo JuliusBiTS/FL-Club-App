@@ -81,23 +81,15 @@ class EventsFeedScreen extends ConsumerWidget {
                     onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
                   ),
                 ),
-                const SizedBox(width: FlcSpace.xs),
-                IconButton.outlined(
-                  tooltip: reverseSort ? 'Sorted the other way — tap to flip back' : 'Flip the date order',
-                  icon: Icon(reverseSort ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
-                  onPressed: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
+                const SizedBox(width: FlcSpace.sm),
+                _FilterButton(
+                  selected: filter,
+                  categories: eventsAsync.maybeWhen(data: _categoryFilters, orElse: () => const <(String, String)>[]),
+                  onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
+                  showFilter: !showingPast,
+                  reverse: reverseSort,
+                  onFlip: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
                 ),
-                if (!showingPast) ...<Widget>[
-                  const SizedBox(width: FlcSpace.sm),
-                  eventsAsync.maybeWhen(
-                    data: (events) => _FilterButton(
-                      selected: filter,
-                      categories: _categoryFilters(events),
-                      onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
-                    ),
-                    orElse: () => const SizedBox(width: 48),
-                  ),
-                ],
               ],
             ),
           ),
@@ -186,32 +178,83 @@ class EventsFeedScreen extends ConsumerWidget {
 /// One button in place of the old scrolling chip row. Shows a dot when a
 /// non-default filter is active, and opens a bottom sheet grouped into
 /// "When it's on" / "Category" rather than one long flat list.
+/// One pill holding both controls: "Filter" (opens the sheet; hidden on the
+/// Past tab, which has nothing to filter) and the date-order arrow. Feedback:
+/// the loose arrow beside the toggle looked bad and shoved the text around.
 class _FilterButton extends StatelessWidget {
-  const _FilterButton({required this.selected, required this.categories, required this.onChanged});
+  const _FilterButton({
+    required this.selected,
+    required this.categories,
+    required this.onChanged,
+    required this.showFilter,
+    required this.reverse,
+    required this.onFlip,
+  });
 
   final String selected;
   final List<(String, String)> categories;
   final ValueChanged<String> onChanged;
+  final bool showFilter;
+  final bool reverse;
+  final VoidCallback onFlip;
 
   @override
   Widget build(BuildContext context) {
-    final bool active = selected != 'all';
+    final bool active = showFilter && selected != 'all';
+    final Color color = FlcColors.accent(context);
+    final Color border = Theme.of(context).colorScheme.outline;
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
-        // Always just "Filter" — feedback: showing the active filter's own
-        // name here grew the button to whatever length a category name
-        // happened to be, squeezing the Upcoming/Past toggle next to it
-        // until its own labels wrapped. The dot below is the "something's
-        // filtered" signal instead.
-        OutlinedButton.icon(
-          onPressed: () => _openSheet(context),
-          icon: const Icon(Icons.tune, size: 18),
-          label: const Text('Filter'),
+        Material(
+          color: Colors.transparent,
+          shape: StadiumBorder(side: BorderSide(color: border)),
+          clipBehavior: Clip.antiAlias,
+          child: SizedBox(
+            height: 40,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                if (showFilter) ...<Widget>[
+                  // Always just "Filter" — a category name here would grow the
+                  // pill and squeeze the Upcoming/Past toggle. The dot is the
+                  // "something's filtered" signal instead.
+                  InkWell(
+                    onTap: () => _openSheet(context),
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.only(left: 14, right: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Icon(Icons.tune, size: 18, color: color),
+                          const SizedBox(width: 6),
+                          Text('Filter', style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  VerticalDivider(width: 1, thickness: 1, indent: 8, endIndent: 8, color: border),
+                ],
+                Tooltip(
+                  message: reverse ? 'Latest first — tap to flip' : 'Earliest first — tap to flip',
+                  child: InkWell(
+                    onTap: onFlip,
+                    child: SizedBox(
+                      width: 44,
+                      height: 40,
+                      child: Icon(reverse ? Icons.arrow_upward : Icons.arrow_downward, size: 20, color: color),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         if (active)
           Positioned(
-            right: -2,
+            left: 4,
             top: -2,
             child: Container(
               width: 10,
