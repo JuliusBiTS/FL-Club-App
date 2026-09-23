@@ -37,6 +37,17 @@ const List<String> kEventCategories = <String>[
 
 const int kMaxPerks = 4;
 const int kMaxPerkLength = 40;
+const int kMaxContentWarnings = 5;
+const int kMaxContentWarningLength = 70;
+
+/// One-tap starting points for the warnings field — staff can still type
+/// their own.
+const List<String> kContentWarningSuggestions = <String>[
+  'May include distressing footage',
+  'Contains flashing images',
+  'Graphic descriptions of violence',
+  'Strong language',
+];
 
 class SpeakerDraft {
   SpeakerDraft({this.name = '', this.role = '', this.bio = '', this.photoUrl});
@@ -184,6 +195,7 @@ class EventDraft {
     this.loyaltyEligible = true,
     this.highlight = EventHighlight.none,
     List<String>? perks,
+    List<String>? contentWarnings,
     this.pickByName = '',
     this.pickByPhotoUrl,
     this.pickQuote = '',
@@ -199,6 +211,7 @@ class EventDraft {
         speakers = speakers ?? <SpeakerDraft>[],
         links = links ?? <LinkDraft>[],
         perks = perks ?? <String>[],
+        contentWarnings = contentWarnings ?? <String>[],
         ticketTypes = ticketTypes ?? <TicketTypeDraft>[];
 
   String? id;
@@ -233,6 +246,7 @@ class EventDraft {
   bool loyaltyEligible;
   EventHighlight highlight;
   List<String> perks;
+  List<String> contentWarnings;
 
   /// A staff member's personal quote, shown as a speech bubble — independent
   /// of [highlight]. Blank [pickQuote] means no bubble, whatever the ribbon.
@@ -313,6 +327,7 @@ class EventDraft {
       loyaltyEligible: e.loyaltyEligible,
       highlight: e.highlight,
       perks: List<String>.of(e.perks),
+      contentWarnings: List<String>.of(e.contentWarnings),
       pickByName: e.pickByName ?? '',
       pickByPhotoUrl: e.pickByPhotoUrl,
       pickQuote: e.pickQuote ?? '',
@@ -355,6 +370,7 @@ class EventDraft {
       loyaltyEligible: loyaltyEligible,
       highlight: EventHighlight.none,
       perks: List<String>.of(perks),
+      contentWarnings: List<String>.of(contentWarnings),
       capacityTotal: capacityTotal,
       capacityApp: capacityApp,
       capacityEventbrite: 0,
@@ -404,6 +420,7 @@ class EventDraft {
       'loyalty_eligible': loyaltyEligible,
       'highlight': highlight.wireName,
       'perks': perks,
+      'content_warnings': contentWarnings.map((String w) => w.trim()).where((String w) => w.isNotEmpty).toList(),
       'pick_by_name': nullIfBlank(pickByName),
       'pick_by_photo_url': pickByPhotoUrl,
       'pick_quote': nullIfBlank(pickQuote),
@@ -495,6 +512,11 @@ class EventDraft {
     if (perks.length > kMaxPerks) errors.add('Add at most $kMaxPerks perks.');
     for (final String p in perks) {
       if (p.length > kMaxPerkLength) errors.add('Keep each perk under $kMaxPerkLength characters.');
+    }
+
+    if (contentWarnings.length > kMaxContentWarnings) errors.add('Add at most $kMaxContentWarnings content warnings.');
+    for (final String w in contentWarnings) {
+      if (w.length > kMaxContentWarningLength) errors.add('Keep each content warning under $kMaxContentWarningLength characters.');
     }
 
     if (publishing) {

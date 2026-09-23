@@ -2,6 +2,7 @@ import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/profile_provider.dart';
@@ -25,7 +26,38 @@ class AccountScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('You')),
-      body: user == null ? const _SignedOutBody() : const _SignedInBody(),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: user == null ? const _SignedOutBody() : const _SignedInBody()),
+          const _VersionFooter(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shows exactly which build is installed — added after a debugging
+/// session where nobody could tell whether a phone was running the latest
+/// APK (every build had reported the same version). Bump the +N in
+/// pubspec.yaml with each build handed over.
+class _VersionFooter extends StatelessWidget {
+  const _VersionFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snap) {
+        final info = snap.data;
+        if (info == null) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: FlcSpace.sm),
+          child: Text(
+            'Version ${info.version} (build ${info.buildNumber})',
+            style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context)),
+          ),
+        );
+      },
     );
   }
 }

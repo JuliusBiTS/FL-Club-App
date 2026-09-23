@@ -323,3 +323,48 @@ Feedback after the first APK install of the round above.
   Firebase project** (`docs/PUSH_SETUP.md` has the complete walkthrough) —
   same category as Stripe and YouTube: an external account only the club
   can create.
+
+## Fourth round (September 2026)
+
+- **The event picture is shown whole, with nothing over it.** The old
+  detail page cropped it to a fixed 240px, put the toolbar over its top
+  edge and laid a dark gradient on it — hiding parts of posters that have
+  their own text. Now: a plain toolbar above, the picture full width at its
+  own proportions below, no gradient, no title, no badges on it. (Feed
+  cards still crop to 16:9 to keep the list even; the full picture is one
+  tap away.)
+- **Content warnings** (`events.content_warnings`, up to 5 short free-text
+  lines, e.g. "May include distressing footage", "Contains flashing
+  images"). Free text rather than a fixed list because what's worth
+  warning about varies by event; the editor offers one-tap suggestions.
+  Shown as a "Content note" panel on the event page above the description,
+  and a small marker on the feed card. Deliberately not copied by "copy
+  settings from last event" — they belong to one event.
+- **Registration groundwork for the user site**
+  (`20260925000003_user_registration.sql`): profiles gain city, country,
+  interests, how-heard, privacy version and a database-stamped
+  marketing-consent time (users can edit them; the guard trigger still
+  only protects the privileged columns). `event_interests` lets a
+  signed-in person register interest in an event under RLS, and guests do
+  it through `register_event_interest()` (upcoming published events only,
+  flood-capped). `event_interest_counts()` exposes counts only. No UI yet —
+  the app and a future website will share these same tables.
+- **SHEEP CRM link, vendor-neutral first**
+  (`20260925000004_crm_members.sql`, `crm-sync` function). SHEEP's API
+  details aren't known yet, so the CRM-specific part is one clearly
+  marked, unverified `mapSheepRecord` + fetch in the function; everything
+  around it is built and works today via a manual import: a `crm_members`
+  staging table, `crm_reconcile_preview()` (read-only), and
+  `crm_reconcile_apply()` (audited, admin only, a separate deliberate
+  step). Safety rules baked in: only a CRM "active" record can activate an
+  existing account with the same email; "lapsed/cancelled" lapses; a
+  person absent from the CRM is only **flagged** (honorary/lifetime and
+  hand-granted members may legitimately not be in it); suspended is never
+  overridden; the `crm_member_id` link is added to the profiles guard so
+  nobody can point their own account at someone else's CRM record. This
+  refines — doesn't replace — the earlier "CSV import with confirm-diff"
+  decision: the CSV path still feeds the same staging table.
+- **The app now shows its build number** (You tab footer), and the build
+  number is bumped per build handed over — after a debugging session where
+  every build reported `0.1.0+1` and nobody could tell which one a phone
+  was running. Also added a date-order flip button beside Filter.

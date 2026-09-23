@@ -141,6 +141,27 @@ class _PromotionSectionState extends State<PromotionSection> {
             ],
           ),
           const Divider(height: FlcSpace.xl),
+          Text('Content warnings', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(
+            'Optional. Shown to people on the event page before they book — e.g. distressing footage or flashing images.',
+            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
+          ),
+          const SizedBox(height: FlcSpace.sm),
+          ChipsInput(
+            label: 'Warnings',
+            hint: 'e.g. May include distressing footage',
+            values: d.contentWarnings,
+            enabled: enabled,
+            maxItems: kMaxContentWarnings,
+            maxLength: kMaxContentWarningLength,
+            suggestions: kContentWarningSuggestions,
+            onChanged: (List<String> v) {
+              d.contentWarnings = v;
+              controller.touch();
+            },
+          ),
+          const Divider(height: FlcSpace.xl),
           Text('A staff member\'s pick', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
           Text(

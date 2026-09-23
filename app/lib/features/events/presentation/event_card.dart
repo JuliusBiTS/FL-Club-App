@@ -61,7 +61,7 @@ class EventCard extends StatelessWidget {
                     const SizedBox(height: FlcSpace.xs),
                     Text(event.summary!, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.bodySmall),
                   ],
-                  if (event.isPromoted || sellingFast || soldOut || event.membersOnly) ...<Widget>[
+                  if (event.isPromoted || sellingFast || soldOut || event.membersOnly || event.contentWarnings.isNotEmpty) ...<Widget>[
                     const SizedBox(height: FlcSpace.sm),
                     Wrap(
                       spacing: FlcSpace.xs,
@@ -69,6 +69,7 @@ class EventCard extends StatelessWidget {
                       children: <Widget>[
                         EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast, soldOut: soldOut, dense: true),
                         if (event.membersOnly) const _MembersChip(),
+                        if (event.contentWarnings.isNotEmpty) const _ContentNoteChip(),
                       ],
                     ),
                   ],
@@ -77,6 +78,29 @@ class EventCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ContentNoteChip extends StatelessWidget {
+  const _ContentNoteChip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 3),
+      decoration: BoxDecoration(
+        color: FlcColors.warning.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(FlcRadius.input),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          const Icon(Icons.warning_amber_rounded, size: 13, color: FlcColors.warning),
+          const SizedBox(width: 4),
+          Text('Content note', style: FlcTextStyles.caption.copyWith(fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }

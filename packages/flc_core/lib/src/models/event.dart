@@ -113,6 +113,7 @@ abstract class EventModel with _$EventModel {
     @JsonKey(name: 'members_only') @Default(false) bool membersOnly,
     @JsonKey(unknownEnumValue: EventHighlight.none) @Default(EventHighlight.none) EventHighlight highlight,
     @Default(<String>[]) List<String> perks,
+    @JsonKey(name: 'content_warnings') @Default(<String>[]) List<String> contentWarnings,
     @JsonKey(name: 'loyalty_eligible') @Default(true) bool loyaltyEligible,
     @JsonKey(name: 'pick_by_name') String? pickByName,
     @JsonKey(name: 'pick_by_photo_url') String? pickByPhotoUrl,

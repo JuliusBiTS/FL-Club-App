@@ -21,6 +21,13 @@ final StateProvider<String> _feedFilterProvider = StateProvider<String>((ref) =>
 /// option buried in the filter sheet.
 final StateProvider<bool> _showingPastProvider = StateProvider<bool>((ref) => false);
 
+/// Feedback: "add a sorting option ... that just lets me flip the date
+/// sort". False = the existing default (soonest-first for Upcoming,
+/// most-recent-first for Past); true reverses whichever list is showing.
+/// Shared across both tabs rather than one toggle each — simplest reading
+/// of "flip it" for a single button.
+final StateProvider<bool> _reverseSortProvider = StateProvider<bool>((ref) => false);
+
 const List<(String, String)> _fixedFilters = <(String, String)>[
   ('all', 'All'),
   ('week', 'In the next 7 days'),
@@ -41,6 +48,7 @@ class EventsFeedScreen extends ConsumerWidget {
     final eventsAsync = ref.watch(eventsFeedControllerProvider);
     final filter = ref.watch(_feedFilterProvider);
     final showingPast = ref.watch(_showingPastProvider);
+    final reverseSort = ref.watch(_reverseSortProvider);
     final sellingFast = ref.watch(sellingFastIdsProvider).valueOrNull ?? const <String>{};
     final soldOut = ref.watch(soldOutIdsProvider).valueOrNull ?? const <String>{};
     final isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
@@ -73,6 +81,12 @@ class EventsFeedScreen extends ConsumerWidget {
                     onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
                   ),
                 ),
+                const SizedBox(width: FlcSpace.xs),
+                IconButton.outlined(
+                  tooltip: reverseSort ? 'Sorted the other way — tap to flip back' : 'Flip the date order',
+                  icon: Icon(reverseSort ? Icons.arrow_upward : Icons.arrow_downward, size: 20),
+                  onPressed: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
+                ),
                 if (!showingPast) ...<Widget>[
                   const SizedBox(width: FlcSpace.sm),
                   eventsAsync.maybeWhen(
@@ -89,13 +103,14 @@ class EventsFeedScreen extends ConsumerWidget {
           ),
           Expanded(
             child: showingPast
-                ? _PastEventsList(onTap: (slug) => context.push('/events/$slug'))
+                ? _PastEventsList(reverse: reverseSort, onTap: (slug) => context.push('/events/$slug'))
                 : eventsAsync.when(
                     loading: () => const _ShimmerList(),
                     error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
                     data: (events) {
-                      final filtered = _applyFilter(events, filter);
-                      if (filtered.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
+                      final matching = _applyFilter(events, filter);
+                      if (matching.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
+                      final filtered = reverseSort ? matching.reversed.toList() : matching;
 
                       // Events already arrive ascending by starts_at (see
                       // EventsRemoteDataSource.fetchUpcomingPublished), so
@@ -281,9 +296,10 @@ class _SectionHeader extends StatelessWidget {
 }
 
 class _PastEventsList extends ConsumerWidget {
-  const _PastEventsList({required this.onTap});
+  const _PastEventsList({required this.onTap, this.reverse = false});
 
   final ValueChanged<String> onTap;
+  final bool reverse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -304,7 +320,7 @@ class _PastEventsList extends ConsumerWidget {
           onRefresh: () async => ref.invalidate(pastEventsProvider),
           child: ListView(
             children: <Widget>[
-              for (final e in events) EventCard(event: e, onTap: () => onTap(e.slug)),
+              for (final e in (reverse ? events.reversed : events)) EventCard(event: e, onTap: () => onTap(e.slug)),
               const SizedBox(height: FlcSpace.xl),
             ],
           ),

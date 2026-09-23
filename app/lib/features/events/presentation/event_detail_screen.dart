@@ -142,16 +142,12 @@ class _EventDetailBody extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
+          // A plain toolbar with its own solid background, above the
+          // picture rather than over it. Feedback: most event pictures are
+          // posters/flyers with their own text, so the toolbar covering
+          // their top edge (and a fixed-height crop) hid parts of them.
           SliverAppBar(
-            expandedHeight: 240,
             pinned: true,
-            // The title only appears here once the bar has collapsed down
-            // to its toolbar — not layered over the photo while expanded.
-            // Feedback: most event photos already have their own text
-            // (flyers, posters), so stacking the title on top of that was
-            // often unreadable. The full title now lives in the body,
-            // below the image, as its own heading.
-            title: Text(event.title, maxLines: 1, overflow: TextOverflow.ellipsis),
             actions: <Widget>[
               if (isStaff)
                 IconButton(
@@ -160,8 +156,8 @@ class _EventDetailBody extends ConsumerWidget {
                   onPressed: () => _openEditor(context, ref, isAdmin: profile?.isAdmin ?? false),
                 ),
             ],
-            flexibleSpace: FlexibleSpaceBar(background: _Hero(event: event)),
           ),
+          SliverToBoxAdapter(child: _EventPicture(event: event)),
           SliverPadding(
             // Extra bottom clearance whenever the buy bar isn't already
             // reserving space: the floating membership handle/dot can sit
@@ -181,6 +177,10 @@ class _EventDetailBody extends ConsumerWidget {
                 ],
                 if (event.hasPick) ...<Widget>[
                   StaffPickBubble(name: event.pickByName!.trim(), quote: event.pickQuote!, photoUrl: event.pickByPhotoUrl),
+                  const SizedBox(height: FlcSpace.md),
+                ],
+                if (event.contentWarnings.isNotEmpty) ...<Widget>[
+                  _ContentWarnings(warnings: event.contentWarnings),
                   const SizedBox(height: FlcSpace.md),
                 ],
                 if (event.subtitle != null && event.subtitle!.isNotEmpty) ...<Widget>[
@@ -330,36 +330,64 @@ class _EventDetailBody extends ConsumerWidget {
   }
 }
 
-class _Hero extends StatelessWidget {
-  const _Hero({required this.event});
+/// Trigger-warning style notices, shown before someone books. Body text
+/// stays in the normal text colour (readable in both themes); only the
+/// icon and tinted panel carry the warning colour.
+class _ContentWarnings extends StatelessWidget {
+  const _ContentWarnings({required this.warnings});
+
+  final List<String> warnings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(FlcSpace.sm),
+      decoration: BoxDecoration(
+        color: FlcColors.warning.withValues(alpha: 0.12),
+        border: Border.all(color: FlcColors.warning.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(FlcRadius.input),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          const Icon(Icons.warning_amber_rounded, color: FlcColors.warning, size: 22),
+          const SizedBox(width: FlcSpace.xs),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Content note', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700)),
+                for (final String w in warnings) Text(w, style: FlcTextStyles.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The event's picture, shown whole: full width at its own proportions
+/// (never cropped to a fixed height), and nothing drawn over it — no
+/// gradient, no title, no badges.
+class _EventPicture extends StatelessWidget {
+  const _EventPicture({required this.event});
 
   final EventModel event;
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        if (event.heroImagePath == null)
-          EventHeroFallback(category: event.category, showLabel: false)
-        else
-          CachedNetworkImage(
-            imageUrl: event.heroImagePath!,
-            fit: BoxFit.cover,
-            errorWidget: (context, url, error) => EventHeroFallback(category: event.category, showLabel: false),
-          ),
-        // Keeps the white title readable over any photo.
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: <Color>[Color(0x33000000), Colors.transparent, Color(0x99000000)],
-              stops: <double>[0, 0.4, 1],
-            ),
-          ),
-        ),
-      ],
+    final String? url = event.heroImagePath;
+    if (url == null) {
+      return AspectRatio(aspectRatio: 16 / 9, child: EventHeroFallback(category: event.category, showLabel: false));
+    }
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: double.infinity,
+      fit: BoxFit.fitWidth,
+      placeholder: (context, _) => AspectRatio(aspectRatio: 16 / 9, child: EventHeroFallback(category: event.category, showLabel: false)),
+      errorWidget: (context, _, _) => AspectRatio(aspectRatio: 16 / 9, child: EventHeroFallback(category: event.category, showLabel: false)),
     );
   }
 }
