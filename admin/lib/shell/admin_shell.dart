@@ -26,17 +26,53 @@ class _AdminShellState extends State<AdminShell> {
   int _selectedIndex = 0;
 
   late final EventAdminRepository _events = EventAdminRepository(Supabase.instance.client);
-  late final MediaAdminRepository _media = MediaAdminRepository(Supabase.instance.client);
+  late final UserAdminRepository _users = UserAdminRepository(Supabase.instance.client);
+  late final MediaAdminRepository _media =MediaAdminRepository(Supabase.instance.client);
 
   late final List<(String, IconData, Widget)> _sections = <(String, IconData, Widget)>[
     if (widget.isAdmin) ('Dashboard', Icons.dashboard_outlined, dashboardSection),
     ('Events', Icons.event_outlined, EventsManagerScreen(repository: _events, isAdmin: widget.isAdmin, embedded: true)),
     if (widget.isAdmin) ('Orders', Icons.receipt_long_outlined, const OrdersSection()),
     if (widget.isAdmin) ('Attendees', Icons.groups_outlined, attendeesSection),
-    if (widget.isAdmin) ('Members', Icons.badge_outlined, membersSection),
+    if (widget.isAdmin)
+      (
+        'Users',
+        Icons.people_outline,
+        UsersScreen(
+          repository: _users,
+          embedded: true,
+          title: 'Users',
+          description:
+              'Everyone who has registered, member or not. Open a person to make them a member, staff or an admin.',
+        ),
+      ),
+    if (widget.isAdmin)
+      (
+        'Members',
+        Icons.badge_outlined,
+        UsersScreen(
+          repository: _users,
+          embedded: true,
+          title: 'Members',
+          initialFilter: UserFilter.members,
+          description: 'People with an active membership. Change a membership type, number or expiry here.',
+        ),
+      ),
     if (widget.isAdmin) ('Applications', Icons.mark_email_unread_outlined, applicationsSection),
     if (widget.isAdmin) ('Loyalty', Icons.loyalty_outlined, loyaltySection),
-    if (widget.isAdmin) ('Staff', Icons.admin_panel_settings_outlined, staffSection),
+    if (widget.isAdmin)
+      (
+        'Staff',
+        Icons.admin_panel_settings_outlined,
+        UsersScreen(
+          repository: _users,
+          embedded: true,
+          title: 'Staff',
+          initialFilter: UserFilter.staff,
+          description:
+              'Staff and admins. To add someone, find them under Users (they need to have registered first) and set their access.',
+        ),
+      ),
     ('Notifications', Icons.notifications_outlined, NotificationsScreen(repository: _events, embedded: true)),
     if (widget.isAdmin) ('Content', Icons.sync_outlined, MediaContentScreen(repository: _media, embedded: true)),
     if (widget.isAdmin) ('Audit log', Icons.history_outlined, auditLogSection),

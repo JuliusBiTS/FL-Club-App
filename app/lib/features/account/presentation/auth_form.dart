@@ -23,16 +23,20 @@ class AuthForm extends ConsumerStatefulWidget {
 
 class _AuthFormState extends ConsumerState<AuthForm> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isRegisterMode = false;
+  bool _acceptedTerms = false;
+  bool _marketingOptIn = false;
   bool _obscurePassword = true;
   bool _loading = false;
   String? _errorMessage;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -57,6 +61,16 @@ class _AuthFormState extends ConsumerState<AuthForm> {
             }),
           ),
           const SizedBox(height: FlcSpace.lg),
+          if (_isRegisterMode) ...<Widget>[
+            TextFormField(
+              controller: _nameController,
+              textCapitalization: TextCapitalization.words,
+              autofillHints: const <String>[AutofillHints.name],
+              decoration: const InputDecoration(labelText: 'Full name'),
+              validator: (value) => (value == null || value.trim().isEmpty) ? 'Enter your name' : null,
+            ),
+            const SizedBox(height: FlcSpace.sm),
+          ],
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -89,7 +103,26 @@ class _AuthFormState extends ConsumerState<AuthForm> {
               return null;
             },
           ),
-          if (_isRegisterMode) PasswordStrengthMeter(password: _passwordController.text),
+          if (_isRegisterMode) ...<Widget>[
+            PasswordStrengthMeter(password: _passwordController.text),
+            const SizedBox(height: FlcSpace.sm),
+            CheckboxListTile(
+              value: _acceptedTerms,
+              onChanged: (v) => setState(() => _acceptedTerms = v ?? false),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('I agree to the terms of use and the privacy notice.'),
+            ),
+            CheckboxListTile(
+              value: _marketingOptIn,
+              onChanged: (v) => setState(() => _marketingOptIn = v ?? false),
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: const Text('Keep me posted about events and news (optional).'),
+            ),
+          ],
           if (!_isRegisterMode)
             Align(
               alignment: Alignment.centerRight,
@@ -125,6 +158,10 @@ class _AuthFormState extends ConsumerState<AuthForm> {
 
   Future<void> _handleSubmit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
+    if (_isRegisterMode && !_acceptedTerms) {
+      setState(() => _errorMessage = 'Please agree to the terms of use and privacy notice to create an account.');
+      return;
+    }
 
     setState(() {
       _loading = true;
@@ -134,7 +171,13 @@ class _AuthFormState extends ConsumerState<AuthForm> {
     final auth = ref.read(authRepositoryProvider);
     try {
       if (_isRegisterMode) {
-        await auth.signUpWithPassword(email: _emailController.text.trim(), password: _passwordController.text);
+        await auth.signUpWithPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          fullName: _nameController.text,
+          acceptedTerms: _acceptedTerms,
+          marketingOptIn: _marketingOptIn,
+        );
       } else {
         await auth.signInWithPassword(email: _emailController.text.trim(), password: _passwordController.text);
       }

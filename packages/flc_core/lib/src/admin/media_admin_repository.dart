@@ -2,18 +2,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/media_post.dart';
 
-/// Manual media (YouTube video) management, and manual sync triggers for
-/// the two Edge Functions that otherwise only run on their own hourly
-/// pg_cron schedule — feedback: "how do you edit the media tab? Any way
-/// for an admin to do changes there? Maybe a manual way to add podcast
-/// links and YT videos?"
-///
-/// Deliberately does NOT touch podcast_episodes: that table is entirely
-/// owned by podcast-sync's upsert-by-guid from the RSS feed (briefing —
-/// "we consume the existing public RSS feed directly"). Adding a manual
-/// row there with no guid would sit oddly alongside synced ones and could
-/// collide with the sync's own upsert key; a "sync now" button is the
-/// right manual lever for podcasts, not a hand-added row.
+/// A hand-added podcast episode or article, as listed on the Content screen.
+class ManualItem {
+  const ManualItem({required this.id, required this.title, required this.publishedAt});
+
+  final String id;
+  final String title;
+  final DateTime publishedAt;
+
+  factory ManualItem.fromRow(Map<String, dynamic> r) => ManualItem(
+        id: r['id'] as String,
+        title: r['title'] as String,
+        publishedAt: DateTime.parse(r['published_at'] as String),
+      );
+}
+
+/// Manual media management (YouTube videos, podcast episodes, articles), and
+/// manual sync triggers for the two Edge Functions that otherwise only run on
+/// their own hourly pg_cron schedule. Hand-added podcasts/articles live in the
+/// same tables as synced ones but are namespaced so they can never collide
+/// with a sync (see the section below).
 class MediaAdminRepository {
   MediaAdminRepository(this._client);
 
@@ -50,6 +58,101 @@ class MediaAdminRepository {
 
   Future<void> deleteMediaPost(String id) async {
     await _client.from('media_posts').delete().eq('id', id);
+  }
+
+  // Hand-added podcast episodes and articles ---------------------------------
+  //
+  // Additive only. The syncs upsert by guid / wp_post_id and never delete, so
+  // hand-added rows are told apart by a `manual:` guid prefix (podcasts) and a
+  // null wp_post_id (articles). Only those can be listed or removed here —
+  // synced rows are never touched from this screen.
+
+  Future<List<ManualItem>> listManualPodcasts() async {
+    final rows = await _client
+        .from('podcast_episodes')
+        .select('id, title, published_at')
+        .like('guid', 'manual:%')
+        .order('published_at', ascending: false);
+    return rows.map(ManualItem.fromRow).toList();
+  }
+
+  Future<void> addPodcastEpisode({
+    required String title,
+    required String audioUrl,
+    String? description,
+    String? imageUrl,
+    required DateTime publishedAt,
+  }) async {
+    final Uri? uri = Uri.tryParse(audioUrl.trim());
+    if (uri == null || !uri.hasScheme || !uri.host.contains('.')) {
+      throw const FormatException('Enter the full audio link, starting with https://');
+    }
+    await _client.from('podcast_episodes').insert(<String, dynamic>{
+      // Random suffix keeps it clear of any guid the RSS sync will ever use.
+      'guid': 'manual:${DateTime.now().microsecondsSinceEpoch}-${audioUrl.hashCode.abs()}',
+      'title': title.trim(),
+      'audio_url': audioUrl.trim(),
+      'description_html': _paragraphs(description),
+      'image_url': _blankToNull(imageUrl),
+      'published_at': publishedAt.toUtc().toIso8601String(),
+    });
+  }
+
+  Future<void> deletePodcastEpisode(String id) async {
+    await _client.from('podcast_episodes').delete().eq('id', id).like('guid', 'manual:%');
+  }
+
+  Future<List<ManualItem>> listManualArticles() async {
+    final rows = await _client
+        .from('articles')
+        .select('id, title, published_at')
+        .isFilter('wp_post_id', null)
+        .order('published_at', ascending: false);
+    return rows.map(ManualItem.fromRow).toList();
+  }
+
+  Future<void> addArticle({
+    required String title,
+    required String body,
+    String? excerpt,
+    String? heroImageUrl,
+    String? authorName,
+    String? linkUrl,
+    required DateTime publishedAt,
+  }) async {
+    final String slug = '${_slugify(title)}-${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
+    await _client.from('articles').insert(<String, dynamic>{
+      'slug': slug,
+      'title': title.trim(),
+      'excerpt': _blankToNull(excerpt),
+      'content_html': _paragraphs(body),
+      'hero_image_url': _blankToNull(heroImageUrl),
+      'author_name': _blankToNull(authorName),
+      'canonical_url': _blankToNull(linkUrl) ?? 'https://www.frontlineclub.com',
+      'published_at': publishedAt.toUtc().toIso8601String(),
+    });
+  }
+
+  Future<void> deleteArticle(String id) async {
+    await _client.from('articles').delete().eq('id', id).isFilter('wp_post_id', null);
+  }
+
+  static String? _blankToNull(String? s) => (s == null || s.trim().isEmpty) ? null : s.trim();
+
+  static String _slugify(String s) {
+    final String slug = s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
+    return slug.isEmpty ? 'post' : (slug.length > 60 ? slug.substring(0, 60) : slug);
+  }
+
+  /// Plain text in, minimal safe HTML out: escaped, blank line = new paragraph.
+  static String? _paragraphs(String? text) {
+    if (text == null || text.trim().isEmpty) return null;
+    String esc(String v) => v.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    return text
+        .trim()
+        .split(RegExp(r'\n\s*\n'))
+        .map((String p) => '<p>${esc(p.trim()).replaceAll('\n', '<br>')}</p>')
+        .join();
   }
 
   /// Runs podcast-sync/wordpress-sync on demand — e.g. right after

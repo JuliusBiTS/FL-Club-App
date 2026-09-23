@@ -105,12 +105,16 @@ insert into ticket_types (event_id, name, description, audience, price_minor, qu
   ('10000000-0000-0000-0000-000000000002', 'Member', 'Members-only screening.', 'member', 500, 80, true, false, 0)
 on conflict do nothing;
 
--- Demo media posts — removed (feedback: "remove the placeholder
--- podcasts"). They were real uploads from the club's own channel,
--- youtube.com/@FrontlineClubLondon (channel id UC_RRSAK5BsitIw0tV2dg9gw —
--- worth keeping this noted for whenever real YouTube sync is set up, see
--- docs/OPEN_QUESTIONS.md), hand-seeded as a stand-in until that sync
--- exists — but a static, one-time seed sitting alongside genuinely live
--- content (the podcast feed, now really syncing) reads as misleading
--- rather than helpful. Manual admin-added media rows are the replacement
--- for now; see docs/DECISIONS.md.
+-- Media posts --------------------------------------------------------------
+-- Real uploads from the club's own channel, youtube.com/@FrontlineClubLondon
+-- (channel id UC_RRSAK5BsitIw0tV2dg9gw). Hand-seeded until a YouTube sync
+-- exists; more can be added (and removed) by staff under Content in the admin
+-- console or You > Manage media in the app. They were briefly removed and
+-- then restored at the club's request.
+insert into media_posts (source, external_id, title, description, thumbnail_url, published_at, is_live) values
+  ('youtube', 'qXZzQYP60-M', 'Lebanon on the Edge', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/qXZzQYP60-M/hqdefault.jpg', '2026-06-03T07:52:03Z', false),
+  ('youtube', 'Syw0GDQV6lw', 'AI Targeting and Palantir: Who Decides Who Lives or Dies?', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/Syw0GDQV6lw/hqdefault.jpg', '2026-05-15T09:33:10Z', false),
+  ('youtube', 'MGIrcA2cNFU', 'The Gulf at a Turning Point', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/MGIrcA2cNFU/hqdefault.jpg', '2026-05-07T10:14:41Z', false),
+  ('youtube', 'oq293zudVck', 'The Power of Humanising Conflict', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/oq293zudVck/hqdefault.jpg', '2026-04-30T13:33:53Z', false),
+  ('youtube', 'oFsSB07TJLQ', 'Why the US War Machine Will Lose in Iran', 'Panel discussion featuring Jeremy Corbyn, recorded at the club.', 'https://img.youtube.com/vi/oFsSB07TJLQ/hqdefault.jpg', '2026-04-01T08:07:02Z', false)
+on conflict (source, external_id) do nothing;

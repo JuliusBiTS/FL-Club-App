@@ -9,6 +9,7 @@ import '../theme/flc_colors.dart';
 import '../theme/flc_spacing.dart';
 import '../theme/flc_typography.dart';
 import 'media_admin_repository.dart';
+import 'media_manual_widgets.dart';
 
 /// Replaces the old "Content" placeholder — feedback: "how do you edit the
 /// media tab? Any way for an admin to do changes there? Maybe a manual way
@@ -187,6 +188,26 @@ class _MediaContentScreenState extends State<MediaContentScreen> {
                       ),
                     );
                   },
+                ),
+                const SizedBox(height: FlcSpace.xl),
+                ManualSection(
+                  title: 'Podcast episodes',
+                  hint: 'Episodes from the RSS feed appear on their own. Add one here only if it isn\'t in the feed — you\'ll need a direct link to the audio file.',
+                  addLabel: 'Add episode',
+                  emptyText: 'No hand-added episodes.',
+                  load: widget.repository.listManualPodcasts,
+                  remove: widget.repository.deletePodcastEpisode,
+                  dialogBuilder: (BuildContext c) => AddPodcastDialog(repository: widget.repository),
+                ),
+                const SizedBox(height: FlcSpace.xl),
+                ManualSection(
+                  title: 'Blog articles',
+                  hint: 'Articles from the website sync on their own. Write one here for anything that isn\'t on the website. Only articles added here can be removed here.',
+                  addLabel: 'Add article',
+                  emptyText: 'No hand-written articles.',
+                  load: widget.repository.listManualArticles,
+                  remove: widget.repository.deleteArticle,
+                  dialogBuilder: (BuildContext c) => AddArticleDialog(repository: widget.repository),
                 ),
               ],
             ),
