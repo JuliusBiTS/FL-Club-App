@@ -74,7 +74,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       ref.invalidate(loyaltyStatusProvider);
                     }),
                   ),
-                _CheckoutStep.confirmation => ConfirmationStep(reference: _orderReference ?? ''),
+                _CheckoutStep.confirmation => ConfirmationStep(
+                    reference: _orderReference ?? '',
+                    args: widget.args,
+                    usedLoyaltyReward: _useLoyaltyReward,
+                  ),
               },
             ),
           ],
@@ -161,7 +165,7 @@ class _ReviewStep extends ConsumerWidget {
             onChanged: (value) => onUseLoyaltyRewardChanged(value ?? false),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
-            secondary: const Icon(Icons.card_giftcard, color: FlcColors.success),
+            secondary: Icon(Icons.card_giftcard, color: FlcColors.successAccent(context)),
             title: const Text('Use your free ticket'),
             subtitle: const Text('Covers one ticket in this order at this price.'),
           ),
@@ -169,7 +173,7 @@ class _ReviewStep extends ConsumerWidget {
         const SizedBox(height: FlcSpace.lg),
         Text(
           'The Frontline Club Charitable Trust — UK registered charity no. 1111898.',
-          style: FlcTextStyles.caption.copyWith(color: FlcColors.slate),
+          style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context)),
         ),
         const SizedBox(height: FlcSpace.sm),
         CheckboxListTile(
