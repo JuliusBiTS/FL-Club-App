@@ -161,3 +161,81 @@ Feedback after the first APK install of the round above.
   `EventHeroFallback` already does for events.
 - **The merged Podcast+Media tab is labelled "Media"**, not "Listen" — it
   carries video too, and the tab name should say so.
+
+## Second round of feedback (September 2026)
+
+- **Events are always strictly chronological now, even on "All".** The
+  previous "lift FC Highlights into its own section at the top" grouping
+  is gone — it directly conflicted with a repeated, explicit ask for
+  chronological order. A highlight still shows as a ribbon on its card; it
+  just no longer reorders the list. Also renamed the "This week" filter to
+  "In the next 7 days", which is what it always actually did.
+- **One filter button instead of a scrolling chip row.** All/Next 7 days/
+  Offers/Members only/category now live in a bottom sheet behind a single
+  `Filter` button (with a dot when a non-default filter is active).
+  Upcoming vs Past is a separate segmented toggle above it, not one more
+  option in that sheet — it's a different query and sort direction, not a
+  filter on the same list.
+- **The event page's title moved below the hero image**, not layered over
+  it — most event photos already have their own text (flyers, posters),
+  so stacking a second layer of text on top of that was often unreadable.
+  It still appears in the collapsed app bar once scrolled, for context.
+- **A hardcoded amount of bottom padding on the event page** now reserves
+  space for the floating membership handle's bottom-right corner, so it
+  can't end up overlapping whatever content happens to fall there for a
+  given event's length.
+- **A dedicated success screen after signing in or registering**
+  (`AuthSuccessScreen`), instead of silently popping back to whatever
+  screen asked for it — checkout's own inline account step is unaffected,
+  since finishing checkout is already its own feedback there.
+- **"Become a member" now offers a way back to sign-in** for a guest who
+  already has an account, and re-fills the form the moment someone signs
+  in from that shortcut mid-flow, rather than making them retype an email
+  they already have on file.
+- **The membership card sheet distinguishes "not a member yet" from a
+  broken card.** get-member-card's 403 is an expected, common state (a
+  signed-in guest or staff account), not a failure — it now gets its own
+  screen with a "Become a member" button instead of a generic red error.
+- **Dark mode is switched on** — `FlcTheme.dark()` already existed but was
+  never reachable; added a light/dark/system toggle under You → Appearance,
+  persisted via `shared_preferences`. Audited every place brand olive was
+  used as text or an icon colour (a category label, "Members only", a
+  speaker's initials, …) and routed them through the new
+  `FlcColors.accent(context)`, which brightens to `brandOnDark` in dark
+  mode — dark olive on the dark theme's near-black surface was unreadable
+  otherwise. Brand olive as a *background* (the app bar, the bottom nav,
+  the membership handle) is unaffected — it's meant to stay the same in
+  both themes.
+- **A test-payment mode**, so the whole ticketing flow — order, ticket
+  issuance, loyalty, confirmation — can be exercised before the club
+  connects a real Stripe account. `create-order` returns a `test_mode`
+  order (no PaymentIntent) whenever `STRIPE_SECRET_KEY` isn't set; a new
+  `simulate-test-payment` function then marks it paid exactly like a real
+  webhook would. Safety is structural, not just UI: that function refuses
+  every request outright the moment a real `STRIPE_SECRET_KEY` is set, so
+  it can never become a free-ticket path once payments go live, and it
+  independently verifies the order belongs to the caller before touching
+  it. The client shows it as a clearly labelled "Test payment — no Stripe
+  account connected" step, never blended in with a real charge.
+- **The event editor can copy venue/category/promotion settings from the
+  last event** (`EventDraft.applyRecurringSettingsFrom`), and remembers
+  everyone who's ever been given a staff pick so a producer can choose
+  them from a list instead of retyping a name and re-uploading a photo
+  every time (`EventAdminRepository.recentStaffPickPeople`, derived from
+  past events rather than a table of its own — it can't go stale). Neither
+  ever touches dates, capacity or ticket pricing, which always need a
+  fresh look. (Along the way: fields fed by a bulk copy like this need a
+  generation-keyed rebuild, not just `touch()`, or a `TextFormField`'s own
+  `initialValue` won't visibly update — see `EventEditorController.
+  formGeneration`.)
+- **The podcast tab is now live** — `PODCAST_RSS_URL` was the only missing
+  piece; `podcast-sync` runs hourly via pg_cron and was already fully
+  built.
+- **YouTube auto-sync and combining ticket types in one order are
+  deliberately deferred.** The first needs the club's channel and a
+  Google Cloud API key, neither in hand yet. The second means a real
+  schema change (today's `orders` row is one ticket type × quantity, not a
+  cart) touching order creation, payment, refunds and every screen that
+  displays an order — exactly the kind of money-handling change that
+  deserves its own focused pass rather than being squeezed in alongside
+  everything above.
