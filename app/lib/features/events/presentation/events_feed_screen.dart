@@ -69,26 +69,32 @@ class EventsFeedScreen extends ConsumerWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.sm, FlcSpace.md, FlcSpace.sm),
-            child: Row(
+            // Two rows: the toggle gets the full width (sharing a row with the
+            // filter pill left "Upcoming" squashed on narrower phones), and the
+            // filter/sort pill sits right-aligned beneath it.
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Expanded(
-                  child: SegmentedButton<bool>(
-                    segments: const <ButtonSegment<bool>>[
-                      ButtonSegment(value: false, label: Text('Upcoming')),
-                      ButtonSegment(value: true, label: Text('Past')),
-                    ],
-                    selected: <bool>{showingPast},
-                    onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
-                  ),
+                SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  segments: const <ButtonSegment<bool>>[
+                    ButtonSegment(value: false, label: Text('Upcoming', maxLines: 1, softWrap: false)),
+                    ButtonSegment(value: true, label: Text('Past', maxLines: 1, softWrap: false)),
+                  ],
+                  selected: <bool>{showingPast},
+                  onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
                 ),
-                const SizedBox(width: FlcSpace.sm),
-                _FilterButton(
-                  selected: filter,
-                  categories: eventsAsync.maybeWhen(data: _categoryFilters, orElse: () => const <(String, String)>[]),
-                  onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
-                  showFilter: !showingPast,
-                  reverse: reverseSort,
-                  onFlip: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
+                const SizedBox(height: FlcSpace.sm),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _FilterButton(
+                    selected: filter,
+                    categories: eventsAsync.maybeWhen(data: _categoryFilters, orElse: () => const <(String, String)>[]),
+                    onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
+                    showFilter: !showingPast,
+                    reverse: reverseSort,
+                    onFlip: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
+                  ),
                 ),
               ],
             ),

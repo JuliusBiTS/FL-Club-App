@@ -14,7 +14,7 @@ class MembershipCardPreferences {
 
   static const String _alwaysDotKey = 'membership_card_always_dot';
 
-  bool get alwaysDot => _prefs.getBool(_alwaysDotKey) ?? false;
+  bool get alwaysDot => _prefs.getBool(_alwaysDotKey) ?? true;
 
   Future<void> setAlwaysDot(bool value) => _prefs.setBool(_alwaysDotKey, value);
 }

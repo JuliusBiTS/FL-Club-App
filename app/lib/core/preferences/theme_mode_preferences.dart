@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Light/dark/system, persisted — feedback: "add a toggle for light and
-/// dark mode in the settings". Defaults to following the system setting,
-/// same as before this existed.
+/// dark mode in the settings". Defaults to light (dark and "match device" are opt-in),
+/// the club's own look.
 class ThemeModePreferences {
   ThemeModePreferences(this._prefs);
 
@@ -17,7 +17,8 @@ class ThemeModePreferences {
   ThemeMode get themeMode => switch (_prefs.getString(_themeModeKey)) {
         'light' => ThemeMode.light,
         'dark' => ThemeMode.dark,
-        _ => ThemeMode.system,
+        'system' => ThemeMode.system,
+        _ => ThemeMode.light, // the club's default look; dark and system are opt-in
       };
 
   Future<void> setThemeMode(ThemeMode mode) => _prefs.setString(_themeModeKey, mode.name);
