@@ -105,20 +105,12 @@ insert into ticket_types (event_id, name, description, audience, price_minor, qu
   ('10000000-0000-0000-0000-000000000002', 'Member', 'Members-only screening.', 'member', 500, 80, true, false, 0)
 on conflict do nothing;
 
--- Demo media posts --------------------------------------------------------
--- Real uploads from the club's actual channel, youtube.com/@FrontlineClubLondon
--- (channel id UC_RRSAK5BsitIw0tV2dg9gw) — pulled straight from its public
--- RSS feed (youtube.com/feeds/videos.xml?channel_id=...) rather than
--- generic search results, which earlier turned up third-party reposts
--- with embedding disabled by their uploader (YouTube player error 153).
--- These are the channel's own uploads, so embedding follows YouTube's
--- default (on) unless the club has explicitly turned it off. Hand-seeded
--- for the demo; real sync still needs a YouTube Data API key to run on a
--- schedule instead (docs/OPEN_QUESTIONS.md).
-insert into media_posts (source, external_id, title, description, thumbnail_url, published_at, is_live) values
-  ('youtube', 'qXZzQYP60-M', 'Lebanon on the Edge', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/qXZzQYP60-M/hqdefault.jpg', '2026-06-03T07:52:03Z', false),
-  ('youtube', 'Syw0GDQV6lw', 'AI Targeting and Palantir: Who Decides Who Lives or Dies?', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/Syw0GDQV6lw/hqdefault.jpg', '2026-05-15T09:33:10Z', false),
-  ('youtube', 'MGIrcA2cNFU', 'The Gulf at a Turning Point', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/MGIrcA2cNFU/hqdefault.jpg', '2026-05-07T10:14:41Z', false),
-  ('youtube', 'oq293zudVck', 'The Power of Humanising Conflict', 'Panel discussion, recorded at the club.', 'https://img.youtube.com/vi/oq293zudVck/hqdefault.jpg', '2026-04-30T13:33:53Z', false),
-  ('youtube', 'oFsSB07TJLQ', 'Why the US War Machine Will Lose in Iran', 'Panel discussion featuring Jeremy Corbyn, recorded at the club.', 'https://img.youtube.com/vi/oFsSB07TJLQ/hqdefault.jpg', '2026-04-01T08:07:02Z', false)
-on conflict (source, external_id) do nothing;
+-- Demo media posts — removed (feedback: "remove the placeholder
+-- podcasts"). They were real uploads from the club's own channel,
+-- youtube.com/@FrontlineClubLondon (channel id UC_RRSAK5BsitIw0tV2dg9gw —
+-- worth keeping this noted for whenever real YouTube sync is set up, see
+-- docs/OPEN_QUESTIONS.md), hand-seeded as a stand-in until that sync
+-- exists — but a static, one-time seed sitting alongside genuinely live
+-- content (the podcast feed, now really syncing) reads as misleading
+-- rather than helpful. Manual admin-added media rows are the replacement
+-- for now; see docs/DECISIONS.md.

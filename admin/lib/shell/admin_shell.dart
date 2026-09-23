@@ -26,6 +26,7 @@ class _AdminShellState extends State<AdminShell> {
   int _selectedIndex = 0;
 
   late final EventAdminRepository _events = EventAdminRepository(Supabase.instance.client);
+  late final MediaAdminRepository _media = MediaAdminRepository(Supabase.instance.client);
 
   late final List<(String, IconData, Widget)> _sections = <(String, IconData, Widget)>[
     if (widget.isAdmin) ('Dashboard', Icons.dashboard_outlined, dashboardSection),
@@ -37,7 +38,7 @@ class _AdminShellState extends State<AdminShell> {
     if (widget.isAdmin) ('Loyalty', Icons.loyalty_outlined, loyaltySection),
     if (widget.isAdmin) ('Staff', Icons.admin_panel_settings_outlined, staffSection),
     ('Notifications', Icons.notifications_outlined, NotificationsScreen(repository: _events, embedded: true)),
-    if (widget.isAdmin) ('Content', Icons.sync_outlined, contentSection),
+    if (widget.isAdmin) ('Content', Icons.sync_outlined, MediaContentScreen(repository: _media, embedded: true)),
     if (widget.isAdmin) ('Audit log', Icons.history_outlined, auditLogSection),
   ];
 

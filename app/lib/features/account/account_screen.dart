@@ -41,7 +41,7 @@ class _SignedOutBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.person_outline, size: 40, color: FlcColors.slate),
+            Icon(Icons.person_outline, size: 40, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.md),
             const Text(
               'Sign in to buy tickets, track your loyalty progress, and access your membership card.',
@@ -76,7 +76,7 @@ class _SignedInBody extends ConsumerWidget {
           loading: () => const Padding(padding: EdgeInsets.all(FlcSpace.lg), child: LinearProgressIndicator()),
           error: (error, stackTrace) => Padding(
             padding: const EdgeInsets.all(FlcSpace.md),
-            child: Text("Couldn't load your profile.", style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: Text("Couldn't load your profile.", style: TextStyle(color: FlcColors.errorAccent(context))),
           ),
           data: (profile) => _ProfileHeader(name: profile?.displayName ?? profile?.fullName, email: user.email ?? '', isMember: profile?.isActiveMember ?? false),
         ),
@@ -129,6 +129,13 @@ class _SignedInBody extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/manage/notifications'),
           ),
+          ListTile(
+            leading: const Icon(Icons.video_library_outlined),
+            title: const Text('Manage media'),
+            subtitle: const Text('Sync the podcast/articles, add or remove a video'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/manage/media'),
+          ),
         ],
         const Divider(height: 1),
         ListTile(
@@ -168,8 +175,8 @@ class _SignedInBody extends ConsumerWidget {
           },
         ),
         ListTile(
-          leading: Icon(Icons.delete_outline, color: Theme.of(context).colorScheme.error),
-          title: Text('Delete account', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+          leading: Icon(Icons.delete_outline, color: FlcColors.errorAccent(context)),
+          title: Text('Delete account', style: TextStyle(color: FlcColors.errorAccent(context))),
           onTap: () => context.push('/you/delete-account'),
         ),
       ],
@@ -238,7 +245,7 @@ class _ProfileHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(name?.isNotEmpty == true ? name! : email, style: FlcTextStyles.h3),
-                Text(email, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+                Text(email, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
                 const SizedBox(height: FlcSpace.xxs),
                 _MembershipChip(isMember: isMember),
               ],
@@ -311,12 +318,15 @@ class _MembershipChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 2),
       decoration: BoxDecoration(
-        color: (isMember ? FlcColors.success : FlcColors.slate).withValues(alpha: 0.12),
+        color: (isMember ? FlcColors.success : FlcColors.secondary(context)).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(FlcRadius.input),
       ),
       child: Text(
         isMember ? 'Member' : 'Not a member',
-        style: FlcTextStyles.caption.copyWith(color: isMember ? FlcColors.success : FlcColors.slate, fontWeight: FontWeight.w600),
+        style: FlcTextStyles.caption.copyWith(
+          color: isMember ? FlcColors.successAccent(context) : FlcColors.secondary(context),
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

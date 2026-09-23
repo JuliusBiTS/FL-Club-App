@@ -28,3 +28,14 @@ class ManageNotificationsScreen extends ConsumerWidget {
     return NotificationsScreen(repository: ref.watch(eventAdminRepositoryProvider));
   }
 }
+
+/// Staff area: trigger a podcast/article resync, add or remove a YouTube
+/// video manually — feedback: "how do you edit the media tab?"
+class ManageMediaScreen extends ConsumerWidget {
+  const ManageMediaScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MediaContentScreen(repository: ref.watch(mediaAdminRepositoryProvider));
+  }
+}

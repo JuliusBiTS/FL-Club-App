@@ -64,6 +64,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
       // for UX; Postgres RLS is the real gate.
       GoRoute(path: '/manage/events', builder: (context, state) => const ManageEventsScreen()),
       GoRoute(path: '/manage/notifications', builder: (context, state) => const ManageNotificationsScreen()),
+      GoRoute(path: '/manage/media', builder: (context, state) => const ManageMediaScreen()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
         branches: <StatefulShellBranch>[

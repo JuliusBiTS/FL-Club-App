@@ -17,6 +17,8 @@ export 'src/models/scan_pack.dart';
 export 'src/models/scan_result.dart';
 export 'src/models/ticket.dart';
 export 'src/models/ticket_type.dart';
+export 'src/admin/media_admin_repository.dart';
+export 'src/admin/media_content_screen.dart';
 export 'src/util/event_text.dart';
 export 'src/util/london_time.dart';
 export 'src/widgets/event_badges.dart';

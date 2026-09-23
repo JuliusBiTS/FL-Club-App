@@ -8,3 +8,9 @@ import '../../core/supabase/supabase_providers.dart';
 final Provider<EventAdminRepository> eventAdminRepositoryProvider = Provider<EventAdminRepository>((ref) {
   return EventAdminRepository(ref.watch(supabaseClientProvider));
 });
+
+/// Staff media (podcast sync trigger, manual YouTube video entries) —
+/// shared with the admin console the same way.
+final Provider<MediaAdminRepository> mediaAdminRepositoryProvider = Provider<MediaAdminRepository>((ref) {
+  return MediaAdminRepository(ref.watch(supabaseClientProvider));
+});

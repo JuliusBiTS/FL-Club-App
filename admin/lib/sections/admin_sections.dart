@@ -59,11 +59,6 @@ const staffSection = AdminSectionPlaceholder(
   description: 'Grant/revoke the staff role.',
 );
 
-const contentSection = AdminSectionPlaceholder(
-  title: 'Content',
-  description: 'Trigger a podcast or WordPress resync, view sync errors.',
-);
-
 const auditLogSection = AdminSectionPlaceholder(
   title: 'Audit log',
   description: 'Filterable, read-only — every privileged mutation in the system.',
