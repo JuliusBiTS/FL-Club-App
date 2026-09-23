@@ -5,8 +5,10 @@ import 'dart:math' as math;
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:barcode_widget/barcode_widget.dart' as bw;
 
 import '../../../core/platform/secure_screen.dart';
@@ -58,6 +60,12 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
   String? _photoPath;
   bool _loading = true;
   String? _error;
+
+  /// True specifically for get-member-card's 403 ("not an active member")
+  /// — a real, expected state for a signed-in guest/staff account, not a
+  /// broken card. Kept separate from _error so it gets its own friendly
+  /// screen instead of a generic "couldn't load" message.
+  bool _notAMember = false;
 
   late final AnimationController _flipController = AnimationController(
     duration: const Duration(milliseconds: 500),
@@ -122,6 +130,7 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
       if (_card == null) {
         setState(() {
           _loading = false;
+          _notAMember = e is FunctionException && e.status == 403;
           _error = memberCardErrorMessage(e);
         });
       }
@@ -195,6 +204,43 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
     }
     final card = _card;
     if (card == null) {
+      // Not an error at all — a signed-in guest or staff account simply
+      // doesn't have a card yet. Its own screen, not a scary red error,
+      // since "the card won't load" was being read as a bug rather than
+      // an accurate status (feedback).
+      if (_notAMember) {
+        return SizedBox(
+          height: 320,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(FlcSpace.md),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  const Icon(Icons.card_membership_outlined, color: Colors.white70, size: 32),
+                  const SizedBox(height: FlcSpace.sm),
+                  const Text(
+                    "You're not a member yet",
+                    style: FlcTextStyles.h3,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: FlcSpace.xxs),
+                  Text(
+                    'Once the club activates your card, it will show up here.',
+                    style: FlcTextStyles.body.copyWith(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: FlcSpace.md),
+                  FilledButton(
+                    onPressed: () => context.push('/you/become-a-member'),
+                    child: const Text('Become a member'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
       return SizedBox(
         height: 320,
         child: Center(

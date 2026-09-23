@@ -1,8 +1,8 @@
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import 'auth_form.dart';
+import 'auth_success_screen.dart';
 
 /// Standalone sign-in — reachable from the You tab. See auth_form.dart for
 /// the actual form; checkout's inline Account step (M3) uses the same
@@ -25,7 +25,11 @@ class SignInScreen extends StatelessWidget {
                 child: Image.asset('assets/images/brand/frontline_logo.jpg', height: 120, fit: BoxFit.cover),
               ),
               const SizedBox(height: FlcSpace.lg),
-              AuthForm(onAuthenticated: () => context.pop()),
+              AuthForm(
+                onAuthenticated: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(builder: (_) => const AuthSuccessScreen()),
+                ),
+              ),
             ],
           ),
         ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -60,6 +61,9 @@ class _MembershipInterestScreenState extends ConsumerState<MembershipInterestScr
     super.dispose();
   }
 
+  // ref.read, not ref.watch: also called from _submit(), outside build.
+  // build() below watches currentUserProvider itself so this still ends up
+  // reactive to a sign-in that happens while this screen is open.
   bool get _isGuest => ref.read(currentUserProvider) == null;
 
   Future<void> _submit() async {
@@ -123,11 +127,44 @@ class _MembershipInterestScreenState extends ConsumerState<MembershipInterestScr
 
   @override
   Widget build(BuildContext context) {
+    // Watched (not read) so this screen reacts the moment someone signs in
+    // from the shortcut below, rather than needing to be reopened.
+    final user = ref.watch(currentUserProvider);
+    ref.listen<User?>(currentUserProvider, (previous, next) {
+      if (previous == null && next != null) {
+        setState(() => _emailController.text = next.email ?? _emailController.text);
+      }
+    });
+    ref.listen(currentProfileProvider, (previous, next) {
+      final String? name = next.valueOrNull?.fullName;
+      if (name != null && name.isNotEmpty && _nameController.text.isEmpty) {
+        setState(() => _nameController.text = name);
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(title: const Text('Become a member')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(FlcSpace.md),
-        child: _submitted ? _SubmittedState(onEmailAgain: _openMailClient) : _buildForm(),
+        child: _submitted
+            ? _SubmittedState(onEmailAgain: _openMailClient)
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  if (user == null) ...<Widget>[
+                    // Feedback: people who already have an account
+                    // shouldn't have to retype their details as a guest —
+                    // give them a way back to sign-in from right here.
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/sign-in'),
+                      icon: const Icon(Icons.login),
+                      label: const Text('Already have an account? Sign in'),
+                    ),
+                    const SizedBox(height: FlcSpace.md),
+                  ],
+                  _buildForm(),
+                ],
+              ),
       ),
     );
   }
