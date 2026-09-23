@@ -194,6 +194,7 @@ class EventDraft {
     this.membersOnly = false,
     this.loyaltyEligible = true,
     this.highlight = EventHighlight.none,
+    this.availabilityTag,
     List<String>? perks,
     List<String>? contentWarnings,
     this.pickByName = '',
@@ -245,6 +246,9 @@ class EventDraft {
   bool membersOnly;
   bool loyaltyEligible;
   EventHighlight highlight;
+
+  /// Manual override: null (automatic), 'selling_fast' or 'sold_out'.
+  String? availabilityTag;
   List<String> perks;
   List<String> contentWarnings;
 
@@ -326,6 +330,7 @@ class EventDraft {
       membersOnly: e.membersOnly,
       loyaltyEligible: e.loyaltyEligible,
       highlight: e.highlight,
+      availabilityTag: e.availabilityTag,
       perks: List<String>.of(e.perks),
       contentWarnings: List<String>.of(e.contentWarnings),
       pickByName: e.pickByName ?? '',
@@ -419,6 +424,7 @@ class EventDraft {
       'members_only': membersOnly,
       'loyalty_eligible': loyaltyEligible,
       'highlight': highlight.wireName,
+      'availability_tag': availabilityTag,
       'perks': perks,
       'content_warnings': contentWarnings.map((String w) => w.trim()).where((String w) => w.isNotEmpty).toList(),
       'pick_by_name': nullIfBlank(pickByName),

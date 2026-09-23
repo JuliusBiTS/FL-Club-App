@@ -4,7 +4,7 @@ import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 
 /// The boot animation: the club's logo flips over into the strapline "The
-/// home of independent journalism" in Jost, then fades out onto the real
+/// championing independent journalism" in Jost, then fades out onto the real
 /// app underneath. Drawn as an overlay via MaterialApp.router's `builder`
 /// (see app.dart), rather than a separate route, so it sits on top of
 /// whatever the router is already doing underneath and needs no special
@@ -107,7 +107,7 @@ class _TextFace extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: FlcSpace.lg),
       child: Text(
-        'THE HOME OF\nINDEPENDENT JOURNALISM',
+        'CHAMPIONING\nINDEPENDENT JOURNALISM',
         textAlign: TextAlign.center,
         style: TextStyle(
           fontFamily: 'Jost',

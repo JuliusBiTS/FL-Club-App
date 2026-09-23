@@ -114,6 +114,36 @@ class _PromotionSectionState extends State<PromotionSection> {
           const SizedBox(height: FlcSpace.xs),
           Text(hint(d.highlight), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
           const SizedBox(height: FlcSpace.md),
+          Text('Availability tag', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: FlcSpace.xs),
+          Wrap(
+            spacing: FlcSpace.xs,
+            runSpacing: FlcSpace.xs,
+            children: <Widget>[
+              for (final (String? value, String label) in <(String?, String)>[
+                (null, 'Automatic'),
+                ('selling_fast', 'Selling fast'),
+                ('sold_out', 'Sold out'),
+              ])
+                ChoiceChip(
+                  label: Text(label),
+                  selected: d.availabilityTag == value,
+                  onSelected: enabled
+                      ? (bool _) {
+                          d.availabilityTag = value;
+                          controller.touch();
+                        }
+                      : null,
+                ),
+            ],
+          ),
+          const SizedBox(height: FlcSpace.xs),
+          Text(
+            'Automatic tags events "Selling fast" at 75% sold and "Sold out" at capacity. Pick one here to force it instead '
+            '(for example when tickets sell elsewhere). It only changes the tag people see — it never blocks or allows a purchase.',
+            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
+          ),
+          const SizedBox(height: FlcSpace.md),
           ChipsInput(
             label: 'Perks',
             hint: 'e.g. Free drink with your ticket',

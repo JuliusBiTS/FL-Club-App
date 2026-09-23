@@ -356,7 +356,7 @@ class _ArticleEditorScreenState extends State<ArticleEditorScreen> {
                   SectionCard(
                     title: 'Paste a draft to auto-fill',
                     subtitle: 'Got the whole piece in a document or an email? Paste it all in — it sorts out the title, summary, text, type, author and date. '
-                        'It keeps the writer\'s words, only fills what\'s blank, and nothing is saved until you press Publish or Save as draft.',
+                        'The AI writes nothing and changes nothing: every word comes straight from what you pasted (it only points out the headline, byline and so on, and cuts the email wrapper). It only fills blank fields, and nothing is saved until you press Publish or Save as draft.',
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: OutlinedButton.icon(
@@ -526,7 +526,7 @@ class _PasteDraftDialogState extends State<_PasteDraftDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text('Paste the whole piece — headline, text, byline, anything. It can be long.', style: FlcTextStyles.bodySmall),
+            const Text('Paste the whole piece — headline, text, byline, anything. Your wording is never changed and nothing is generated.', style: FlcTextStyles.bodySmall),
             const SizedBox(height: FlcSpace.sm),
             TextField(
               controller: _text,

@@ -3,9 +3,10 @@
 // article's fields via the Claude API: title, summary, body, type, author,
 // date and original link. Nothing is written to the database; the person
 // reviews the result in the editor and publishes it themselves.
-//
-// The model is told to keep the author's own words. It sorts and tidies; it
-// does not rewrite, shorten or add facts.
+// The model NEVER writes article text. It only points at passages of the pasted
+// text (verbatim quotes, verified by substring match) and classifies; the body
+// is the original text with the title/byline/email wrapper cut out, by code.
+
 
 import Anthropic from "npm:@anthropic-ai/sdk@0.127.0";
 import { zodOutputFormat } from "npm:@anthropic-ai/sdk@0.127.0/helpers/zod";
@@ -19,16 +20,62 @@ import { checkRateLimit } from "../_shared/rate-limit.ts";
 const MAX_INPUT_CHARS = 30000; // a long feature piece
 const MIN_INPUT_CHARS = 20;
 
-const ExtractedArticle = z.object({
-  title: z.string().nullable(),
-  excerpt: z.string().nullable(),
-  body: z.string().nullable(),
-  kind: z.enum(["Story", "Blog"]).nullable(),
-  author_name: z.string().nullable(),
+// The model never writes any text that ends up in the article. It only POINTS
+// at passages of the pasted text (verbatim quotes) and classifies. Every quote
+// is then checked against the original with a plain substring test, and the
+// article body is built by CODE: the original text with the title / byline /
+// email wrapper cut out. If the model invents or alters a quote it simply
+// doesn't match and is ignored. That is what makes "never rewrite, never
+// generate" a property of the program rather than a request to the model.
+const Pointers = z.object({
+  title_quote: z.string().nullable(),
+  excerpt_quote: z.string().nullable(),
+  author_quote: z.string().nullable(),
+  date_quote: z.string().nullable(),
   published_on: z.string().nullable(),
-  link_url: z.string().nullable(),
+  link_quote: z.string().nullable(),
+  kind: z.enum(["Story", "Blog"]).nullable(),
+  remove_quotes: z.array(z.string()),
   notes: z.array(z.string()),
 });
+
+function found(text: string, quote: string | null): string | null {
+  if (!quote) return null;
+  const q = quote.trim();
+  return q.length > 0 && text.includes(q) ? q : null;
+}
+
+function buildFields(text: string, p: z.infer<typeof Pointers>) {
+  const title = found(text, p.title_quote);
+  if (title && (title.length > 200 || title.includes("\n"))) return buildFields(text, { ...p, title_quote: null });
+  const excerpt = found(text, p.excerpt_quote);
+  const author = found(text, p.author_quote);
+  const link = found(text, p.link_quote);
+  const dateQuote = found(text, p.date_quote);
+  const publishedOn = dateQuote && p.published_on && /^\d{4}-\d{2}-\d{2}$/.test(p.published_on) ? p.published_on : null;
+
+  // Body = the original text minus the pieces the model pointed at. Nothing is
+  // reworded; only whole, verified passages are cut, and never more than 40%.
+  let body = text.replace(/\r\n/g, "\n");
+  const cuts = [title, ...p.remove_quotes.map((q) => found(text, q))].filter((q): q is string => !!q && q.length <= 1500);
+  const original = body.length;
+  for (const c of cuts) {
+    const next = body.replace(c, "");
+    if (original - next.length <= original * 0.4) body = next;
+  }
+  body = body.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+
+  return {
+    title,
+    excerpt,
+    body: body.length > 0 ? body : null,
+    kind: p.kind,
+    author_name: author,
+    published_on: publishedOn,
+    link_url: link,
+    notes: p.notes,
+  };
+}
 
 const bodySchema = z.object({ text: z.string().min(MIN_INPUT_CHARS).max(MAX_INPUT_CHARS) }).strict();
 
@@ -74,27 +121,28 @@ Deno.serve(async (req) => {
   try {
     const response = await client.messages.parse({
       model: "claude-opus-5",
-      max_tokens: 16000,
-      system: `You read one pasted block of text — a draft article, story, blog post, or an email containing one — and sort it into the given fields. Today's date in London is ${todayLondon}.
+      max_tokens: 4096,
+      system: `You are a filing assistant for a journalism club. You read one pasted block of text — a draft article, story or blog post, possibly wrapped in an email — and POINT AT parts of it. You never write, rewrite, summarise, shorten, correct or improve any text. Today's date in London is ${todayLondon}.
 
-Rules:
-- Keep the author's own words. Do not rewrite, shorten, summarise or add anything to "body"; only tidy it: remove email headers/signatures/"Dear…" wrappers that are not part of the piece, fix obvious line-break damage, and separate paragraphs with a blank line. Never write HTML or markdown headings; "- " for a real bullet list is fine.
-- "title": the piece's own headline if it has one; otherwise null (do not invent a headline).
-- "excerpt": one or two sentences to show under the title. Use the piece's own standfirst/intro if it has one; otherwise you may write a short neutral summary using only facts in the text.
-- "kind": "Story" for a reported/feature/narrative piece, "Blog" for an opinion, commentary or club-news post; null if unclear.
-- "author_name": only if the text names the author (a byline or sign-off). Never guess.
-- "published_on": a date as YYYY-MM-DD only if the text states when it was written or published; else null.
-- "link_url": only if the text gives a URL for the original publication; else null.
-- "notes": short plain-English notes on anything the person should check by hand (missing headline, unclear author, text that looked like boilerplate you removed). Empty if nothing to flag.
-- Never fabricate a fact that is not in the text.`,
+Every "…_quote" field must be copied CHARACTER FOR CHARACTER from the pasted text, exactly as it appears, including its punctuation and spelling. If you cannot copy something exactly, use null. Anything you paraphrase will be thrown away.
+
+Fields:
+- "title_quote": the piece's own headline line, only if it has one; else null. Never invent a headline.
+- "excerpt_quote": one or two consecutive sentences copied from the piece's own opening or standfirst, to show under the title. Copy only; do not summarise. Null if unsure.
+- "author_quote": the author's name as written in a byline or sign-off; null if the text doesn't name them.
+- "date_quote": a date exactly as written in the text (e.g. "12 September 2026") if the text says when the piece was written or published; else null. "published_on": that same date as YYYY-MM-DD (null if date_quote is null).
+- "link_quote": a URL copied exactly, only if the text gives one for the original publication.
+- "kind": "Story" for a reported/feature/narrative piece, "Blog" for opinion, commentary or club news; null if unclear.
+- "remove_quotes": passages that are NOT part of the article and should be cut, each copied exactly: email headers, greetings ("Hi Martin,"), sign-offs, the byline line, the date line. Never list any sentence of the article itself.
+- "notes": short plain notes for the editor about anything to check by hand (no headline found, unclear author, text that looks unfinished). Notes are shown to the editor only and are never published.`,
       messages: [{ role: "user", content: body.text }],
-      output_config: { format: zodOutputFormat(ExtractedArticle) },
+      output_config: { format: zodOutputFormat(Pointers) },
     });
 
     if (!response.parsed_output) {
       return errorResponse("Couldn't make sense of that text — try pasting a clearer excerpt.", 502);
     }
-    return jsonResponse({ fields: response.parsed_output });
+    return jsonResponse({ fields: buildFields(body.text, response.parsed_output) });
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) {
       return errorResponse("The auto-fill service is busy right now — try again in a minute.", 503);
