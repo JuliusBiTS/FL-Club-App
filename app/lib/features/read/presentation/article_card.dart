@@ -14,6 +14,7 @@ class ArticleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('EEE d MMM yyyy');
+    final String? heroUrl = article.displayHeroImageUrl;
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -25,10 +26,10 @@ class ArticleCard extends StatelessWidget {
           children: <Widget>[
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: article.heroImageUrl == null
+              child: heroUrl == null
                   ? const ArticleHeroFallback()
                   : CachedNetworkImage(
-                      imageUrl: article.heroImageUrl!,
+                      imageUrl: heroUrl,
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) => const ArticleHeroFallback(),
                     ),
@@ -53,7 +54,7 @@ class ArticleCard extends StatelessWidget {
                       article.excerpt!,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
                     ),
                   ],
                   const SizedBox(height: FlcSpace.xxs),
@@ -62,7 +63,7 @@ class ArticleCard extends StatelessWidget {
                       dateFormat.format(article.publishedAt.toLocal()),
                       if (article.authorName != null) article.authorName!,
                     ].join(' · '),
-                    style: FlcTextStyles.caption.copyWith(color: FlcColors.slate),
+                    style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context)),
                   ),
                 ],
               ),

@@ -26,3 +26,19 @@ abstract class ArticleModel with _$ArticleModel {
 
   factory ArticleModel.fromJson(Map<String, dynamic> json) => _$ArticleModelFromJson(json);
 }
+
+extension ArticleModelHero on ArticleModel {
+  /// [heroImageUrl] if the club set one, otherwise the first picture
+  /// actually used in the article body — feedback: "if there is no
+  /// thumbnail just use the first picture used in the article if
+  /// possible." Null (falls through to the logo placeholder) only when
+  /// neither exists.
+  String? get displayHeroImageUrl => heroImageUrl ?? _firstImageIn(contentHtml);
+
+  static final RegExp _imgSrc = RegExp('''<img[^>]+src=["']([^"']+)["']''', caseSensitive: false);
+
+  static String? _firstImageIn(String? html) {
+    if (html == null || html.isEmpty) return null;
+    return _imgSrc.firstMatch(html)?.group(1);
+  }
+}

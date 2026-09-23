@@ -64,6 +64,7 @@ class _ArticleDetailBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('EEE d MMM yyyy');
+    final String? heroUrl = article.displayHeroImageUrl;
 
     return CustomScrollView(
       slivers: <Widget>[
@@ -71,10 +72,10 @@ class _ArticleDetailBody extends StatelessWidget {
           pinned: true,
           expandedHeight: 220,
           flexibleSpace: FlexibleSpaceBar(
-            background: article.heroImageUrl == null
+            background: heroUrl == null
                 ? const ArticleHeroFallback()
                 : CachedNetworkImage(
-                    imageUrl: article.heroImageUrl!,
+                    imageUrl: heroUrl,
                     fit: BoxFit.cover,
                     errorWidget: (context, url, error) => const ArticleHeroFallback(),
                   ),
@@ -96,7 +97,7 @@ class _ArticleDetailBody extends StatelessWidget {
                   dateFormat.format(article.publishedAt.toLocal()),
                   if (article.authorName != null) article.authorName!,
                 ].join(' · '),
-                style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
               ),
               const SizedBox(height: FlcSpace.md),
               // content_html is already sanitised server-side against a
