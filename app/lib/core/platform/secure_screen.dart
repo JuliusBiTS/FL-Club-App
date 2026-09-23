@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
 import 'package:flutter/services.dart';
 
@@ -9,12 +9,12 @@ class SecureScreen {
   static const _channel = MethodChannel('flc/secure_screen');
 
   static Future<void> enable() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     await _channel.invokeMethod<void>('enable');
   }
 
   static Future<void> disable() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     await _channel.invokeMethod<void>('disable');
   }
 
@@ -24,12 +24,12 @@ class SecureScreen {
   /// [restoreBrightness] on the same screen's dispose, same as [enable]
   /// pairs with [disable].
   static Future<void> setMaxBrightness() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     await _channel.invokeMethod<void>('setMaxBrightness');
   }
 
   static Future<void> restoreBrightness() async {
-    if (!Platform.isAndroid) return;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     await _channel.invokeMethod<void>('restoreBrightness');
   }
 }

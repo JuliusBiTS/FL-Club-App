@@ -36,7 +36,7 @@ class PushService {
 
   /// Call once at startup, after Supabase is initialised.
   Future<void> init() async {
-    if (!Env.pushConfigured) return;
+    if (kIsWeb || !Env.pushConfigured) return; // web preview: no push
     try {
       await Firebase.initializeApp(
         options: const FirebaseOptions(

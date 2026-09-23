@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show consolidateHttpClientResponseBytes;
+import 'package:flutter/foundation.dart' show consolidateHttpClientResponseBytes, kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -18,6 +18,7 @@ class MemberPhotoCache {
   }
 
   Future<void> downloadAndSave(String signedUrl) async {
+    if (kIsWeb) return; // no local file storage in a browser
     final client = HttpClient();
     try {
       final request = await client.getUrl(Uri.parse(signedUrl));
@@ -32,11 +33,13 @@ class MemberPhotoCache {
   }
 
   Future<File?> cached() async {
+    if (kIsWeb) return null;
     final file = await _file();
     return file.existsSync() ? file : null;
   }
 
   Future<void> clear() async {
+    if (kIsWeb) return;
     final file = await _file();
     if (file.existsSync()) await file.delete();
   }

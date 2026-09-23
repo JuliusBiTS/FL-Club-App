@@ -44,6 +44,8 @@ dependencies:
   # Local cache / secure storage
   drift: ^2.21.0
   sqlite3_flutter_libs: ^0.5.26
+  crypto: ^3.0.3
+  sqlite3: ">=3.0.0 <4.0.0" # web build loads sqlite3.wasm directly
   path_provider: ^2.1.5
   path: ^1.9.1
   flutter_secure_storage: ^9.2.2

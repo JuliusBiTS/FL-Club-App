@@ -385,3 +385,7 @@ Feedback after the first APK install of the round above.
 - **Events feed:** the date-order arrow lives inside the Filter pill (one control; on Past it's the only part).
 - **Article AI never writes.** `extract-article-details` no longer returns any model-written text. The model only points at passages (verbatim quotes, each verified by substring match against the paste) and classifies Story/Blog; the article body is the original text with the headline/byline/email wrapper cut out by code (never more than 40% removed). The summary line is a verbatim quote from the piece or empty. Model notes are shown to the editor only.
 - **Manual availability tag** on events (Automatic / Selling fast / Sold out), `events.availability_tag`; display only, never blocks or allows purchase. Splash strapline is now "Championing independent journalism".
+
+### Web preview build (for iPhone testing without a Mac)
+- `app/` now also builds for the web (`flutter build web --release --dart-define-from-file=dart_defines.json --dart-define=WEB_GATE_HASH=<sha256>`). Web differences: in-memory SQLite (WASM) cache, no push, no Stripe sheet, no lock-screen audio controls, no local photo cache. Scanner/camera behaviour in mobile Safari is untested.
+- Password screen (`core/web_gate.dart`) shows only on web and only when a hash is baked in. Casual keep-out only, NOT strong security (checked in the browser); real data stays behind sign-in and database rules. The password is never in the repo.
