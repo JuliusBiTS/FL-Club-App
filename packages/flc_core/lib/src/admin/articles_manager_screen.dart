@@ -245,6 +245,73 @@ class _ArticleEditorScreenState extends State<ArticleEditorScreen> {
     }
   }
 
+  Future<void> _autoFill() async {
+    final ExtractedArticle? x = await showDialog<ExtractedArticle>(
+      context: context,
+      builder: (BuildContext ctx) => _PasteDraftDialog(repository: widget.repository),
+    );
+    if (x == null || !mounted) return;
+    final List<String> filled = <String>[];
+    final List<String> kept = <String>[];
+    void fill(String label, TextEditingController c, String? value) {
+      if (value == null) return;
+      if (c.text.trim().isEmpty) {
+        c.text = value;
+        filled.add(label);
+      } else {
+        kept.add(label);
+      }
+    }
+
+    setState(() {
+      fill('title', _title, x.title);
+      fill('summary', _excerpt, x.excerpt);
+      fill('text', _body, x.body);
+      fill('author', _author, x.authorName);
+      fill('link', _link, x.linkUrl);
+      if (widget.article == null) {
+        if (x.kind != null && _kinds.contains(x.kind)) {
+          _kind = x.kind!;
+          filled.add('type');
+        }
+        if (x.publishedOn != null && !x.publishedOn!.isAfter(DateTime.now())) {
+          _published = x.publishedOn!;
+          filled.add('date');
+        }
+      }
+    });
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext ctx) => AlertDialog(
+        title: const Text('Auto-fill'),
+        content: SizedBox(
+          width: 420,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text(filled.isEmpty ? 'Couldn\'t find anything new to fill in.' : 'Filled in: ${filled.join(', ')}.'),
+                if (kept.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: FlcSpace.sm),
+                  Text('Left alone (already had something): ${kept.join(', ')}.', style: TextStyle(color: FlcColors.secondary(ctx))),
+                ],
+                if (x.notes.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: FlcSpace.sm),
+                  Text('Worth checking', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: FlcColors.warning)),
+                  for (final String n in x.notes) Text('• $n'),
+                ],
+                const SizedBox(height: FlcSpace.sm),
+                const Text('Add a picture below, then check everything before publishing.', style: FlcTextStyles.bodySmall),
+              ],
+            ),
+          ),
+        ),
+        actions: <Widget>[TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+      ),
+    );
+  }
+
   Future<void> _delete() async {
     final bool? ok = await showDialog<bool>(
       context: context,
@@ -286,6 +353,20 @@ class _ArticleEditorScreenState extends State<ArticleEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
+                  SectionCard(
+                    title: 'Paste a draft to auto-fill',
+                    subtitle: 'Got the whole piece in a document or an email? Paste it all in — it sorts out the title, summary, text, type, author and date. '
+                        'It keeps the writer\'s words, only fills what\'s blank, and nothing is saved until you press Publish or Save as draft.',
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(foregroundColor: FlcColors.accent(context)),
+                        icon: const Icon(Icons.auto_fix_high_outlined),
+                        label: const Text('Paste a draft'),
+                        onPressed: _saving ? null : _autoFill,
+                      ),
+                    ),
+                  ),
                   SectionCard(
                     title: 'Picture',
                     subtitle: 'Shown at the top of the article and on its card. Without one, the first picture in the text (or the club logo) is used.',
@@ -390,6 +471,88 @@ class _ArticleEditorScreenState extends State<ArticleEditorScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PasteDraftDialog extends StatefulWidget {
+  const _PasteDraftDialog({required this.repository});
+
+  final ArticleAdminRepository repository;
+
+  @override
+  State<_PasteDraftDialog> createState() => _PasteDraftDialogState();
+}
+
+class _PasteDraftDialogState extends State<_PasteDraftDialog> {
+  final TextEditingController _text = TextEditingController();
+  bool _busy = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  Future<void> _run() async {
+    if (_text.text.trim().length < 20) {
+      setState(() => _error = 'Paste a bit more — a few sentences at least.');
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final ExtractedArticle x = await widget.repository.extractDetails(_text.text.trim());
+      if (mounted) Navigator.pop(context, x);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = EventAdminRepository.describeError(e);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Paste a draft'),
+      content: SizedBox(
+        width: 560,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text('Paste the whole piece — headline, text, byline, anything. It can be long.', style: FlcTextStyles.bodySmall),
+            const SizedBox(height: FlcSpace.sm),
+            TextField(
+              controller: _text,
+              enabled: !_busy,
+              minLines: 10,
+              maxLines: 16,
+              maxLength: 30000,
+              decoration: const InputDecoration(hintText: 'Paste the text here…', alignLabelWithHint: true),
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: FlcSpace.xs),
+                child: Text(_error!, style: TextStyle(color: FlcColors.errorAccent(context))),
+              ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(onPressed: _busy ? null : () => Navigator.pop(context), child: const Text('Cancel')),
+        FilledButton.icon(
+          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+          onPressed: _busy ? null : _run,
+          icon: _busy ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.auto_fix_high_outlined),
+          label: Text(_busy ? 'Reading…' : 'Sort it out'),
+        ),
+      ],
     );
   }
 }

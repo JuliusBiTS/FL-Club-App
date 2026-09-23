@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../events_admin/event_admin_repository.dart' show EventAdminException;
+
 /// An article as the admin sees it — includes drafts, and knows whether it
 /// came from the website sync (read-only here: an edit would be overwritten
 /// on the next sync) or was written by hand (fully editable).
@@ -105,6 +107,17 @@ class ArticleAdminRepository {
     }
   }
 
+  /// Sends a pasted draft to the server, which asks Claude to sort it into
+  /// title / summary / text / type / author / date / link. Nothing is saved.
+  Future<ExtractedArticle> extractDetails(String text) async {
+    final response = await _client.functions.invoke('extract-article-details', body: <String, dynamic>{'text': text});
+    final dynamic data = response.data;
+    if (data is! Map || data['fields'] is! Map) {
+      throw EventAdminException('The auto-fill service gave an unexpected answer.');
+    }
+    return ExtractedArticle.fromJson(Map<String, dynamic>.from(data['fields'] as Map));
+  }
+
   Future<void> delete(String id) async {
     await _client.from('articles').delete().eq('id', id).isFilter('wp_post_id', null);
   }
@@ -137,5 +150,34 @@ class ArticleAdminRepository {
         .replaceAll('&gt;', '>')
         .replaceAll('&amp;', '&')
         .trim();
+  }
+}
+
+/// What the auto-fill guessed. Every field is optional; the editor only ever
+/// uses these to fill blanks.
+class ExtractedArticle {
+  const ExtractedArticle({this.title, this.excerpt, this.body, this.kind, this.authorName, this.publishedOn, this.linkUrl, this.notes = const <String>[]});
+
+  final String? title;
+  final String? excerpt;
+  final String? body;
+  final String? kind;
+  final String? authorName;
+  final DateTime? publishedOn;
+  final String? linkUrl;
+  final List<String> notes;
+
+  factory ExtractedArticle.fromJson(Map<String, dynamic> j) {
+    String? s(String k) => (j[k] is String && (j[k] as String).trim().isNotEmpty) ? (j[k] as String).trim() : null;
+    return ExtractedArticle(
+      title: s('title'),
+      excerpt: s('excerpt'),
+      body: s('body'),
+      kind: s('kind'),
+      authorName: s('author_name'),
+      publishedOn: s('published_on') == null ? null : DateTime.tryParse(s('published_on')!),
+      linkUrl: s('link_url'),
+      notes: ((j['notes'] as List?) ?? const <dynamic>[]).whereType<String>().toList(),
+    );
   }
 }
