@@ -6,14 +6,16 @@ import '../theme/flc_spacing.dart';
 import '../theme/flc_typography.dart';
 
 /// The promotional ribbons on an event: FC Highlights / Staff pick / Special
-/// offer (chosen by staff), "Selling fast" (derived from sales), and any
-/// perks such as "Free drink with your ticket". One widget so the app's feed,
-/// the event page and the editor's live preview always look identical.
+/// offer (chosen by staff), "Selling fast" / "Sold out" (both derived from
+/// sales, never both at once), and any perks such as "Free drink with your
+/// ticket". One widget so the app's feed, the event page and the editor's
+/// live preview always look identical.
 class EventBadges extends StatelessWidget {
   const EventBadges({
     required this.highlight,
     this.perks = const <String>[],
     this.sellingFast = false,
+    this.soldOut = false,
     this.dense = false,
     super.key,
   });
@@ -21,11 +23,12 @@ class EventBadges extends StatelessWidget {
   final EventHighlight highlight;
   final List<String> perks;
   final bool sellingFast;
+  final bool soldOut;
 
   /// Smaller chips for cards; normal size for the detail page.
   final bool dense;
 
-  bool get isEmpty => highlight == EventHighlight.none && perks.isEmpty && !sellingFast;
+  bool get isEmpty => highlight == EventHighlight.none && perks.isEmpty && !sellingFast && !soldOut;
 
   @override
   Widget build(BuildContext context) {
@@ -35,12 +38,23 @@ class EventBadges extends StatelessWidget {
       runSpacing: FlcSpace.xs,
       children: <Widget>[
         if (highlight != EventHighlight.none) _highlightChip(context),
-        if (sellingFast)
+        // Solid, not tinted like the others — sold out is the one ribbon
+        // that changes whether someone can act at all, so it gets more
+        // visual weight, not less.
+        if (soldOut)
+          _BadgeChip(
+            label: 'Sold out',
+            icon: Icons.event_busy_outlined,
+            background: FlcColors.errorAccent(context),
+            foreground: Colors.white,
+            dense: dense,
+          )
+        else if (sellingFast)
           _BadgeChip(
             label: 'Selling fast',
             icon: Icons.local_fire_department_outlined,
             background: FlcColors.error.withValues(alpha: 0.10),
-            foreground: FlcColors.error,
+            foreground: FlcColors.errorAccent(context),
             dense: dense,
           ),
         for (final String perk in perks)
@@ -48,7 +62,9 @@ class EventBadges extends StatelessWidget {
             label: perk,
             icon: Icons.card_giftcard_outlined,
             background: Colors.transparent,
-            foreground: FlcColors.graphite,
+            // Confirmed near-invisible in a screenshot: plain graphite is
+            // ~1.7:1 on the dark surface.
+            foreground: FlcColors.secondaryStrong(context),
             outlined: true,
             dense: dense,
           ),
@@ -82,7 +98,10 @@ class EventBadges extends StatelessWidget {
           label: highlight.badgeLabel!,
           icon: Icons.local_offer_outlined,
           background: FlcColors.warning.withValues(alpha: 0.14),
-          foreground: const Color(0xFF7A5900), // warning tone, darkened to keep AA contrast on the tint
+          // Light mode: warning darkened for AA contrast on the light
+          // tint. Dark mode: plain warning already passes (~5.2:1) against
+          // the dark surface — the darkened version does not (~2.7:1).
+          foreground: Theme.of(context).brightness == Brightness.dark ? FlcColors.warning : const Color(0xFF7A5900),
           dense: dense,
         );
       case EventHighlight.none:

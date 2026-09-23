@@ -10,11 +10,12 @@ import 'package:flutter/material.dart';
 /// club has chosen — FC Highlights / Special offer / perks — plus "Selling
 /// fast", which is derived from sales rather than set by hand.
 class EventCard extends StatelessWidget {
-  const EventCard({required this.event, required this.onTap, this.sellingFast = false, super.key});
+  const EventCard({required this.event, required this.onTap, this.sellingFast = false, this.soldOut = false, super.key});
 
   final EventModel event;
   final VoidCallback onTap;
   final bool sellingFast;
+  final bool soldOut;
 
   @override
   Widget build(BuildContext context) {
@@ -54,19 +55,19 @@ class EventCard extends StatelessWidget {
                   const SizedBox(height: FlcSpace.xxs),
                   Text(
                     '$when · ${event.venueRoom ?? event.venueName}${event.isOnline ? ' · Also online' : ''}',
-                    style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                    style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
                   ),
                   if (event.summary != null && event.summary!.trim().isNotEmpty) ...<Widget>[
                     const SizedBox(height: FlcSpace.xs),
                     Text(event.summary!, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.bodySmall),
                   ],
-                  if (event.isPromoted || sellingFast || event.membersOnly) ...<Widget>[
+                  if (event.isPromoted || sellingFast || soldOut || event.membersOnly) ...<Widget>[
                     const SizedBox(height: FlcSpace.sm),
                     Wrap(
                       spacing: FlcSpace.xs,
                       runSpacing: FlcSpace.xs,
                       children: <Widget>[
-                        EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast, dense: true),
+                        EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast, soldOut: soldOut, dense: true),
                         if (event.membersOnly) const _MembersChip(),
                       ],
                     ),

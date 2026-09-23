@@ -52,6 +52,17 @@ class EventsRemoteDataSource {
     }
   }
 
+  /// Ids of events that are fully sold out (derived in Postgres by
+  /// events_sold_out(); same reasoning as fetchSellingFastIds).
+  Future<Set<String>> fetchSoldOutIds() async {
+    try {
+      final dynamic rows = await _client.rpc('events_sold_out');
+      return <String>{for (final dynamic id in (rows as List<dynamic>)) id as String};
+    } catch (_) {
+      return <String>{};
+    }
+  }
+
   Future<List<TicketTypeModel>> fetchTicketTypes(String eventId) async {
     final rows = await _client
         .from('ticket_types')

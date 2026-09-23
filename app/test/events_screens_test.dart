@@ -59,17 +59,29 @@ Future<void> _pumpFeed(WidgetTester tester, {UserRole? role}) async {
 
 void main() {
   group('Events feed', () {
-    testWidgets('always shows events in chronological order, soonest first', (tester) async {
+    testWidgets('lifts FC Highlights into its own section at the top, on "All" only', (tester) async {
       await _pumpFeed(tester);
 
-      // "Book talk" carries FC Highlights but is later than "Afghanistan
-      // 2026" — feedback: no ribbon should ever pull an event out of date
-      // order any more, so it must NOT come first.
+      expect(find.text('FC HIGHLIGHTS'), findsOneWidget); // section header
+      expect(find.text('COMING UP'), findsOneWidget);
+
+      final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
+      final panelY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
+      expect(recommendedY, lessThan(panelY), reason: 'the recommended event is listed first even though it is later in date');
+    });
+
+    testWidgets('every other filter is plain chronological, with no grouping', (tester) async {
+      await _pumpFeed(tester);
+
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'In the next 7 days'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('FC HIGHLIGHTS'), findsNothing);
       final panelY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
       final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
-      final quizY = tester.getTopLeft(find.text('Members\' quiz night')).dy;
-      expect(panelY, lessThan(recommendedY));
-      expect(recommendedY, lessThan(quizY));
+      expect(panelY, lessThan(recommendedY), reason: 'soonest first once nothing is grouped');
     });
 
     testWidgets('shows ribbons: FC Highlights, a perk, and a derived "Selling fast"', (tester) async {
@@ -93,7 +105,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Book talk: The Last Correspondent'), findsOneWidget);
       expect(find.text('Afghanistan 2026'), findsNothing);
-      expect(find.widgetWithText(OutlinedButton, 'Book talk'), findsOneWidget); // the button now shows the active filter
+      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsOneWidget); // always says "Filter", never the active filter's name
     });
 
     testWidgets('the Offers filter shows events with a special offer or perks', (tester) async {

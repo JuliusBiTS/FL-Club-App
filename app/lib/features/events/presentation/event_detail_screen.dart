@@ -111,6 +111,7 @@ class _EventDetailBody extends ConsumerWidget {
     final profile = ref.watch(currentProfileProvider).valueOrNull;
     final isStaff = profile?.isStaff ?? false;
     final sellingFast = ref.watch(sellingFastIdsProvider).valueOrNull?.contains(event.id) ?? false;
+    final soldOut = ref.watch(soldOutIdsProvider).valueOrNull?.contains(event.id) ?? false;
     final bookable = event.status == 'published';
 
     TicketTypeModel? selected;
@@ -174,8 +175,8 @@ class _EventDetailBody extends ConsumerWidget {
                 Text(event.title, style: FlcTextStyles.h2),
                 const SizedBox(height: FlcSpace.sm),
                 if (!bookable) _StatusBanner(status: event.status),
-                if (event.isPromoted || sellingFast) ...<Widget>[
-                  EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast),
+                if (event.isPromoted || sellingFast || soldOut) ...<Widget>[
+                  EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast, soldOut: soldOut),
                   const SizedBox(height: FlcSpace.sm),
                 ],
                 if (event.hasPick) ...<Widget>[
@@ -183,7 +184,7 @@ class _EventDetailBody extends ConsumerWidget {
                   const SizedBox(height: FlcSpace.md),
                 ],
                 if (event.subtitle != null && event.subtitle!.isNotEmpty) ...<Widget>[
-                  Text(event.subtitle!, style: FlcTextStyles.body.copyWith(color: FlcColors.slate)),
+                  Text(event.subtitle!, style: FlcTextStyles.body.copyWith(color: FlcColors.secondary(context))),
                   const SizedBox(height: FlcSpace.md),
                 ],
                 // One bordered block for the practical facts — grouping these
@@ -300,9 +301,9 @@ class _EventDetailBody extends ConsumerWidget {
                     const SizedBox(height: FlcSpace.xs),
                     Row(
                       children: <Widget>[
-                        const Icon(Icons.loyalty_outlined, size: 14, color: FlcColors.slate),
+                        Icon(Icons.loyalty_outlined, size: 14, color: FlcColors.secondary(context)),
                         const SizedBox(width: 4),
-                        Text('Earns a loyalty point', style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
+                        Text('Earns a loyalty point', style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context))),
                       ],
                     ),
                   ],
@@ -371,10 +372,10 @@ class _StatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (String text, Color color) = switch (status) {
-      'cancelled' => ('This event has been cancelled.', FlcColors.error),
+      'cancelled' => ('This event has been cancelled.', FlcColors.errorAccent(context)),
       'postponed' => ('This event has been postponed. We\'ll confirm a new date soon.', FlcColors.warning),
-      'draft' => ('Draft — only staff can see this.', FlcColors.slate),
-      _ => ('This event is no longer on sale.', FlcColors.slate),
+      'draft' => ('Draft — only staff can see this.', FlcColors.secondary(context)),
+      _ => ('This event is no longer on sale.', FlcColors.secondary(context)),
     };
     return Container(
       margin: const EdgeInsets.only(bottom: FlcSpace.md),
@@ -416,7 +417,7 @@ class _SpeakerTile extends StatelessWidget {
                   Text(speaker.role!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.accent(context))),
                 if (speaker.bio != null && speaker.bio!.isNotEmpty) ...<Widget>[
                   const SizedBox(height: 2),
-                  Text(speaker.bio!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+                  Text(speaker.bio!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
                 ],
               ],
             ),
@@ -504,13 +505,13 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextStyle style = caption ? FlcTextStyles.caption.copyWith(color: FlcColors.slate) : FlcTextStyles.body;
+    final TextStyle style = caption ? FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context)) : FlcTextStyles.body;
     return Padding(
       padding: EdgeInsets.only(bottom: last ? 0 : FlcSpace.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, size: caption ? 15 : 20, color: FlcColors.slate),
+          Icon(icon, size: caption ? 15 : 20, color: FlcColors.secondary(context)),
           const SizedBox(width: FlcSpace.xs),
           Expanded(child: Text(text, style: style)),
         ],

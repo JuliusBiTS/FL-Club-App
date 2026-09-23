@@ -29,10 +29,10 @@ const List<(String, String)> _fixedFilters = <(String, String)>[
 ];
 
 /// Briefing §9.1. Upcoming/Past toggle, one filter button (rather than a
-/// row of chips), and — feedback — always strictly chronological:
-/// soonest-first for Upcoming, most-recent-first for Past. FC Highlights
-/// still shows as a ribbon on its card, it just no longer jumps the event
-/// out of date order into its own section.
+/// row of chips). On "All", FC Highlights events are lifted into their own
+/// section at the top (feedback: bring this back); every other filter, and
+/// the section itself, and "Coming up" below it, are each strictly
+/// chronological — soonest-first for Upcoming, most-recent-first for Past.
 class EventsFeedScreen extends ConsumerWidget {
   const EventsFeedScreen({super.key});
 
@@ -42,6 +42,7 @@ class EventsFeedScreen extends ConsumerWidget {
     final filter = ref.watch(_feedFilterProvider);
     final showingPast = ref.watch(_showingPastProvider);
     final sellingFast = ref.watch(sellingFastIdsProvider).valueOrNull ?? const <String>{};
+    final soldOut = ref.watch(soldOutIdsProvider).valueOrNull ?? const <String>{};
     final isStaff = ref.watch(currentProfileProvider).valueOrNull?.isStaff ?? false;
 
     return Scaffold(
@@ -96,23 +97,37 @@ class EventsFeedScreen extends ConsumerWidget {
                       final filtered = _applyFilter(events, filter);
                       if (filtered.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
 
+                      // Events already arrive ascending by starts_at (see
+                      // EventsRemoteDataSource.fetchUpcomingPublished), so
+                      // both of these stay chronological among themselves —
+                      // only the recommended ones move, as a whole group,
+                      // ahead of everything else.
+                      final bool grouped = filter == 'all';
+                      final recommended = grouped ? filtered.where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList() : const <EventModel>[];
+                      final recommendedIds = recommended.map((e) => e.id).toSet();
+                      final rest = filtered.where((e) => !recommendedIds.contains(e.id)).toList();
+
+                      Widget card(EventModel e) => EventCard(
+                            event: e,
+                            sellingFast: sellingFast.contains(e.id),
+                            soldOut: soldOut.contains(e.id),
+                            onTap: () => context.push('/events/${e.slug}'),
+                          );
+
                       return RefreshIndicator(
                         onRefresh: () async {
                           ref.invalidate(sellingFastIdsProvider);
+                          ref.invalidate(soldOutIdsProvider);
                           await ref.read(eventsFeedControllerProvider.notifier).refresh();
                         },
                         child: ListView(
                           children: <Widget>[
-                            // Already ascending by starts_at (see
-                            // EventsRemoteDataSource.fetchUpcomingPublished)
-                            // — rendered in that order with nothing lifted
-                            // out of it, so soonest is always first.
-                            for (final e in filtered)
-                              EventCard(
-                                event: e,
-                                sellingFast: sellingFast.contains(e.id),
-                                onTap: () => context.push('/events/${e.slug}'),
-                              ),
+                            if (recommended.isNotEmpty) ...<Widget>[
+                              const _SectionHeader(title: 'FC Highlights', icon: Icons.verified_outlined),
+                              for (final e in recommended) card(e),
+                              if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
+                            ],
+                            for (final e in rest) card(e),
                             const SizedBox(height: FlcSpace.xl),
                           ],
                         ),
@@ -163,26 +178,21 @@ class _FilterButton extends StatelessWidget {
   final List<(String, String)> categories;
   final ValueChanged<String> onChanged;
 
-  String _label(String id) {
-    for (final f in _fixedFilters) {
-      if (f.$1 == id) return f.$2;
-    }
-    for (final c in categories) {
-      if (c.$1 == id) return c.$2;
-    }
-    return 'Filter';
-  }
-
   @override
   Widget build(BuildContext context) {
     final bool active = selected != 'all';
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
+        // Always just "Filter" — feedback: showing the active filter's own
+        // name here grew the button to whatever length a category name
+        // happened to be, squeezing the Upcoming/Past toggle next to it
+        // until its own labels wrapped. The dot below is the "something's
+        // filtered" signal instead.
         OutlinedButton.icon(
           onPressed: () => _openSheet(context),
           icon: const Icon(Icons.tune, size: 18),
-          label: Text(active ? _label(selected) : 'Filter', overflow: TextOverflow.ellipsis),
+          label: const Text('Filter'),
         ),
         if (active)
           Positioned(
@@ -215,7 +225,7 @@ class _FilterButton extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(FlcSpace.md, 0, FlcSpace.md, FlcSpace.xxs),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text('CATEGORY', style: FlcTextStyles.overline.copyWith(color: FlcColors.slate)),
+                    child: Text('CATEGORY', style: FlcTextStyles.overline.copyWith(color: FlcColors.secondary(context))),
                   ),
                 ),
                 for (final c in categories) _SheetRow(id: c.$1, label: c.$2, selected: selected, onChanged: onChanged),
@@ -246,6 +256,26 @@ class _SheetRow extends StatelessWidget {
         onChanged(id);
         Navigator.of(context).pop();
       },
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.icon});
+
+  final String title;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.md, FlcSpace.md, FlcSpace.xxs),
+      child: Row(
+        children: <Widget>[
+          if (icon != null) ...<Widget>[Icon(icon, size: 18, color: FlcColors.accent(context)), const SizedBox(width: FlcSpace.xs)],
+          Text(title.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.accent(context))),
+        ],
+      ),
     );
   }
 }
@@ -317,7 +347,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.slate),
+            Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.sm),
             Text(
               filtered

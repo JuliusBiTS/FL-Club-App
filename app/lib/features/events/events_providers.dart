@@ -41,6 +41,12 @@ final sellingFastIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) {
   return ref.watch(_eventsRemoteDataSourceProvider).fetchSellingFastIds();
 });
 
+/// Which upcoming events are fully sold out — same fetch/fail pattern as
+/// [sellingFastIdsProvider].
+final soldOutIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) {
+  return ref.watch(_eventsRemoteDataSourceProvider).fetchSoldOutIds();
+});
+
 /// Past events, most recent first — fetched only when the "Past" filter is
 /// actually selected (autoDispose), not cached offline: unlike the upcoming
 /// feed, nothing time-sensitive depends on this being available with no
