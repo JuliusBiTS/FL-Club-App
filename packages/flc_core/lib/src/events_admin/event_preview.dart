@@ -44,7 +44,7 @@ class EventPreviewCard extends StatelessWidget {
                 if (draft.category != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: FlcSpace.xxs),
-                    child: Text(draft.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.brand)),
+                    child: Text(draft.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.accent(context))),
                   ),
                 Text(
                   draft.title.trim().isEmpty ? 'Your event title' : draft.title.trim(),
@@ -72,7 +72,7 @@ class EventPreviewCard extends StatelessWidget {
                             color: FlcColors.brand.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(FlcRadius.input),
                           ),
-                          child: Text('Members only', style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600)),
+                          child: Text('Members only', style: FlcTextStyles.caption.copyWith(color: FlcColors.accent(context), fontWeight: FontWeight.w600)),
                         ),
                     ],
                   ),

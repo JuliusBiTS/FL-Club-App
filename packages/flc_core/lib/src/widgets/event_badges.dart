@@ -34,7 +34,7 @@ class EventBadges extends StatelessWidget {
       spacing: FlcSpace.xs,
       runSpacing: FlcSpace.xs,
       children: <Widget>[
-        if (highlight != EventHighlight.none) _highlightChip(),
+        if (highlight != EventHighlight.none) _highlightChip(context),
         if (sellingFast)
           _BadgeChip(
             label: 'Selling fast',
@@ -56,7 +56,7 @@ class EventBadges extends StatelessWidget {
     );
   }
 
-  Widget _highlightChip() {
+  Widget _highlightChip(BuildContext context) {
     // Label text comes from EventHighlight.badgeLabel — the single source of
     // truth also used by the editor's picker — so there's only ever one
     // place to rename a ribbon, not two copies that can drift apart.
@@ -74,7 +74,7 @@ class EventBadges extends StatelessWidget {
           label: highlight.badgeLabel!,
           icon: Icons.star_outline,
           background: FlcColors.brand.withValues(alpha: 0.10),
-          foreground: FlcColors.brand,
+          foreground: FlcColors.accent(context),
           dense: dense,
         );
       case EventHighlight.specialOffer:

@@ -287,9 +287,9 @@ class _ImageSlotState extends State<ImageSlot> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        const Icon(Icons.add_photo_alternate_outlined, color: FlcColors.brand, size: 32),
+                        Icon(Icons.add_photo_alternate_outlined, color: FlcColors.accent(context), size: 32),
                         const SizedBox(height: FlcSpace.xs),
-                        Text(widget.label, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.brand)),
+                        Text(widget.label, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.accent(context))),
                       ],
                     ),
                   ),

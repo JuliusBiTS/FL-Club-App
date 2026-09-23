@@ -48,7 +48,7 @@ class EventCard extends StatelessWidget {
                   if (event.category != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: FlcSpace.xxs),
-                      child: Text(event.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.brand)),
+                      child: Text(event.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.accent(context))),
                     ),
                   Text(event.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3),
                   const SizedBox(height: FlcSpace.xxs),
@@ -92,7 +92,7 @@ class _MembersChip extends StatelessWidget {
         color: FlcColors.brand.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(FlcRadius.input),
       ),
-      child: Text('Members only', style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600)),
+      child: Text('Members only', style: FlcTextStyles.caption.copyWith(color: FlcColors.accent(context), fontWeight: FontWeight.w600)),
     );
   }
 }

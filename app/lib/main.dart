@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/env.dart';
 import 'core/preferences/membership_card_preferences.dart';
+import 'core/preferences/theme_mode_preferences.dart';
 import 'core/push/push_service.dart';
 import 'features/podcast/audio/podcast_audio_handler.dart';
 import 'features/podcast/podcast_providers.dart';
@@ -55,6 +56,7 @@ Future<void> main() async {
   // storage (which is reserved for tokens/credentials).
   final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   final MembershipCardPreferences membershipCardPreferences = MembershipCardPreferences(sharedPreferences);
+  final ThemeModePreferences themeModePreferences = ThemeModePreferences(sharedPreferences);
 
   // Sentry: sendDefaultPii disabled per briefing §15 — crash reports are
   // identified by an opaque user id only, never name/email/content.
@@ -70,6 +72,7 @@ Future<void> main() async {
           podcastAudioHandlerProvider.overrideWithValue(audioHandler),
           pushServiceProvider.overrideWithValue(pushService),
           membershipCardPreferencesProvider.overrideWithValue(membershipCardPreferences),
+          themeModePreferencesProvider.overrideWithValue(themeModePreferences),
         ],
         child: const FrontlineClubApp(),
       ),

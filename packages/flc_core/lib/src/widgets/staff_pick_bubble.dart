@@ -33,7 +33,7 @@ class StaffPickBubble extends StatelessWidget {
             radius: avatarRadius,
             backgroundColor: FlcColors.brand.withValues(alpha: 0.15),
             backgroundImage: photoUrl == null ? null : NetworkImage(photoUrl!),
-            child: photoUrl == null ? Icon(Icons.person_outline, size: avatarRadius, color: FlcColors.brand) : null,
+            child: photoUrl == null ? Icon(Icons.person_outline, size: avatarRadius, color: FlcColors.accent(context)) : null,
           ),
           const SizedBox(width: FlcSpace.sm),
           Expanded(
@@ -47,7 +47,7 @@ class StaffPickBubble extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '— $name, Frontline Club',
-                  style: FlcTextStyles.caption.copyWith(color: FlcColors.brand, fontWeight: FontWeight.w600),
+                  style: FlcTextStyles.caption.copyWith(color: FlcColors.accent(context), fontWeight: FontWeight.w600),
                 ),
               ],
             ),

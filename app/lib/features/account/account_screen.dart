@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_repository.dart';
 import '../../core/auth/profile_provider.dart';
 import '../../core/preferences/membership_card_preferences.dart';
+import '../../core/preferences/theme_mode_preferences.dart';
 import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_providers.dart';
 import '../membership/presentation/membership_card_sheet.dart';
@@ -130,6 +131,13 @@ class _SignedInBody extends ConsumerWidget {
           ),
         ],
         const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.brightness_6_outlined),
+          title: const Text('Appearance'),
+          subtitle: Text(_themeModeLabel(ref.watch(themeModeProvider))),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showThemeModeSheet(context, ref),
+        ),
         SwitchListTile(
           secondary: const Icon(Icons.circle_outlined),
           title: const Text('Minimise the membership button'),
@@ -167,6 +175,40 @@ class _SignedInBody extends ConsumerWidget {
       ],
     );
   }
+}
+
+String _themeModeLabel(ThemeMode mode) => switch (mode) {
+      ThemeMode.system => 'Match device setting',
+      ThemeMode.light => 'Light',
+      ThemeMode.dark => 'Dark',
+    };
+
+/// Feedback: "add a toggle for light and dark mode in the settings" —
+/// FlcTheme.light()/.dark() already existed, this is just the missing
+/// switch. A bottom sheet rather than a settings-page submenu since it's
+/// one choice among three, same pattern as the events filter sheet.
+Future<void> _showThemeModeSheet(BuildContext context, WidgetRef ref) async {
+  final ThemeMode current = ref.read(themeModeProvider);
+  await showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (context) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          for (final mode in ThemeMode.values)
+            ListTile(
+              title: Text(_themeModeLabel(mode)),
+              trailing: mode == current ? Icon(Icons.check, color: FlcColors.accent(context)) : null,
+              onTap: () {
+                setThemeMode(ref, mode);
+                Navigator.of(context).pop();
+              },
+            ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _ProfileHeader extends StatelessWidget {

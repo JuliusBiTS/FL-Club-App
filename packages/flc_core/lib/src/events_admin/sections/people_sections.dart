@@ -87,7 +87,7 @@ class _SpeakerRow extends StatelessWidget {
               radius: 30,
               backgroundColor: FlcColors.brand.withValues(alpha: 0.08),
               backgroundImage: speaker.photoUrl == null ? null : NetworkImage(speaker.photoUrl!),
-              child: speaker.photoUrl == null ? const Icon(Icons.add_a_photo_outlined, color: FlcColors.brand) : null,
+              child: speaker.photoUrl == null ? Icon(Icons.add_a_photo_outlined, color: FlcColors.accent(context)) : null,
             ),
           ),
           const SizedBox(width: FlcSpace.sm),

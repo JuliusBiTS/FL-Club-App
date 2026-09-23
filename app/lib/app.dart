@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/preferences/theme_mode_preferences.dart';
 import 'core/push/push_service.dart';
 import 'core/router/app_router.dart';
 import 'core/supabase/supabase_providers.dart';
@@ -73,7 +74,7 @@ class _FrontlineClubAppState extends ConsumerState<FrontlineClubApp> {
       scaffoldMessengerKey: rootMessengerKey,
       theme: FlcTheme.light(),
       darkTheme: FlcTheme.dark(),
-      themeMode: ThemeMode.system, // overridable from the You tab settings, briefing §9.10 — not yet wired
+      themeMode: ref.watch(themeModeProvider), // You tab → Appearance, briefing §9.10
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales, // en-GB only at launch, briefing §6
       routerConfig: router,

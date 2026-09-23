@@ -148,7 +148,7 @@ class _Notice extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, size: 18, color: FlcColors.brand),
+          Icon(icon, size: 18, color: FlcColors.accent(context)),
           const SizedBox(width: FlcSpace.xs),
           Expanded(child: Text(text, style: FlcTextStyles.bodySmall)),
         ],

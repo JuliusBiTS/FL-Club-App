@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 /// Design tokens — briefing §16.1.
 ///
@@ -30,4 +30,20 @@ abstract final class FlcColors {
   static const Color scannerValidBg = Color(0xFF0E3B24); // success flash background
   static const Color scannerWarningBg = Color(0xFF4A3B0A); // already-checked-in flash background
   static const Color scannerErrorBg = Color(0xFF4A1512); // invalid/refused flash background
+
+  /// A brighter, warmer olive used ONLY where [brand] is set as text or an
+  /// icon colour on a surface that switches with the theme (a category
+  /// label, a chip's text, "Members only", ...). Dark-olive-on-near-black
+  /// is genuinely hard to read (feedback) — this is not used for anything
+  /// that's brand-coloured as a background in both themes already (the app
+  /// bar, the bottom nav, buttons), only for foreground brand accents.
+  static const Color brandOnDark = Color(0xFF9CC257);
+
+  /// Resolves [brand] for use as text/icon colour against whatever surface
+  /// is behind it in the current theme — call this instead of the bare
+  /// [brand] constant anywhere brand olive is the colour of text or an
+  /// icon (not a background fill, which brand itself remains in both
+  /// themes).
+  static Color accent(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? brandOnDark : brand;
 }

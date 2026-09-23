@@ -87,7 +87,7 @@ class _ArticleDetailBody extends StatelessWidget {
               if (article.categories.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: FlcSpace.xs),
-                  child: Text(article.categories.first.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.brand)),
+                  child: Text(article.categories.first.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.accent(context))),
                 ),
               Text(article.title, style: FlcTextStyles.h2),
               const SizedBox(height: FlcSpace.xs),
