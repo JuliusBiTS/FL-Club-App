@@ -6,6 +6,7 @@ import '../../theme/flc_spacing.dart';
 import '../../theme/flc_typography.dart';
 import '../../util/london_time.dart';
 import '../../widgets/staff_pick_bubble.dart';
+import '../event_admin_repository.dart';
 import '../event_draft.dart';
 import '../event_editor_controller.dart';
 import '../widgets/editor_widgets.dart';
@@ -18,11 +19,49 @@ const List<String> _perkSuggestions = <String>[
   'Signed copies available',
 ];
 
-/// Highlight ribbon, perks and scheduled publishing.
-class PromotionSection extends StatelessWidget {
+/// Highlight ribbon, perks, a staff pick and scheduled publishing.
+class PromotionSection extends StatefulWidget {
   const PromotionSection({required this.controller, super.key});
 
   final EventEditorController controller;
+
+  @override
+  State<PromotionSection> createState() => _PromotionSectionState();
+}
+
+class _PromotionSectionState extends State<PromotionSection> {
+  late Future<List<StaffPickPerson>> _staffPickPeople = widget.controller.repository.recentStaffPickPeople();
+  bool _copyingLastEvent = false;
+
+  EventEditorController get controller => widget.controller;
+
+  Future<void> _copyFromLastEvent() async {
+    setState(() => _copyingLastEvent = true);
+    try {
+      final EventModel? last = await controller.repository.mostRecentEvent();
+      if (!mounted) return;
+      if (last == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No previous event to copy from yet.')));
+        return;
+      }
+      controller.applyBulkChange((draft) => draft.applyRecurringSettingsFrom(last));
+      setState(() => _staffPickPeople = controller.repository.recentStaffPickPeople());
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Copied venue, category and promotion settings from "${last.title}".')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(EventAdminRepository.describeError(e))));
+    } finally {
+      if (mounted) setState(() => _copyingLastEvent = false);
+    }
+  }
+
+  void _choosePickPerson(StaffPickPerson person) {
+    controller.applyBulkChange((draft) {
+      draft.pickByName = person.name;
+      draft.pickByPhotoUrl = person.photoUrl;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +81,19 @@ class PromotionSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          if (controller.isNew) ...<Widget>[
+            // Feedback: "copy settings from last event" — venue, category
+            // and promotion only, never dates/description/capacity/pricing,
+            // which always need a fresh look.
+            OutlinedButton.icon(
+              onPressed: enabled && !_copyingLastEvent ? _copyFromLastEvent : null,
+              icon: _copyingLastEvent
+                  ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.content_copy_outlined, size: 18),
+              label: const Text('Copy settings from last event'),
+            ),
+            const SizedBox(height: FlcSpace.md),
+          ],
           Wrap(
             spacing: FlcSpace.xs,
             runSpacing: FlcSpace.xs,
@@ -96,6 +148,40 @@ class PromotionSection extends StatelessWidget {
             style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
           ),
           const SizedBox(height: FlcSpace.sm),
+          FutureBuilder<List<StaffPickPerson>>(
+            future: _staffPickPeople,
+            builder: (BuildContext context, AsyncSnapshot<List<StaffPickPerson>> snap) {
+              final List<StaffPickPerson> people = snap.data ?? const <StaffPickPerson>[];
+              if (people.isEmpty) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(bottom: FlcSpace.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Chosen before — tap to reuse their name and photo:',
+                      style: FlcTextStyles.caption.copyWith(color: FlcColors.slate),
+                    ),
+                    const SizedBox(height: FlcSpace.xxs),
+                    Wrap(
+                      spacing: FlcSpace.xs,
+                      runSpacing: FlcSpace.xs,
+                      children: <Widget>[
+                        for (final StaffPickPerson person in people)
+                          ActionChip(
+                            avatar: person.photoUrl == null
+                                ? const Icon(Icons.person_outline, size: 18)
+                                : CircleAvatar(backgroundImage: NetworkImage(person.photoUrl!)),
+                            label: Text(person.name),
+                            onPressed: enabled ? () => _choosePickPerson(person) : null,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -118,6 +204,7 @@ class PromotionSection extends StatelessWidget {
                 child: Column(
                   children: <Widget>[
                     TextFormField(
+                      key: ValueKey('pickByName-${controller.formGeneration}'),
                       initialValue: d.pickByName,
                       enabled: enabled,
                       decoration: const InputDecoration(labelText: 'Their name', isDense: true),

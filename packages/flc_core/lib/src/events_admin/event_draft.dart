@@ -251,6 +251,28 @@ class EventDraft {
   int issuedTickets;
   int eventbriteSold;
 
+  /// Copies over the "how this kind of event is normally run" fields from
+  /// a previous event — feedback: "copy settings from last event". Never
+  /// touches title, dates, description, speakers, links, capacity or
+  /// ticket types/pricing: those need a deliberate look at every single
+  /// event, so copying them silently would be the wrong kind of shortcut.
+  /// Also skips pickQuote — a quote is written fresh for each event, only
+  /// who it's from and their photo carry over (see recentStaffPickPeople).
+  void applyRecurringSettingsFrom(EventModel other) {
+    venueName = other.venueName;
+    venueRoom = other.venueRoom ?? '';
+    venueAddress = other.venueAddress;
+    isOnline = other.isOnline;
+    category = other.category;
+    isFilmed = other.isFilmed;
+    membersOnly = other.membersOnly;
+    loyaltyEligible = other.loyaltyEligible;
+    highlight = other.highlight;
+    perks = List<String>.of(other.perks);
+    pickByName = other.pickByName ?? '';
+    pickByPhotoUrl = other.pickByPhotoUrl;
+  }
+
   bool get isNew => id == null;
   bool get isPublished => status == 'published';
   bool get isCancelled => status == 'cancelled';

@@ -71,6 +71,7 @@ class BasicsSection extends StatelessWidget {
           ),
           const SizedBox(height: FlcSpace.sm),
           DropdownButtonFormField<String>(
+            key: ValueKey('category-${controller.formGeneration}'),
             initialValue: d.category,
             decoration: const InputDecoration(labelText: 'Category'),
             items: <DropdownMenuItem<String>>[
@@ -154,6 +155,7 @@ class ScheduleSection extends StatelessWidget {
           ResponsiveRow(
             children: <Widget>[
               TextFormField(
+                key: ValueKey('venueName-${controller.formGeneration}'),
                 initialValue: d.venueName,
                 enabled: enabled,
                 decoration: const InputDecoration(labelText: 'Venue'),
@@ -163,6 +165,7 @@ class ScheduleSection extends StatelessWidget {
                 },
               ),
               TextFormField(
+                key: ValueKey('venueRoom-${controller.formGeneration}'),
                 initialValue: d.venueRoom,
                 enabled: enabled,
                 decoration: const InputDecoration(labelText: 'Room', hintText: 'The Forum, Clubroom…'),
@@ -175,6 +178,7 @@ class ScheduleSection extends StatelessWidget {
           ),
           const SizedBox(height: FlcSpace.sm),
           TextFormField(
+            key: ValueKey('venueAddress-${controller.formGeneration}'),
             initialValue: d.venueAddress,
             enabled: enabled,
             decoration: const InputDecoration(labelText: 'Address'),

@@ -28,6 +28,14 @@ class EventEditorController extends ChangeNotifier {
   bool saving = false;
   bool dirty = false;
 
+  /// Bumped only by [applyBulkChange] — a handful of form fields key off
+  /// this (see content_sections.dart, promotion_sections.dart) so they
+  /// remount and pick up a programmatic change (e.g. "copy settings from
+  /// last event", choosing a saved staff pick) without remounting — and
+  /// losing cursor position — on every ordinary keystroke, which plain
+  /// [touch] still covers.
+  int formGeneration = 0;
+
   bool get isNew => draft.isNew;
 
   /// The status as stored in the database (null until first saved).
@@ -49,6 +57,14 @@ class EventEditorController extends ChangeNotifier {
   void touch() {
     dirty = true;
     notifyListeners();
+  }
+
+  /// For a mutation the person didn't type character-by-character (bulk
+  /// copy, choosing from a saved list) — see [formGeneration].
+  void applyBulkChange(void Function(EventDraft draft) mutate) {
+    mutate(draft);
+    formGeneration++;
+    touch();
   }
 
   /// Saves and moves the event to [status]. Returns an error message, or null on success.

@@ -8,6 +8,18 @@ import '../util/event_text.dart';
 import 'event_autofill.dart';
 import 'event_draft.dart';
 
+/// One person who's been used as a staff pick before — lets the editor
+/// offer "choose a staff member" instead of retyping a name and re-
+/// uploading a photo every time (feedback). Derived from past events
+/// rather than its own table, so the list is never out of sync with who's
+/// actually been picked.
+class StaffPickPerson {
+  const StaffPickPerson({required this.name, this.photoUrl});
+
+  final String name;
+  final String? photoUrl;
+}
+
 /// A failure already phrased for a person to read (briefing §16.4 tone).
 class EventAdminException implements Exception {
   EventAdminException(this.message);
@@ -101,6 +113,35 @@ class EventAdminRepository {
     } catch (_) {
       return <TicketTypeDraft>[];
     }
+  }
+
+  /// The most recently created event, for the new-event editor's "Copy
+  /// settings from last event" action — null the very first time, before
+  /// any event exists yet.
+  Future<EventModel?> mostRecentEvent() async {
+    final rows = await _client.from('events').select().order('created_at', ascending: false).limit(1);
+    if (rows.isEmpty) return null;
+    return EventModel.fromJson(rows.first);
+  }
+
+  /// Distinct people who've been given a staff pick before, most recently
+  /// used first.
+  Future<List<StaffPickPerson>> recentStaffPickPeople({int limit = 20}) async {
+    final rows = await _client
+        .from('events')
+        .select('pick_by_name, pick_by_photo_url, created_at')
+        .not('pick_by_name', 'is', null)
+        .order('created_at', ascending: false)
+        .limit(200); // over-fetch a little — de-duplicated by name below
+
+    final Map<String, StaffPickPerson> byName = <String, StaffPickPerson>{};
+    for (final Map<String, dynamic> r in rows) {
+      final String? name = (r['pick_by_name'] as String?)?.trim();
+      if (name == null || name.isEmpty || byName.containsKey(name)) continue;
+      byName[name] = StaffPickPerson(name: name, photoUrl: r['pick_by_photo_url'] as String?);
+      if (byName.length >= limit) break;
+    }
+    return byName.values.toList();
   }
 
   Future<EventDraft> loadDraft(String eventId) async {
