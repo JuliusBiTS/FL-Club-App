@@ -149,6 +149,10 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
+  /// Upserts one or a few events without touching any other cached row —
+  /// for caching a single event's detail view. Never used for the
+  /// "upcoming" list itself; see [replaceUpcomingEvents] for why that
+  /// needs different semantics.
   Future<void> upsertEvents(List<(String id, String slug, DateTime startsAt, String status, String json)> rows) {
     return batch((batchBuilder) {
       for (final row in rows) {
@@ -164,6 +168,35 @@ class AppDatabase extends _$AppDatabase {
           mode: InsertMode.insertOrReplace,
         );
       }
+    });
+  }
+
+  /// Replaces the ENTIRE cached table with exactly this list — for the
+  /// upcoming-events feed specifically, which is always refreshed as one
+  /// complete set (EventsRepositoryImpl.refreshUpcoming). Plain upsert
+  /// alone was a real bug: an event that stopped being "upcoming" server-
+  /// side (its date passed, or it was unpublished) had no way to ever
+  /// leave the cache, so a stale copy could linger and mix into the
+  /// "Upcoming" list indefinitely — this is why events were sometimes seen
+  /// out of order or ones that should no longer show still did. Delete +
+  /// insert in one transaction, same pattern as replaceAllTickets below.
+  Future<void> replaceUpcomingEvents(List<(String id, String slug, DateTime startsAt, String status, String json)> rows) {
+    return transaction(() async {
+      await delete(cachedEvents).go();
+      await batch((batchBuilder) {
+        for (final row in rows) {
+          batchBuilder.insert(
+            cachedEvents,
+            CachedEventsCompanion.insert(
+              id: row.$1,
+              slug: row.$2,
+              startsAt: row.$3,
+              status: row.$4,
+              json: row.$5,
+            ),
+          );
+        }
+      });
     });
   }
 
@@ -190,9 +223,14 @@ class AppDatabase extends _$AppDatabase {
     return (select(cachedTickets)..orderBy([(t) => OrderingTerm.asc(t.eventStartsAt)])).get();
   }
 
+  /// Belt-and-braces alongside replaceUpcomingEvents: even if a stale row
+  /// somehow survives (e.g. mid-refresh), it's excluded from "Upcoming"
+  /// once its own start time has passed, matching the remote query's own
+  /// starts_at >= now filter.
   Future<List<CachedEvent>> publishedEventsSortedByStart() {
+    final DateTime now = DateTime.now().toUtc();
     return (select(cachedEvents)
-          ..where((t) => t.status.equals('published'))
+          ..where((t) => t.status.equals('published') & t.startsAt.isBiggerOrEqualValue(now))
           ..orderBy([(t) => OrderingTerm.asc(t.startsAt)]))
         .get();
   }

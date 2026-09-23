@@ -22,8 +22,20 @@ class EventsLocalDataSource {
     return EventModel.fromJson(jsonDecode(row.json) as Map<String, dynamic>);
   }
 
+  /// Caches one (or a few) events without touching the rest of the table —
+  /// for a single event's detail view. Never for the whole upcoming list;
+  /// see [replaceUpcoming].
   Future<void> writeEvents(List<EventModel> events) {
     return _db.upsertEvents([
+      for (final event in events) (event.id, event.slug, event.startsAt, event.status, jsonEncode(event.toJson())),
+    ]);
+  }
+
+  /// Replaces the entire cached "upcoming" set with exactly this list —
+  /// the fix for events that had stopped being upcoming server-side never
+  /// leaving the cache (see AppDatabase.replaceUpcomingEvents).
+  Future<void> replaceUpcoming(List<EventModel> events) {
+    return _db.replaceUpcomingEvents([
       for (final event in events) (event.id, event.slug, event.startsAt, event.status, jsonEncode(event.toJson())),
     ]);
   }

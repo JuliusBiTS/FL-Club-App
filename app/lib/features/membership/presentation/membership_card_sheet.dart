@@ -102,16 +102,26 @@ class _MembershipCardSheetState extends ConsumerState<MembershipCardSheet> with 
   Future<void> _load() async {
     final repo = ref.read(memberCardRepositoryProvider);
 
-    final cached = await repo.getCached();
-    if (cached != null) {
-      final photoPath = await repo.cachedPhotoPath();
-      if (!mounted) return;
-      setState(() {
-        _card = cached;
-        _photoPath = photoPath;
-        _loading = false;
-      });
-      _startRotating();
+    // Bug fix: this used to run outside the try/catch below. Any exception
+    // reading the cache — flutter_secure_storage genuinely can throw here,
+    // e.g. after a reinstall invalidates its keystore entry — was left
+    // completely unhandled, so _loading never got set back to false and
+    // the sheet was stuck showing a spinner forever. A failed cache read
+    // isn't fatal either way: just fall through to the live refresh below.
+    try {
+      final cached = await repo.getCached();
+      if (cached != null) {
+        final photoPath = await repo.cachedPhotoPath();
+        if (!mounted) return;
+        setState(() {
+          _card = cached;
+          _photoPath = photoPath;
+          _loading = false;
+        });
+        _startRotating();
+      }
+    } catch (e) {
+      // Ignored — the live refresh below is the real source of truth.
     }
 
     try {

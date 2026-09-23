@@ -16,7 +16,7 @@ class EventsRepositoryImpl implements EventsRepository {
   @override
   Future<List<EventModel>> refreshUpcoming() async {
     final fresh = await _remote.fetchUpcomingPublished();
-    await _local.writeEvents(fresh);
+    await _local.replaceUpcoming(fresh);
     return fresh;
   }
 

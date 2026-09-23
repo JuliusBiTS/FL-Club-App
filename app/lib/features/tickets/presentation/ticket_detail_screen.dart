@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -72,18 +73,32 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
     if (mounted) setState(() => _payload = payload);
   }
 
+  /// Always the tickets overview, never wherever plain back-navigation
+  /// would otherwise land — feedback: this should never leave someone at
+  /// a tab's root instead of the list they came from. This route lives
+  /// outside the shell (like checkout), reachable from more than one
+  /// place, so a plain pop can't be trusted to always have that list
+  /// underneath it.
+  void _backToTickets(BuildContext context) => context.go('/you/tickets');
+
   @override
   Widget build(BuildContext context) {
     final ticket = widget.ticket;
     final dateFormat = DateFormat('EEE d MMM yyyy, HH:mm');
 
-    return Scaffold(
-      backgroundColor: FlcColors.ink,
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) _backToTickets(context);
+      },
+      child: Scaffold(
         backgroundColor: FlcColors.ink,
-        foregroundColor: Colors.white,
-        title: Text(ticket.eventTitle, style: const TextStyle(color: Colors.white)),
-      ),
+        appBar: AppBar(
+          backgroundColor: FlcColors.ink,
+          foregroundColor: Colors.white,
+          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _backToTickets(context)),
+          title: Text(ticket.eventTitle, style: const TextStyle(color: Colors.white)),
+        ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(FlcSpace.lg),
@@ -119,6 +134,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -147,9 +163,9 @@ class _QrArea extends StatelessWidget {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Icon(Icons.check_circle_outline, size: 48, color: FlcColors.slate),
+            Icon(Icons.check_circle_outline, size: 48, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.sm),
-            Text(label, style: FlcTextStyles.body.copyWith(color: FlcColors.slate)),
+            Text(label, style: FlcTextStyles.body.copyWith(color: FlcColors.secondary(context))),
           ],
         ),
       );
@@ -167,12 +183,12 @@ class _QrArea extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Icon(Icons.wifi_off, size: 32, color: FlcColors.slate),
+              Icon(Icons.wifi_off, size: 32, color: FlcColors.secondary(context)),
               const SizedBox(height: FlcSpace.sm),
               Text(
                 "This ticket hasn't synced to this device yet — connect to the internet once to load it.",
                 textAlign: TextAlign.center,
-                style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
               ),
             ],
           ),
