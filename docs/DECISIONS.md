@@ -239,3 +239,87 @@ Feedback after the first APK install of the round above.
   displays an order — exactly the kind of money-handling change that
   deserves its own focused pass rather than being squeezed in alongside
   everything above.
+
+## Third round of feedback (September 2026)
+
+- **Sign-in's success screen is shown in place, not by navigating to a new
+  route.** The previous version used `Navigator.pushReplacement` on top of
+  go_router's own declarative Navigator for that route — go_router
+  rebuilds/reconciles that Navigator's page stack the moment auth state
+  changes (`_ProfileRefreshListenable`, which fires right after a
+  sign-in), silently discarding the imperatively-pushed screen underneath
+  it. Real bug, not a preference: swapping the same screen's own body in
+  place (same pattern as `MembershipInterestScreen`'s `_SubmittedState`)
+  sidesteps the conflict entirely rather than working around it.
+- **A real bug in the offline event cache**: it only ever upserted, never
+  pruned — an event that stopped being "upcoming" server-side (date
+  passed, unpublished) had no way to ever leave the cache, so a stale copy
+  could sit there indefinitely and mix into the "Upcoming" list. The
+  upcoming feed's cache write is now a full replace each refresh
+  (`AppDatabase.replaceUpcomingEvents`, transactional delete+insert — the
+  same pattern `replaceAllTickets` already used), and the cached read now
+  also filters `starts_at >= now` itself as a second line of defence, not
+  just the remote query. A single event's own detail-view cache (upsert,
+  unaffected) is a separate method precisely so this fix couldn't touch it.
+- **The membership card's "always loading" was a real bug**: reading the
+  cached card ran outside the `try`/`catch` around the live refresh, so
+  any exception there (`flutter_secure_storage` genuinely can throw — a
+  reinstall invalidating its keystore entry is a known real-world trigger)
+  left `_loading` stuck `true` forever with nothing to ever set it back.
+- **FC Highlights lifted-to-top is back** — direct feedback reversed the
+  previous round's removal. It coexists with strict chronological order:
+  the section itself, and "Coming up" below it, are each still sorted
+  soonest-first — only the highlighted events move as a whole group ahead
+  of everything else, same as before that removal.
+- **A comprehensive dark-mode contrast pass**, beyond last round's brand
+  olive fix: `FlcColors.slate` (secondary text, ~55 call sites), `graphite`
+  (the perk chip's text — confirmed near-invisible in a screenshot),
+  `error` and `success` all measured under the 4.5:1 WCAG AA minimum
+  against the dark theme's surface — a single fixed colour can't pass
+  contrast against both a near-white and a near-black background at once,
+  so each now resolves through a `BuildContext`-aware helper
+  (`FlcColors.secondary/secondaryStrong/errorAccent/successAccent`) the
+  same way `accent()` already did for brand olive.
+- **The filter button always just says "Filter"**, never the active
+  filter's own name — showing a long category name there was growing the
+  button until the Upcoming/Past segmented control next to it ran out of
+  room and its own labels wrapped. The dot is the only "something's
+  filtered" signal now.
+- **The 5 hand-seeded "placeholder" media_posts rows are gone** (real
+  videos from the club's own channel, but static and no longer
+  distinguishable from genuinely-synced content once the podcast feed
+  actually started syncing for real) — deleted from the database and the
+  seed script.
+- **A real "Content" admin section**, replacing that placeholder —
+  feedback: "how do you edit the media tab? Any way for an admin to do
+  changes there?" A "sync now" button each for the podcast feed and
+  WordPress (both already auto-sync hourly via pg_cron; this is just for
+  "right now, don't wait"), plus manual add/remove for YouTube videos
+  (`MediaAdminRepository`, `MediaContentScreen`, shared by the admin
+  console and the app's staff area) — deliberately NOT extended to
+  podcast_episodes, which stays fully owned by the RSS sync's upsert-by-
+  guid; a hand-added row with no guid would sit oddly next to synced ones.
+- **Articles fall back to their own first image** when the club hasn't set
+  a hero image — `ArticleModel.displayHeroImageUrl`, extracted from
+  `content_html` — before falling back further to the logo placeholder.
+- **The ticket screen's back button always returns to the tickets
+  overview**, never wherever plain back-navigation would otherwise land —
+  it's a route outside the shell (like checkout), reachable from more
+  than one place, so a plain pop can't be trusted to always have that
+  list underneath it.
+- **The order confirmation screen now shows real order details** (event,
+  ticket type, quantity, total paid — the same `CheckoutArgs` already
+  confirmed on the review step, not re-fetched, so it can never disagree
+  with what was just agreed to) plus a quiet, smaller echo of the boot
+  splash's brand olive and Jost strapline: "Thank you for supporting
+  independent journalism" — a nod to that moment rather than a second
+  full-screen takeover, since this sits inside an already-busy flow, not
+  someone's first impression of the app.
+- **A "Sold out" tag**, mirroring "Selling fast"'s existing derived
+  design exactly (`events_sold_out()`, same shape as `events_selling_fast()`
+  — only event ids ever leave the database) — solid rather than tinted,
+  since it's the one ribbon that changes whether someone can act at all.
+- **Push notifications are fully built and deployed, waiting only on a
+  Firebase project** (`docs/PUSH_SETUP.md` has the complete walkthrough) —
+  same category as Stripe and YouTube: an external account only the club
+  can create.
