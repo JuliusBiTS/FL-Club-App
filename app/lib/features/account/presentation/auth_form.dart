@@ -97,7 +97,7 @@ class _AuthFormState extends ConsumerState<AuthForm> {
             ),
           if (_errorMessage != null) ...<Widget>[
             const SizedBox(height: FlcSpace.sm),
-            Text(_errorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Text(_errorMessage!, style: TextStyle(color: FlcColors.errorAccent(context))),
           ],
           const SizedBox(height: FlcSpace.md),
           FilledButton(

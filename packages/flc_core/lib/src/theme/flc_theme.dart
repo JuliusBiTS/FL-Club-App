@@ -19,8 +19,13 @@ abstract final class FlcTheme {
       brightness: brightness,
       primary: FlcColors.brand,
       onPrimary: Colors.white,
-      secondary: FlcColors.graphite,
+      secondary: isDark ? FlcColors.graphiteOnDark : FlcColors.graphite,
       onSecondary: Colors.white,
+      // Deliberately NOT dark-mode-adjusted here: colorScheme.error also
+      // backs the delete-account button's solid fill (white text on top),
+      // and a brighter dark-mode error would need onError to flip too —
+      // more moving parts than the one place that actually shows error as
+      // plain text needs. See FlcColors.errorAccent for that instead.
       error: FlcColors.error,
       onError: Colors.white,
       surface: isDark ? FlcColors.surfaceDark : FlcColors.surface,

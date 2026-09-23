@@ -328,7 +328,7 @@ class AboutSection extends StatelessWidget {
             title: const Text('This event will be filmed'),
             subtitle: Text(
               'Shows the filming notice: footage may be used publicly and commercially.',
-              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
             ),
             value: d.isFilmed,
             onChanged: enabled

@@ -89,8 +89,8 @@ class _SeekBar extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Text(_format(position), style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
-                  Text(_format(duration), style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
+                  Text(_format(position), style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context))),
+                  Text(_format(duration), style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context))),
                 ],
               ),
             ),

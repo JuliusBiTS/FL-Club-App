@@ -53,7 +53,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             ),
             if (_errorMessage != null) ...<Widget>[
               const SizedBox(height: FlcSpace.sm),
-              Text(_errorMessage!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Text(_errorMessage!, style: TextStyle(color: FlcColors.errorAccent(context))),
             ],
             const SizedBox(height: FlcSpace.md),
             FilledButton(
@@ -79,7 +79,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
           TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text('Delete', style: TextStyle(color: Theme.of(dialogContext).colorScheme.error)),
+            child: Text('Delete', style: TextStyle(color: FlcColors.errorAccent(dialogContext))),
           ),
         ],
       ),

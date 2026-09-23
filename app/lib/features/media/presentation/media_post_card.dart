@@ -64,7 +64,7 @@ class MediaPostCard extends StatelessWidget {
                   const SizedBox(height: FlcSpace.xxs),
                   Text(
                     post.isLive ? 'Streaming now' : dateFormat.format(post.publishedAt.toLocal()),
-                    style: FlcTextStyles.bodySmall.copyWith(color: post.isLive ? FlcColors.error : FlcColors.slate),
+                    style: FlcTextStyles.bodySmall.copyWith(color: post.isLive ? FlcColors.errorAccent(context) : FlcColors.secondary(context)),
                   ),
                 ],
               ),

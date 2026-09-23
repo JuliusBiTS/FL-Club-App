@@ -28,7 +28,7 @@ class LoyaltyScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                const Icon(Icons.loyalty_outlined, size: 40, color: FlcColors.slate),
+                Icon(Icons.loyalty_outlined, size: 40, color: FlcColors.secondary(context)),
                 const SizedBox(height: FlcSpace.sm),
                 const Text('Sign in to track your loyalty progress.', style: FlcTextStyles.body, textAlign: TextAlign.center),
                 const SizedBox(height: FlcSpace.md),
@@ -149,7 +149,7 @@ class _AvailableRewardsCard extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.card_giftcard, color: FlcColors.success),
+          Icon(Icons.card_giftcard, color: FlcColors.successAccent(context)),
           const SizedBox(width: FlcSpace.sm),
           Expanded(
             child: Text(
@@ -188,14 +188,14 @@ class _LedgerRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(title, style: FlcTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(dateFormat.format(entry.createdAt), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+                Text(dateFormat.format(entry.createdAt), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
               ],
             ),
           ),
           Text(
             '${positive ? '+' : ''}${entry.delta}',
             style: FlcTextStyles.body.copyWith(
-              color: positive ? FlcColors.success : FlcColors.slate,
+              color: positive ? FlcColors.successAccent(context) : FlcColors.secondary(context),
               fontWeight: FontWeight.w600,
             ),
           ),

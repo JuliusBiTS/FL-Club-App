@@ -234,12 +234,12 @@ class _PaymentMessage extends StatelessWidget {
             if (loading)
               const SizedBox(height: 40, width: 40, child: CircularProgressIndicator())
             else
-              Icon(icon, size: 40, color: FlcColors.slate),
+              Icon(icon, size: 40, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.md),
             Text(title, style: FlcTextStyles.h3, textAlign: TextAlign.center),
             if (message != null) ...<Widget>[
               const SizedBox(height: FlcSpace.sm),
-              Text(message!, style: FlcTextStyles.body.copyWith(color: FlcColors.slate), textAlign: TextAlign.center),
+              Text(message!, style: FlcTextStyles.body.copyWith(color: FlcColors.secondary(context)), textAlign: TextAlign.center),
             ],
             if (onRetry != null) ...<Widget>[
               const SizedBox(height: FlcSpace.md),

@@ -108,9 +108,9 @@ class _AutoFillDialogState extends State<_AutoFillDialog> {
                         const SizedBox(height: FlcSpace.sm),
                       ],
                       if (result.keptExisting.isNotEmpty) ...<Widget>[
-                        Text('Left alone (already had something)', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: FlcColors.slate)),
+                        Text('Left alone (already had something)', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600, color: FlcColors.secondary(context))),
                         const SizedBox(height: FlcSpace.xxs),
-                        Text(result.keptExisting.join(', '), style: const TextStyle(color: FlcColors.slate)),
+                        Text(result.keptExisting.join(', '), style: TextStyle(color: FlcColors.secondary(context))),
                         const SizedBox(height: FlcSpace.sm),
                       ],
                       if (result.notes.isNotEmpty) ...<Widget>[

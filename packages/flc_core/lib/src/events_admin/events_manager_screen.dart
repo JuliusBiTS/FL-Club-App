@@ -165,7 +165,7 @@ class _EventsManagerScreenState extends State<EventsManagerScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        const Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.slate),
+                        Icon(Icons.event_busy_outlined, size: 40, color: FlcColors.secondary(context)),
                         const SizedBox(height: FlcSpace.sm),
                         Text(all.isEmpty ? 'No events yet — create the first one.' : 'No events match.', style: FlcTextStyles.body),
                       ],
@@ -250,7 +250,7 @@ class _EventRow extends StatelessWidget {
                       '$when · $where${event.category == null ? '' : ' · ${event.category}'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
                     ),
                     if (event.isPromoted || sellingFast) ...<Widget>[
                       const SizedBox(height: FlcSpace.xs),
@@ -261,7 +261,7 @@ class _EventRow extends StatelessWidget {
               ),
               const SizedBox(width: FlcSpace.xs),
               EventStatusChip(status: event.status, scheduled: event.isScheduled),
-              const Icon(Icons.chevron_right, color: FlcColors.slate),
+              Icon(Icons.chevron_right, color: FlcColors.secondary(context)),
             ],
           ),
         ),

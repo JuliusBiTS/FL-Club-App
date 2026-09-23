@@ -192,7 +192,7 @@ class _Centered extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 40, color: FlcColors.slate),
+            Icon(icon, size: 40, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.sm),
             Text(text, textAlign: TextAlign.center, style: FlcTextStyles.body),
             if (action != null) ...<Widget>[const SizedBox(height: FlcSpace.md), action!],

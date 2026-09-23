@@ -88,7 +88,7 @@ class TicketsSection extends StatelessWidget {
               Expanded(child: Text('Ticket types', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600))),
               Text(
                 '$allocated of ${d.capacityApp} app seats assigned',
-                style: FlcTextStyles.caption.copyWith(color: allocated > d.capacityApp ? FlcColors.error : FlcColors.slate),
+                style: FlcTextStyles.caption.copyWith(color: allocated > d.capacityApp ? FlcColors.error : FlcColors.secondary(context)),
               ),
             ],
           ),
@@ -383,7 +383,7 @@ class MembershipLoyaltySection extends StatelessWidget {
             title: const Text('Members only'),
             subtitle: Text(
               'Only active members can book. Non-members see the event but can\'t buy.',
-              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
             ),
             value: d.membersOnly,
             onChanged: enabled
@@ -398,7 +398,7 @@ class MembershipLoyaltySection extends StatelessWidget {
             title: const Text('Counts towards loyalty'),
             subtitle: Text(
               'Buying a ticket earns a loyalty point — one per person per event, however many tickets. Free tickets never earn a point. Turn off for private, partner or fundraising events.',
-              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+              style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
             ),
             value: d.loyaltyEligible,
             onChanged: enabled
@@ -412,7 +412,7 @@ class MembershipLoyaltySection extends StatelessWidget {
           Text('How this will read to people', style: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: FlcSpace.xs),
           if (active.isEmpty)
-            Text('Add ticket types above to see the pricing summary.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate))
+            Text('Add ticket types above to see the pricing summary.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)))
           else ...<Widget>[
             for (final TicketTypeDraft t in memberTickets)
               _SummaryLine(icon: Icons.badge_outlined, text: 'Members: ${t.name.isEmpty ? 'Member ticket' : t.name} — ${price(t)}'),
@@ -455,7 +455,7 @@ class _SummaryLine extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Icon(icon, size: 18, color: warn ? FlcColors.warning : FlcColors.slate),
+          Icon(icon, size: 18, color: warn ? FlcColors.warning : FlcColors.secondary(context)),
           const SizedBox(width: FlcSpace.xs),
           Expanded(child: Text(text, style: FlcTextStyles.bodySmall)),
         ],

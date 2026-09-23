@@ -50,10 +50,10 @@ class EventPreviewCard extends StatelessWidget {
                   draft.title.trim().isEmpty ? 'Your event title' : draft.title.trim(),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: FlcTextStyles.h3.copyWith(color: draft.title.trim().isEmpty ? FlcColors.slate : null),
+                  style: FlcTextStyles.h3.copyWith(color: draft.title.trim().isEmpty ? FlcColors.secondary(context) : null),
                 ),
                 const SizedBox(height: FlcSpace.xxs),
-                Text('$when · $where', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+                Text('$when · $where', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
                 if (draft.summary.trim().isNotEmpty) ...<Widget>[
                   const SizedBox(height: FlcSpace.xs),
                   Text(draft.summary.trim(), maxLines: 3, overflow: TextOverflow.ellipsis, style: FlcTextStyles.bodySmall),
@@ -104,8 +104,8 @@ class EventStatusChip extends StatelessWidget {
       'published' => ('Live', FlcColors.success),
       'postponed' => ('Postponed', FlcColors.warning),
       'cancelled' => ('Cancelled', FlcColors.error),
-      'archived' => ('Archived', FlcColors.slate),
-      _ => scheduled ? ('Scheduled', FlcColors.brand) : ('Draft', FlcColors.slate),
+      'archived' => ('Archived', FlcColors.secondary(context)),
+      _ => scheduled ? ('Scheduled', FlcColors.brand) : ('Draft', FlcColors.secondary(context)),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: FlcSpace.xs, vertical: 2),

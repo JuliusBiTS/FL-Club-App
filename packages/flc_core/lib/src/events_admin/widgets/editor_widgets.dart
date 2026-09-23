@@ -38,7 +38,7 @@ class SectionCard extends StatelessWidget {
                       Text(title, style: FlcTextStyles.h3),
                       if (subtitle != null) ...<Widget>[
                         const SizedBox(height: 2),
-                        Text(subtitle!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+                        Text(subtitle!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
                       ],
                     ],
                   ),
@@ -149,7 +149,7 @@ class DateTimeField extends StatelessWidget {
         ),
         child: Text(
           value == null ? 'Not set' : DateFormat('EEE d MMM yyyy, HH:mm').format(value!),
-          style: FlcTextStyles.body.copyWith(color: value == null ? FlcColors.slate : null),
+          style: FlcTextStyles.body.copyWith(color: value == null ? FlcColors.secondary(context) : null),
         ),
       ),
     );

@@ -514,7 +514,7 @@ class _EditorViewState extends State<_EditorView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
-            if (c.dirty) Padding(padding: const EdgeInsets.only(right: FlcSpace.md), child: Text('Unsaved changes', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate))),
+            if (c.dirty) Padding(padding: const EdgeInsets.only(right: FlcSpace.md), child: Text('Unsaved changes', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)))),
             if (isDraft) ...<Widget>[
               OutlinedButton(
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
@@ -550,11 +550,11 @@ class _PreviewPane extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text('Preview', style: FlcTextStyles.overline.copyWith(color: FlcColors.slate)),
+        Text('Preview', style: FlcTextStyles.overline.copyWith(color: FlcColors.secondary(context))),
         const SizedBox(height: FlcSpace.xs),
         EventPreviewCard(draft: controller.draft),
         const SizedBox(height: FlcSpace.lg),
-        Text('Before you publish', style: FlcTextStyles.overline.copyWith(color: FlcColors.slate)),
+        Text('Before you publish', style: FlcTextStyles.overline.copyWith(color: FlcColors.secondary(context))),
         const SizedBox(height: FlcSpace.xs),
         EditorChecklist(draft: controller.draft),
       ],

@@ -48,7 +48,7 @@ class EpisodeCard extends StatelessWidget {
                         dateFormat.format(episode.publishedAt.toLocal()),
                         if (episode.durationSeconds != null) _formatDuration(episode.durationSeconds!),
                       ].join(' · '),
-                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                      style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
                     ),
                     if (fraction != null) ...<Widget>[
                       const SizedBox(height: FlcSpace.xxs),

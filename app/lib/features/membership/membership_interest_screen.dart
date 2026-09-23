@@ -213,7 +213,7 @@ class _MembershipInterestScreenState extends ConsumerState<MembershipInterestScr
           ),
           if (_error != null) ...<Widget>[
             const SizedBox(height: FlcSpace.md),
-            Text(_error!, style: FlcTextStyles.body.copyWith(color: FlcColors.error)),
+            Text(_error!, style: FlcTextStyles.body.copyWith(color: FlcColors.errorAccent(context))),
           ],
           const SizedBox(height: FlcSpace.lg),
           FilledButton(
@@ -239,7 +239,7 @@ class _SubmittedState extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Icon(Icons.check_circle_outline, color: FlcColors.success, size: 40),
+        Icon(Icons.check_circle_outline, color: FlcColors.successAccent(context), size: 40),
         const SizedBox(height: FlcSpace.md),
         const Text('Application sent', style: FlcTextStyles.h3),
         const SizedBox(height: FlcSpace.xs),

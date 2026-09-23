@@ -88,7 +88,7 @@ class _TicketRow extends StatelessWidget {
       child: ListTile(
         leading: Icon(
           Icons.confirmation_number_outlined,
-          color: isPast || statusLabel != null ? FlcColors.slate : Theme.of(context).colorScheme.primary,
+          color: isPast || statusLabel != null ? FlcColors.secondary(context) : Theme.of(context).colorScheme.primary,
         ),
         title: Text(ticket.eventTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(
@@ -115,7 +115,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const Icon(Icons.confirmation_number_outlined, size: 40, color: FlcColors.slate),
+            Icon(Icons.confirmation_number_outlined, size: 40, color: FlcColors.secondary(context)),
             const SizedBox(height: FlcSpace.sm),
             const Text(
               "You don't have any tickets yet.",

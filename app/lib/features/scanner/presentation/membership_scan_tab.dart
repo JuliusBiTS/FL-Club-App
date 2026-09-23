@@ -142,7 +142,7 @@ class _MembershipScanTabState extends ConsumerState<MembershipScanTab> {
         children: <Widget>[
           Text(
             'Barcode + number is identification only (tier 1) — never sufficient for a member discount on its own.',
-            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
           ),
           const SizedBox(height: FlcSpace.md),
           TextField(

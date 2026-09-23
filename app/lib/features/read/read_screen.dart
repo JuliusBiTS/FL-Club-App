@@ -61,15 +61,15 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(FlcSpace.lg),
+        padding: const EdgeInsets.all(FlcSpace.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.article_outlined, size: 40, color: FlcColors.slate),
-            SizedBox(height: FlcSpace.sm),
-            Text('No articles yet — check back soon.', textAlign: TextAlign.center, style: FlcTextStyles.body),
+            Icon(Icons.article_outlined, size: 40, color: FlcColors.secondary(context)),
+            const SizedBox(height: FlcSpace.sm),
+            const Text('No articles yet — check back soon.', textAlign: TextAlign.center, style: FlcTextStyles.body),
           ],
         ),
       ),

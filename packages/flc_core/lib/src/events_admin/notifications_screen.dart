@@ -60,7 +60,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       return Text('Couldn\'t load history. ${EventAdminRepository.describeError(snap.error!)}', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.error));
                     }
                     final List<Map<String, dynamic>> rows = snap.data ?? const <Map<String, dynamic>>[];
-                    if (rows.isEmpty) return Text('Nothing sent yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate));
+                    if (rows.isEmpty) return Text('Nothing sent yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)));
                     return Card(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.xs),

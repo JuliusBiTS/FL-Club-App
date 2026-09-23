@@ -112,7 +112,7 @@ class _PromotionSectionState extends State<PromotionSection> {
             ],
           ),
           const SizedBox(height: FlcSpace.xs),
-          Text(hint(d.highlight), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
+          Text(hint(d.highlight), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
           const SizedBox(height: FlcSpace.md),
           ChipsInput(
             label: 'Perks',
@@ -130,12 +130,12 @@ class _PromotionSectionState extends State<PromotionSection> {
           const SizedBox(height: FlcSpace.sm),
           Row(
             children: <Widget>[
-              const Icon(Icons.local_fire_department_outlined, size: 18, color: FlcColors.slate),
+              Icon(Icons.local_fire_department_outlined, size: 18, color: FlcColors.secondary(context)),
               const SizedBox(width: FlcSpace.xs),
               Expanded(
                 child: Text(
                   '"Selling fast" appears on its own once 75% of seats are sold — nothing to switch on.',
-                  style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+                  style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
                 ),
               ),
             ],
@@ -145,7 +145,7 @@ class _PromotionSectionState extends State<PromotionSection> {
           const SizedBox(height: 2),
           Text(
             'Optional, and independent of the ribbon above — a personal note from someone on the team about why this one\'s worth going to.',
-            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate),
+            style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)),
           ),
           const SizedBox(height: FlcSpace.sm),
           FutureBuilder<List<StaffPickPerson>>(
@@ -160,7 +160,7 @@ class _PromotionSectionState extends State<PromotionSection> {
                   children: <Widget>[
                     Text(
                       'Chosen before — tap to reuse their name and photo:',
-                      style: FlcTextStyles.caption.copyWith(color: FlcColors.slate),
+                      style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context)),
                     ),
                     const SizedBox(height: FlcSpace.xxs),
                     Wrap(
@@ -237,7 +237,7 @@ class _PromotionSectionState extends State<PromotionSection> {
           ),
           if (d.pickQuote.trim().isNotEmpty && d.pickByName.trim().isNotEmpty) ...<Widget>[
             const SizedBox(height: FlcSpace.sm),
-            Text('How it will look', style: FlcTextStyles.caption.copyWith(color: FlcColors.slate)),
+            Text('How it will look', style: FlcTextStyles.caption.copyWith(color: FlcColors.secondary(context))),
             const SizedBox(height: FlcSpace.xxs),
             StaffPickBubble(name: d.pickByName.trim(), quote: d.pickQuote, photoUrl: d.pickByPhotoUrl),
           ],

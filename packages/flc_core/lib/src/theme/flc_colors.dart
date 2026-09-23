@@ -46,4 +46,39 @@ abstract final class FlcColors {
   /// themes).
   static Color accent(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? brandOnDark : brand;
+
+  /// A lighter neutral grey for secondary text/icons in dark mode. [slate]
+  /// on [surfaceDark] measures ~3.4:1 — under the 4.5:1 WCAG AA minimum for
+  /// body-sized text, and the actual "still difficult to read in dark
+  /// mode" feedback — a single fixed grey can't pass contrast against both
+  /// a near-white AND a near-black surface, so this needs its own resolver
+  /// the same way [accent] does for brand olive.
+  static const Color slateOnDark = Color(0xFFA9AEB4);
+
+  /// Resolves [slate] for use as secondary text/icon colour against
+  /// whatever surface is behind it in the current theme — call this
+  /// instead of the bare [slate] constant.
+  static Color secondary(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? slateOnDark : slate;
+
+  /// A lighter neutral grey for the same reason as [slateOnDark], for
+  /// [graphite] (the perk chip's text/icon colour — ~1.7:1 on
+  /// [surfaceDark], essentially invisible — confirmed in a screenshot).
+  static const Color graphiteOnDark = Color(0xFFC7CACD);
+
+  static Color secondaryStrong(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? graphiteOnDark : graphite;
+
+  /// [error]/[success] are both too dark to read as text on [surfaceDark]
+  /// (~2.6:1 and ~3.4:1 respectively — under the 4.5:1 minimum); these are
+  /// the dark-mode-readable versions. [warning] itself already passes
+  /// (~5.2:1) and needs no counterpart.
+  static const Color errorOnDark = Color(0xFFFF8A80);
+  static const Color successOnDark = Color(0xFF7BC67E);
+
+  static Color errorAccent(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? errorOnDark : error;
+
+  static Color successAccent(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? successOnDark : success;
 }

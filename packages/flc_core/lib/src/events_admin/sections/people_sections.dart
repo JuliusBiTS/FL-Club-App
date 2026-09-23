@@ -33,7 +33,7 @@ class SpeakersSection extends StatelessWidget {
             )
           : null,
       child: d.speakers.isEmpty
-          ? Text('No speakers yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate))
+          ? Text('No speakers yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)))
           : Column(
               children: <Widget>[
                 for (int i = 0; i < d.speakers.length; i++)
@@ -195,7 +195,7 @@ class LinksSection extends StatelessWidget {
             )
           : null,
       child: d.links.isEmpty
-          ? Text('No links yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate))
+          ? Text('No links yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)))
           : Column(
               children: <Widget>[
                 for (final LinkDraft link in d.links)
