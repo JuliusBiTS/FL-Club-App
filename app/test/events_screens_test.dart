@@ -59,45 +59,61 @@ Future<void> _pumpFeed(WidgetTester tester, {UserRole? role}) async {
 
 void main() {
   group('Events feed', () {
-    testWidgets('lifts FC Highlights into its own section at the top', (tester) async {
+    testWidgets('always shows events in chronological order, soonest first', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.text('FC HIGHLIGHTS'), findsOneWidget); // section header
-      expect(find.text('COMING UP'), findsOneWidget);
-
-      final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
+      // "Book talk" carries FC Highlights but is later than "Afghanistan
+      // 2026" — feedback: no ribbon should ever pull an event out of date
+      // order any more, so it must NOT come first.
       final panelY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
-      expect(recommendedY, lessThan(panelY), reason: 'the recommended event is listed first even though it is later in date');
+      final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
+      final quizY = tester.getTopLeft(find.text('Members\' quiz night')).dy;
+      expect(panelY, lessThan(recommendedY));
+      expect(recommendedY, lessThan(quizY));
     });
 
     testWidgets('shows ribbons: FC Highlights, a perk, and a derived "Selling fast"', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.text('FC Highlights'), findsOneWidget); // the badge (header is upper-case)
+      expect(find.text('FC Highlights'), findsOneWidget);
       expect(find.text('Free drink with your ticket'), findsOneWidget);
       expect(find.text('Selling fast'), findsOneWidget);
       expect(find.text('Members only'), findsWidgets);
     });
 
-    testWidgets('builds a chip for each category in the programme and filters by it', (tester) async {
+    testWidgets('the filter button opens a sheet with one row per category, and filters by it', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.widgetWithText(ChoiceChip, 'Panel discussion'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'Book talk'), findsOneWidget);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ListTile, 'Panel discussion'), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Book talk'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Book talk'));
+      await tester.tap(find.widgetWithText(ListTile, 'Book talk'));
       await tester.pumpAndSettle();
       expect(find.text('Book talk: The Last Correspondent'), findsOneWidget);
       expect(find.text('Afghanistan 2026'), findsNothing);
+      expect(find.widgetWithText(OutlinedButton, 'Book talk'), findsOneWidget); // the button now shows the active filter
     });
 
-    testWidgets('the Offers chip shows events with a special offer or perks', (tester) async {
+    testWidgets('the Offers filter shows events with a special offer or perks', (tester) async {
       await _pumpFeed(tester);
 
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Offers'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Filter'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'Offers'));
       await tester.pumpAndSettle();
       expect(find.text('Book talk: The Last Correspondent'), findsOneWidget);
       expect(find.text('Members\' quiz night'), findsNothing);
+    });
+
+    testWidgets('the Past toggle shows past events and hides the filter button', (tester) async {
+      await _pumpFeed(tester);
+      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsOneWidget);
+
+      await tester.tap(find.text('Past'));
+      await tester.pumpAndSettle();
+      expect(find.widgetWithText(OutlinedButton, 'Filter'), findsNothing);
     });
 
     testWidgets('only staff see the "Manage events" button', (tester) async {

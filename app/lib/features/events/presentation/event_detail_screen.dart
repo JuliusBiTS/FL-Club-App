@@ -144,6 +144,13 @@ class _EventDetailBody extends ConsumerWidget {
           SliverAppBar(
             expandedHeight: 240,
             pinned: true,
+            // The title only appears here once the bar has collapsed down
+            // to its toolbar — not layered over the photo while expanded.
+            // Feedback: most event photos already have their own text
+            // (flyers, posters), so stacking the title on top of that was
+            // often unreadable. The full title now lives in the body,
+            // below the image, as its own heading.
+            title: Text(event.title, maxLines: 1, overflow: TextOverflow.ellipsis),
             actions: <Widget>[
               if (isStaff)
                 IconButton(
@@ -152,15 +159,20 @@ class _EventDetailBody extends ConsumerWidget {
                   onPressed: () => _openEditor(context, ref, isAdmin: profile?.isAdmin ?? false),
                 ),
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(event.title, style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w600)),
-              background: _Hero(event: event),
-            ),
+            flexibleSpace: FlexibleSpaceBar(background: _Hero(event: event)),
           ),
           SliverPadding(
-            padding: EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.md, FlcSpace.md, bookable && selected != null ? 100 : FlcSpace.xl),
+            // Extra bottom clearance whenever the buy bar isn't already
+            // reserving space: the floating membership handle/dot can sit
+            // over this same bottom-right corner (briefing §9.6), and
+            // without this the two collide with whatever content happens
+            // to end up at the bottom of a given event's content length —
+            // feedback: "an example of it being a bit busy".
+            padding: EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.md, FlcSpace.md, bookable && selected != null ? 100 : 88),
             sliver: SliverList(
               delegate: SliverChildListDelegate(<Widget>[
+                Text(event.title, style: FlcTextStyles.h2),
+                const SizedBox(height: FlcSpace.sm),
                 if (!bookable) _StatusBanner(status: event.status),
                 if (event.isPromoted || sellingFast) ...<Widget>[
                   EventBadges(highlight: event.highlight, perks: event.perks, sellingFast: sellingFast),
@@ -392,7 +404,7 @@ class _SpeakerTile extends StatelessWidget {
             radius: 26,
             backgroundColor: FlcColors.brand.withValues(alpha: 0.10),
             backgroundImage: speaker.photoUrl == null ? null : CachedNetworkImageProvider(speaker.photoUrl!),
-            child: speaker.photoUrl == null ? Text(initials, style: FlcTextStyles.h3.copyWith(color: FlcColors.brand)) : null,
+            child: speaker.photoUrl == null ? Text(initials, style: FlcTextStyles.h3.copyWith(color: FlcColors.accent(context))) : null,
           ),
           const SizedBox(width: FlcSpace.sm),
           Expanded(
@@ -401,7 +413,7 @@ class _SpeakerTile extends StatelessWidget {
               children: <Widget>[
                 Text(speaker.name, style: FlcTextStyles.body.copyWith(fontWeight: FontWeight.w700)),
                 if (speaker.role != null && speaker.role!.isNotEmpty)
-                  Text(speaker.role!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.brand)),
+                  Text(speaker.role!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.accent(context))),
                 if (speaker.bio != null && speaker.bio!.isNotEmpty) ...<Widget>[
                   const SizedBox(height: 2),
                   Text(speaker.bio!, style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.slate)),
@@ -519,7 +531,7 @@ class _TicketTypeRow extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: FlcSpace.xs),
       shape: selected
-          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(FlcRadius.card), side: const BorderSide(color: FlcColors.brand, width: 2))
+          ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(FlcRadius.card), side: BorderSide(color: FlcColors.accent(context), width: 2))
           : null,
       child: ListTile(
         title: Text(ticketType.name),
