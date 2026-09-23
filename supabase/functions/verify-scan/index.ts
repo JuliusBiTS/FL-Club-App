@@ -200,7 +200,8 @@ Deno.serve(async (req) => {
     const { data: profile } = await admin
       .from("profiles")
       .select("id")
-      .eq("membership_number", body.membership_number)
+      // Staff type these by hand: ignore case and stray spaces, treat % and _ literally.
+      .ilike("membership_number", body.membership_number.trim().replace(/[\\%_]/g, (c) => "\\" + c))
       .maybeSingle();
     profileId = profile?.id ?? null;
     result = profile ? "valid" : "not_found";

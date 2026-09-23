@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import '../../core/preferences/theme_mode_preferences.dart';
 import '../../core/push/push_service.dart';
 import '../../core/supabase/supabase_providers.dart';
 import '../membership/presentation/membership_card_sheet.dart';
+import 'data/profile_photo_repository.dart';
 
 /// The "You" tab — briefing §9.10. Signed out: a sign-in prompt, never a
 /// wall. Signed in: header, tickets/loyalty/membership, and the settings/
@@ -110,13 +112,26 @@ class _SignedInBody extends ConsumerWidget {
             padding: const EdgeInsets.all(FlcSpace.md),
             child: Text("Couldn't load your profile.", style: TextStyle(color: FlcColors.errorAccent(context))),
           ),
-          data: (profile) => _ProfileHeader(name: profile?.displayName ?? profile?.fullName, email: user.email ?? '', isMember: profile?.isActiveMember ?? false),
+          data: (profile) => _ProfileHeader(
+            name: profile?.displayName ?? profile?.fullName,
+            email: user.email ?? '',
+            isMember: profile?.isActiveMember ?? false,
+            photoUrl: ref.watch(profilePhotoUrlProvider).valueOrNull,
+            onTap: () => context.push('/you/profile'),
+          ),
         ),
         const Padding(
           padding: EdgeInsets.fromLTRB(FlcSpace.md, 0, FlcSpace.md, FlcSpace.sm),
           child: _MembershipCardTile(),
         ),
         const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.manage_accounts_outlined),
+          title: const Text('Your details'),
+          subtitle: const Text('Name, phone, picture, news preferences'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/you/profile'),
+        ),
         ListTile(
           leading: const Icon(Icons.confirmation_number_outlined),
           title: const Text('My tickets'),
@@ -251,25 +266,32 @@ Future<void> _showThemeModeSheet(BuildContext context, WidgetRef ref) async {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({required this.name, required this.email, required this.isMember});
+  const _ProfileHeader({required this.name, required this.email, required this.isMember, this.photoUrl, this.onTap});
 
   final String? name;
   final String email;
   final bool isMember;
+  final String? photoUrl;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
       padding: const EdgeInsets.all(FlcSpace.md),
       child: Row(
         children: <Widget>[
           CircleAvatar(
             radius: 28,
             backgroundColor: FlcColors.ink,
-            child: Text(
-              (name?.isNotEmpty == true ? name![0] : email[0]).toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontSize: 20),
-            ),
+            backgroundImage: photoUrl == null ? null : CachedNetworkImageProvider(photoUrl!, cacheKey: 'profile-photo'),
+            child: photoUrl != null
+                ? null
+                : Text(
+                    (name?.isNotEmpty == true ? name![0] : email[0]).toUpperCase(),
+                    style: const TextStyle(color: Colors.white, fontSize: 20),
+                  ),
           ),
           const SizedBox(width: FlcSpace.md),
           Expanded(
@@ -284,6 +306,7 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

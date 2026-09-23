@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'scan_camera.dart';
 
 import '../data/scan_pack_repository.dart';
 import '../scanner_providers.dart';
@@ -18,7 +18,10 @@ enum _MembershipMode { qr, manual }
 /// password), never the green "member confirmed" treatment a verified
 /// rotating QR gets. See MembershipScanResultModel's doc comment.
 class MembershipScanTab extends ConsumerStatefulWidget {
-  const MembershipScanTab({super.key});
+  const MembershipScanTab({required this.active, super.key});
+
+  /// Only the visible tab may hold the camera.
+  final bool active;
 
   @override
   ConsumerState<MembershipScanTab> createState() => _MembershipScanTabState();
@@ -26,29 +29,19 @@ class MembershipScanTab extends ConsumerStatefulWidget {
 
 class _MembershipScanTabState extends ConsumerState<MembershipScanTab> {
   _MembershipMode _mode = _MembershipMode.qr;
-  MobileScannerController? _controller;
   final _numberController = TextEditingController();
   bool _busy = false;
   MembershipScanResultModel? _result;
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = MobileScannerController();
-  }
-
-  @override
   void dispose() {
-    unawaited(_controller?.dispose());
     _numberController.dispose();
     super.dispose();
   }
 
-  Future<void> _onDetect(BarcodeCapture capture) async {
-    if (_busy || capture.barcodes.isEmpty) return;
-    final payload = capture.barcodes.first.rawValue;
-    if (payload == null) return;
+  Future<void> _onDetect(String payload) async {
+    if (_busy) return;
     await _run(() async {
       final deviceId = await ref.read(deviceIdProvider).get();
       return ref.read(membershipScanRepositoryProvider).scanQr(payload: payload, deviceId: deviceId);
@@ -130,9 +123,8 @@ class _MembershipScanTabState extends ConsumerState<MembershipScanTab> {
   }
 
   Widget _buildCamera() {
-    final controller = _controller;
-    if (controller == null) return const SizedBox.shrink();
-    return MobileScanner(controller: controller, onDetect: _onDetect);
+    if (!widget.active) return const SizedBox.expand();
+    return ScanCamera(onCode: _onDetect);
   }
 
   Widget _buildManual() {

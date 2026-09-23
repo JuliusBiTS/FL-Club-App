@@ -5,7 +5,7 @@ import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'scan_camera.dart';
 
 import '../../../core/local_db/app_database_provider.dart';
 import '../../events/presentation/events_feed_controller.dart';
@@ -18,14 +18,17 @@ import 'scan_result_overlay.dart';
 /// pauses (not stops) while a result is on screen so the same code isn't
 /// re-detected before staff dismisses it.
 class DoorScanTab extends ConsumerStatefulWidget {
-  const DoorScanTab({super.key});
+  const DoorScanTab({required this.active, super.key});
+
+  /// Only the visible tab may hold the camera.
+  final bool active;
 
   @override
   ConsumerState<DoorScanTab> createState() => _DoorScanTabState();
 }
 
 class _DoorScanTabState extends ConsumerState<DoorScanTab> {
-  MobileScannerController? _controller;
+  final _cameraKey = GlobalKey<ScanCameraState>();
   String? _eventId;
   String? _eventTitle;
   bool _busy = false;
@@ -53,7 +56,6 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
   @override
   void dispose() {
     unawaited(_connectivitySub?.cancel());
-    unawaited(_controller?.dispose());
     super.dispose();
   }
 
@@ -64,13 +66,8 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
     });
     try {
       await ref.read(scanPackRepositoryProvider).download(event.id);
-      final controller = MobileScannerController();
-      if (!mounted) {
-        unawaited(controller.dispose());
-        return;
-      }
+      if (!mounted) return;
       setState(() {
-        _controller = controller;
         _eventId = event.id;
         _eventTitle = event.title;
         _loadingPack = false;
@@ -92,14 +89,19 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
     if (mounted) setState(() => _pendingCount = pending.length);
   }
 
-  Future<void> _onDetect(BarcodeCapture capture) async {
+  Future<void> _onDetect(String payload) async {
     final eventId = _eventId;
-    if (_busy || eventId == null || capture.barcodes.isEmpty) return;
-    final payload = capture.barcodes.first.rawValue;
-    if (payload == null) return;
+    if (_busy || eventId == null) return;
 
     setState(() => _busy = true);
-    final result = await ref.read(doorScanRepositoryProvider).scan(eventId: eventId, payload: payload);
+    final TicketScanResultModel result;
+    try {
+      result = await ref.read(doorScanRepositoryProvider).scan(eventId: eventId, payload: payload);
+    } catch (_) {
+      // Never leave the scanner stuck "busy" behind a failed lookup.
+      if (mounted) setState(() => _busy = false);
+      return;
+    }
     if (!mounted) return;
     setState(() => _result = result);
     unawaited(_trySync());
@@ -126,9 +128,7 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
   }
 
   void _switchEvent() {
-    unawaited(_controller?.dispose());
     setState(() {
-      _controller = null;
       _eventId = null;
       _eventTitle = null;
       _result = null;
@@ -139,10 +139,9 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = _controller;
     final eventId = _eventId;
 
-    if (eventId == null || controller == null) {
+    if (eventId == null) {
       return _EventPicker(loading: _loadingPack, error: _loadError, onSelect: _selectEvent);
     }
 
@@ -166,11 +165,11 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
               IconButton(
                 icon: const Icon(Icons.flash_on),
                 tooltip: 'Torch',
-                onPressed: () => controller.toggleTorch(),
+                onPressed: () => _cameraKey.currentState?.toggleTorch(),
               ),
             ],
           ),
-          body: MobileScanner(controller: controller, onDetect: _onDetect),
+          body: widget.active ? ScanCamera(key: _cameraKey, onCode: _onDetect) : const SizedBox.expand(),
         ),
         if (_result != null) Positioned.fill(child: _buildOverlay(_result!)),
       ],

@@ -32,6 +32,9 @@ class MemberCardRepository {
     final photoUrl = data['photo_signed_url'] as String?;
     if (photoUrl != null) {
       await _photoCache.downloadAndSave(photoUrl);
+    } else {
+      // Photo removed on the account — don't keep showing the old one.
+      await _photoCache.clear();
     }
     return card;
   }

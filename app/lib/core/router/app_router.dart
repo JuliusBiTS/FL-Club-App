@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/account/account_screen.dart';
 import '../../features/account/presentation/delete_account_screen.dart';
 import '../../features/account/presentation/notification_settings_screen.dart';
+import '../../features/account/presentation/profile_settings_screen.dart';
 import '../../features/account/presentation/sign_in_screen.dart';
 import '../../features/checkout/domain/checkout_args.dart';
 import '../../features/checkout/presentation/checkout_screen.dart';
@@ -110,6 +111,7 @@ final Provider<GoRouter> appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const AccountScreen(),
                 routes: <RouteBase>[
                   GoRoute(path: 'tickets', builder: (context, state) => const TicketsScreen()),
+                  GoRoute(path: 'profile', builder: (context, state) => const ProfileSettingsScreen()),
                   GoRoute(path: 'loyalty', builder: (context, state) => const LoyaltyScreen()),
                   GoRoute(path: 'notifications', builder: (context, state) => const NotificationSettingsScreen()),
                   GoRoute(path: 'become-a-member', builder: (context, state) => const MembershipInterestScreen()),

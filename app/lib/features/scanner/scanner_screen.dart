@@ -68,7 +68,10 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
           Expanded(
             child: IndexedStack(
               index: _mode.index,
-              children: const <Widget>[DoorScanTab(), MembershipScanTab()],
+              children: <Widget>[
+                DoorScanTab(active: _mode == _ScanMode.door),
+                MembershipScanTab(active: _mode == _ScanMode.membership),
+              ],
             ),
           ),
         ],

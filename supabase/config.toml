@@ -74,3 +74,5 @@ verify_jwt = false # pg_cron-triggered
 verify_jwt = false # pg_cron-triggered
 [functions.purge-deleted-accounts]
 verify_jwt = false # pg_cron-triggered
+[functions.profile-photo]
+verify_jwt = true
