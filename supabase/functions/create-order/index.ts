@@ -9,7 +9,7 @@ import { z } from "npm:zod@3.23.8";
 import Stripe from "npm:stripe@16.9.0";
 import { handlePreflight } from "../_shared/cors.ts";
 import { jsonResponse, errorResponse } from "../_shared/response.ts";
-import { createAdminClient, createCallerClient, requireEnv } from "../_shared/supabase-clients.ts";
+import { createAdminClient, createCallerClient } from "../_shared/supabase-clients.ts";
 import { checkRateLimit } from "../_shared/rate-limit.ts";
 
 const bodySchema = z
@@ -69,14 +69,27 @@ Deno.serve(async (req) => {
     currency: string;
   }>)[0];
 
+  // Test mode: no Stripe secret key configured on this project yet (the
+  // club hasn't connected a real account). Rather than fail every
+  // checkout with a dead end, skip Stripe entirely and let the client
+  // drive the order to 'paid' via simulate-test-payment instead — that
+  // function has its own server-side check that this can NEVER run once a
+  // real STRIPE_SECRET_KEY is set, so this can't become a free-ticket path
+  // once payments are actually live. See docs/DECISIONS.md.
+  const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (!stripeSecretKey) {
+    return jsonResponse({
+      order_id: reservation.order_id,
+      reference: reservation.reference,
+      client_secret: null,
+      total_minor: reservation.total_minor,
+      test_mode: true,
+    });
+  }
+
   let paymentIntent: Stripe.PaymentIntent;
   try {
-    // Constructing the Stripe client (and therefore reading
-    // STRIPE_SECRET_KEY) happens inside this try too — until the club
-    // connects a real Stripe account this throws on every checkout, and
-    // that must still release the inventory hold and return a clean
-    // error rather than an opaque 500.
-    const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-06-20" });
     paymentIntent = await stripe.paymentIntents.create(
       {
         amount: reservation.total_minor,
@@ -107,5 +120,6 @@ Deno.serve(async (req) => {
     reference: reservation.reference,
     client_secret: paymentIntent.client_secret,
     total_minor: reservation.total_minor,
+    test_mode: false,
   });
 });
