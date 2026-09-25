@@ -33,7 +33,11 @@ class DoorScanRepository {
 
     final cached = await _db.scanPackTicketById(parsed.ticketId);
     if (cached == null || cached.eventId != eventId) {
-      return TicketScanResultModel(ticketId: parsed.ticketId, result: 'not_found');
+      // Not in this device's pack: most likely bought after the pack was
+      // downloaded. If there's a connection, ask the server instead of
+      // turning away a paying guest; with none, it can only be "not found".
+      final online = await _verifyOnline(eventId, payload, scannedAt);
+      return online ?? TicketScanResultModel(ticketId: parsed.ticketId, result: 'not_found');
     }
 
     final keyBase64 = await _eventScanKeyStore.get(eventId);
@@ -83,6 +87,29 @@ class DoorScanRepository {
       attendeeName: attendeeName,
       ticketTypeName: ticketTypeName,
     );
+  }
+
+  /// One-off online check for a ticket this device's pack doesn't know about.
+  /// Returns null when there's no connection (or the call fails).
+  Future<TicketScanResultModel?> _verifyOnline(String eventId, String payload, DateTime scannedAt) async {
+    try {
+      final response = await _client.functions.invoke(
+        'verify-scan',
+        body: {
+          'kind': 'ticket',
+          'event_id': eventId,
+          'device_id': 'door-online',
+          'scans': [
+            {'payload': payload, 'scanned_at': scannedAt.toIso8601String(), 'was_offline': false},
+          ],
+        },
+      );
+      final results = ((response.data as Map<String, dynamic>)['results'] as List<dynamic>).cast<Map<String, dynamic>>();
+      if (results.isEmpty) return null;
+      return TicketScanResultModel.fromApiJson(results.first);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Flushes every queued offline scan for [eventId] to verify-scan in one

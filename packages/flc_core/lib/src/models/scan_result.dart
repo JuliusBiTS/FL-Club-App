@@ -19,7 +19,7 @@ abstract class TicketScanResultModel with _$TicketScanResultModel {
   }) = _TicketScanResultModel;
 
   factory TicketScanResultModel.fromApiJson(Map<String, dynamic> json) => TicketScanResultModel(
-        ticketId: json['ticket_id'] as String,
+        ticketId: (json['ticket_id'] as String?) ?? '', // null when the code wasn't a ticket at all
         result: json['result'] as String,
         attendeeName: json['attendee_name'] as String?,
         ticketTypeName: json['ticket_type_name'] as String?,

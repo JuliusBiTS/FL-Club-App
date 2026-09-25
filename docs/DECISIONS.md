@@ -389,3 +389,11 @@ Feedback after the first APK install of the round above.
 ### Web preview build (for iPhone testing without a Mac)
 - `app/` now also builds for the web (`flutter build web --release --dart-define-from-file=dart_defines.json --dart-define=WEB_GATE_HASH=<sha256>`). Web differences: in-memory SQLite (WASM) cache, no push, no Stripe sheet, no lock-screen audio controls, no local photo cache. Scanner/camera behaviour in mobile Safari is untested.
 - Password screen (`core/web_gate.dart`) shows only on web and only when a hash is baked in. Casual keep-out only, NOT strong security (checked in the browser); real data stays behind sign-in and database rules. The password is never in the repo.
+
+### Scanning, verified end to end (25 Sep 2026)
+- Live test with demo accounts: buy (test mode) → ticket issued → QR payload from the ticket secret → staff scan: valid; 2nd scan already_redeemed; other event wrong_event; tampered invalid_signature; 30-min-old code expired_code; garbage invalid; non-staff refused (403). The scan pack's key verifies the same payload offline. Member card QR → staff scan valid; manual lookup "identified, not verified"; bad/unknown refused. Test tickets/orders were voided afterwards.
+- Scan packs (offline door lists) no longer have a "too early / too late" window: any event can be scanned any time.
+- The door event picker uses its own list (published events from 2 days ago onwards) — the public feed hides an event once it starts, which is exactly when the door is busiest.
+- A ticket not in the device's pack (bought after download) is checked online instead of being turned away; offline it is "not found".
+- `TicketScanResultModel.fromApiJson` tolerates a null ticket id (garbage QR) instead of throwing.
+- Scan camera shows an aiming frame + hint. Physical-camera behaviour is still unverified on a device.

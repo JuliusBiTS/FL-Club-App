@@ -1,3 +1,4 @@
+import 'package:flc_core/flc_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -35,4 +36,21 @@ final Provider<DoorScanRepository> doorScanRepositoryProvider = Provider<DoorSca
 
 final Provider<MembershipScanRepository> membershipScanRepositoryProvider = Provider<MembershipScanRepository>((ref) {
   return MembershipScanRepository(ref.watch(supabaseClientProvider));
+});
+
+/// Events staff can scan for: everything published from two days ago onwards.
+/// The public feed hides an event the moment it starts, which is exactly when
+/// the door is busiest — so the scanner has its own list. Any future event is
+/// included too (tickets can be scanned whenever).
+final scannerEventsProvider = FutureProvider.autoDispose<List<EventModel>>((ref) async {
+  final since = DateTime.now().toUtc().subtract(const Duration(days: 2)).toIso8601String();
+  final rows = await ref
+      .watch(supabaseClientProvider)
+      .from('events')
+      .select()
+      .eq('status', 'published')
+      .gte('starts_at', since)
+      .order('starts_at')
+      .limit(120);
+  return rows.map(EventModel.fromJson).toList();
 });

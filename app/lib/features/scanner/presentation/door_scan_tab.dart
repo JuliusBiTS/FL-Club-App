@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'scan_camera.dart';
 
 import '../../../core/local_db/app_database_provider.dart';
-import '../../events/presentation/events_feed_controller.dart';
 import '../data/scan_pack_repository.dart';
 import '../scanner_providers.dart';
 import 'scan_result_overlay.dart';
@@ -228,7 +227,7 @@ class _EventPicker extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final eventsAsync = ref.watch(eventsFeedControllerProvider);
+    final eventsAsync = ref.watch(scannerEventsProvider);
     final dateFormat = DateFormat('EEE d MMM, HH:mm');
 
     return Scaffold(
@@ -246,7 +245,15 @@ class _EventPicker extends ConsumerWidget {
           Expanded(
             child: eventsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => const Center(child: Text("Couldn't load events.")),
+              error: (e, st) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text("Couldn't load events."),
+                    TextButton(onPressed: () => ref.invalidate(scannerEventsProvider), child: const Text('Try again')),
+                  ],
+                ),
+              ),
               data: (events) {
                 if (events.isEmpty) return const Center(child: Text('No events to scan for.'));
                 return ListView.builder(

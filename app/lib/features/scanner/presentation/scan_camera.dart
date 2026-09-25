@@ -76,6 +76,23 @@ class ScanCameraState extends State<ScanCamera> {
     return MobileScanner(
       controller: _controller,
       onDetect: _onDetect,
+      overlayBuilder: (BuildContext context, BoxConstraints constraints) {
+        final double side = (constraints.biggest.shortestSide * 0.65).clamp(160.0, 320.0);
+        return IgnorePointer(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Container(
+                width: side,
+                height: side,
+                decoration: BoxDecoration(border: Border.all(color: Colors.white70, width: 3), borderRadius: BorderRadius.circular(16)),
+              ),
+              const SizedBox(height: FlcSpace.md),
+              const Text('Point the camera at the QR code', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        );
+      },
       errorBuilder: (BuildContext context, MobileScannerException error, Widget? child) {
         final bool denied = error.errorCode == MobileScannerErrorCode.permissionDenied;
         return ColoredBox(

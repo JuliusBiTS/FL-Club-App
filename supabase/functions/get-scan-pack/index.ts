@@ -39,18 +39,14 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (eventErr || !event) return errorResponse("event not found", 404);
 
+  // Staff can scan any event at any time — no "too early" or "too late"
+  // window (feedback: tickets must be scannable whenever, even for an event
+  // far in the future). The pack is just this event's ticket list plus its
+  // scan key, and it's re-downloaded whenever staff pick the event.
   const now = Date.now();
   const startsAt = new Date(event.starts_at).getTime();
   const endsAt = event.ends_at ? new Date(event.ends_at).getTime() : startsAt + 3 * 3600_000;
-  const twelveHoursMs = 12 * 3600_000;
   const sixHoursMs = 6 * 3600_000;
-
-  if (startsAt - now > twelveHoursMs) {
-    return errorResponse("This event doesn't start soon enough for a scan pack yet — try again closer to the door.", 403);
-  }
-  if (now - endsAt > sixHoursMs) {
-    return errorResponse("This event has already finished.", 403);
-  }
 
   let masterTicketKey: string;
   try {
@@ -70,7 +66,8 @@ Deno.serve(async (req) => {
     return errorResponse("internal error", 500);
   }
 
-  const expiresAt = new Date(endsAt + sixHoursMs).toISOString();
+  // Good for at least a day, or until six hours after the event ends.
+  const expiresAt = new Date(Math.max(endsAt + sixHoursMs, now + 24 * 3600_000)).toISOString();
 
   return jsonResponse({
     event_id: event.id,
