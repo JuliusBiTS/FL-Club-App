@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
   if (profileId && result === "valid") {
     const { data: profile } = await admin
       .from("profiles")
-      .select("full_name, membership_kind, membership_expires_at, member_status, membership_photo_path")
+      .select("full_name, membership_kind, membership_number, membership_started_at, membership_expires_at, member_status, membership_photo_path")
       .eq("id", profileId)
       .maybeSingle();
 
@@ -251,6 +251,8 @@ Deno.serve(async (req) => {
       responseExtra = {
         full_name: profile.full_name,
         membership_kind: profile.membership_kind,
+        membership_number: profile.membership_number,
+        member_since: profile.membership_started_at,
         valid_to: profile.membership_expires_at,
         photo_signed_url: photoSignedUrl,
       };

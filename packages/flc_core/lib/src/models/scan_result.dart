@@ -50,6 +50,8 @@ abstract class MembershipScanResultModel with _$MembershipScanResultModel {
     required bool authenticated,
     String? fullName,
     String? membershipKind,
+    String? memberNumber,
+    String? memberSince,
     String? validTo,
     String? photoSignedUrl,
   }) = _MembershipScanResultModel;
@@ -60,6 +62,8 @@ abstract class MembershipScanResultModel with _$MembershipScanResultModel {
         authenticated: json['authenticated'] as bool? ?? false,
         fullName: json['full_name'] as String?,
         membershipKind: json['membership_kind'] as String?,
+        memberNumber: json['membership_number'] as String?,
+        memberSince: json['member_since'] as String?,
         validTo: json['valid_to'] as String?,
         photoSignedUrl: json['photo_signed_url'] as String?,
       );

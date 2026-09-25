@@ -13,6 +13,7 @@ class ScanResultOverlay extends StatelessWidget {
     this.subtitle,
     this.detail,
     this.photoUrl,
+    this.facts,
     this.onDismiss,
     super.key,
   });
@@ -23,12 +24,16 @@ class ScanResultOverlay extends StatelessWidget {
   final String? subtitle;
   final String? detail;
   final String? photoUrl;
+
+  /// Label/value rows shown in a small card under the name (member overview).
+  final List<(String, String)>? facts;
   final VoidCallback? onDismiss;
 
   factory ScanResultOverlay.valid({
     required String title,
     String? subtitle,
     String? photoUrl,
+    List<(String, String)>? facts,
     VoidCallback? onDismiss,
   }) =>
       ScanResultOverlay(
@@ -37,6 +42,7 @@ class ScanResultOverlay extends StatelessWidget {
         title: title,
         subtitle: subtitle,
         photoUrl: photoUrl,
+        facts: facts,
         onDismiss: onDismiss,
       );
 
@@ -45,6 +51,7 @@ class ScanResultOverlay extends StatelessWidget {
     String? subtitle,
     String? detail,
     String? photoUrl,
+    List<(String, String)>? facts,
     VoidCallback? onDismiss,
   }) =>
       ScanResultOverlay(
@@ -54,6 +61,7 @@ class ScanResultOverlay extends StatelessWidget {
         subtitle: subtitle,
         detail: detail,
         photoUrl: photoUrl,
+        facts: facts,
         onDismiss: onDismiss,
       );
 
@@ -105,6 +113,28 @@ class ScanResultOverlay extends StatelessWidget {
                       subtitle!,
                       style: FlcTextStyles.body.copyWith(color: Colors.white),
                       textAlign: TextAlign.center,
+                    ),
+                  ],
+                  if (facts != null && facts!.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: FlcSpace.md),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: FlcSpace.md, vertical: FlcSpace.sm),
+                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.22), borderRadius: BorderRadius.circular(FlcRadius.card)),
+                      child: Column(
+                        children: <Widget>[
+                          for (final (String label, String value) in facts!)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 3),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(child: Text(label, style: FlcTextStyles.bodySmall.copyWith(color: Colors.white70))),
+                                  Text(value, style: FlcTextStyles.body.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                   if (detail != null) ...<Widget>[

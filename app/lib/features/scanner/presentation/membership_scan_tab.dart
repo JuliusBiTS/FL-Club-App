@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
 import 'scan_camera.dart';
 
 import '../data/scan_pack_repository.dart';
@@ -150,11 +152,30 @@ class _MembershipScanTabState extends ConsumerState<MembershipScanTab> {
     );
   }
 
+  /// The quick "who is this" card: type, number, since when, valid until.
+  List<(String, String)> _memberFacts(MembershipScanResultModel r) {
+    String cap(String s) => s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+    String date(String? iso, String pattern) {
+      final d = iso == null ? null : DateTime.tryParse(iso);
+      return d == null ? '' : DateFormat(pattern).format(d.toLocal());
+    }
+
+    final since = date(r.memberSince, 'MMM yyyy');
+    final until = date(r.validTo, 'd MMM yyyy');
+    return <(String, String)>[
+      if (r.membershipKind != null) ('Membership', '${cap(r.membershipKind!)} member'),
+      if (r.memberNumber != null && r.memberNumber!.isNotEmpty) ('Member no.', r.memberNumber!),
+      if (since.isNotEmpty) ('Member since', since),
+      ('Valid until', until.isEmpty ? 'No expiry date' : until),
+    ];
+  }
+
   Widget _buildOverlay(MembershipScanResultModel r) {
     if (r.result == 'valid' && r.authenticated) {
       return ScanResultOverlay.valid(
         title: r.fullName ?? 'Member',
-        subtitle: r.membershipKind,
+        subtitle: 'Verified member',
+        facts: _memberFacts(r),
         photoUrl: r.photoSignedUrl,
         onDismiss: _dismissResult,
       );
@@ -164,6 +185,7 @@ class _MembershipScanTabState extends ConsumerState<MembershipScanTab> {
         title: r.fullName ?? 'Member',
         subtitle: 'Identified, not verified',
         detail: 'Check photo ID before honouring a member rate — this was a manual lookup, not a scanned QR.',
+        facts: _memberFacts(r),
         photoUrl: r.photoSignedUrl,
         onDismiss: _dismissResult,
       );
