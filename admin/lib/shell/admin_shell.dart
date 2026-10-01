@@ -6,6 +6,7 @@ import '../auth_gate.dart';
 import '../sections/audit_log_section.dart';
 import '../sections/dashboard_section.dart';
 import '../sections/orders_section.dart';
+import '../sections/sales_section.dart';
 
 /// Desktop-first console shell — briefing §9.12. Wide NavigationRail
 /// rather than the mobile app's bottom nav; this runs in a browser tab on
@@ -39,6 +40,7 @@ class _AdminShellState extends State<AdminShell> {
     if (widget.isAdmin) ('Dashboard', Icons.dashboard_outlined, const DashboardSection()),
     ('Events', Icons.event_outlined, EventsManagerScreen(repository: _events, isAdmin: widget.isAdmin, embedded: true)),
     if (widget.isAdmin) ('Orders', Icons.receipt_long_outlined, const OrdersSection()),
+    if (widget.isAdmin) ('Sales', Icons.insights_outlined, SalesSection(events: _events)),
     if (widget.isAdmin)
       (
         'People',

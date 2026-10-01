@@ -54,3 +54,28 @@ final scannerEventsProvider = FutureProvider.autoDispose<List<EventModel>>((ref)
       .limit(120);
   return rows.map(EventModel.fromJson).toList();
 });
+
+/// How many tickets are sold for an event and how many are already in.
+class CheckinCounts {
+  const CheckinCounts({required this.sold, required this.checkedIn, required this.live});
+
+  final int sold;
+  final int checkedIn;
+
+  /// True when it came from the server (counts every door); false when it was
+  /// worked out from this phone's downloaded list because there's no signal.
+  final bool live;
+}
+
+final checkinCountsProvider = FutureProvider.autoDispose.family<CheckinCounts, String>((ref, eventId) async {
+  try {
+    final dynamic r = await ref.watch(supabaseClientProvider).rpc('event_checkin_counts', params: <String, dynamic>{'p_event_id': eventId});
+    final Map<String, dynamic> m = Map<String, dynamic>.from(r as Map);
+    return CheckinCounts(sold: (m['sold'] as num).toInt(), checkedIn: (m['checked_in'] as num).toInt(), live: true);
+  } catch (_) {
+    final tickets = await ref.watch(appDatabaseProvider).scanPackTicketsFor(eventId);
+    final int sold = tickets.where((t) => t.status == 'valid' || t.status == 'redeemed').length;
+    final int inside = tickets.where((t) => t.status == 'redeemed').length;
+    return CheckinCounts(sold: sold, checkedIn: inside, live: false);
+  }
+});

@@ -24,6 +24,7 @@ dependencies:
   intl: ^0.19.0
   data_table_2: ^2.5.16 # sortable/filterable tables for Orders/Members/Attendees, briefing §9.12
   file_picker: ^8.1.4 # CSV import for SHEEP CRM reconciliation, briefing §12.5
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

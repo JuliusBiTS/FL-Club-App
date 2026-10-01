@@ -431,6 +431,7 @@ class _EditorViewState extends State<_EditorView> {
                     MembershipLoyaltySection(controller: c),
                     PromotionSection(controller: c),
                     if (!c.isNew) NotificationsSection(controller: c),
+                    if (!c.isNew) WaitingListSection(controller: c),
                     const SizedBox(height: FlcSpace.xl),
                   ],
                 );

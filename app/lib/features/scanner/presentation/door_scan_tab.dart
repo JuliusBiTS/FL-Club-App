@@ -103,6 +103,7 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
     }
     if (!mounted) return;
     setState(() => _result = result);
+    ref.invalidate(checkinCountsProvider(eventId));
     unawaited(_trySync());
   }
 
@@ -168,7 +169,12 @@ class _DoorScanTabState extends ConsumerState<DoorScanTab> {
               ),
             ],
           ),
-          body: widget.active ? ScanCamera(key: _cameraKey, onCode: _onDetect) : const SizedBox.expand(),
+          body: Column(
+            children: <Widget>[
+              _CheckinStrip(eventId: eventId),
+              Expanded(child: widget.active ? ScanCamera(key: _cameraKey, onCode: _onDetect) : const SizedBox.expand()),
+            ],
+          ),
         ),
         if (_result != null) Positioned.fill(child: _buildOverlay(_result!)),
       ],
@@ -270,6 +276,69 @@ class _EventPicker extends ConsumerWidget {
                   },
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "47 of 120 checked in" across the top of the door scanner — updates after
+/// every scan and every 20 seconds, so a second door's scans show up too.
+class _CheckinStrip extends ConsumerStatefulWidget {
+  const _CheckinStrip({required this.eventId});
+
+  final String eventId;
+
+  @override
+  ConsumerState<_CheckinStrip> createState() => _CheckinStripState();
+}
+
+class _CheckinStripState extends ConsumerState<_CheckinStrip> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 20), (_) {
+      if (mounted) ref.invalidate(checkinCountsProvider(widget.eventId));
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final CheckinCounts? c = ref.watch(checkinCountsProvider(widget.eventId)).valueOrNull;
+    if (c == null) return const SizedBox(height: 4, child: LinearProgressIndicator(minHeight: 4));
+    final double fraction = c.sold == 0 ? 0 : (c.checkedIn / c.sold).clamp(0.0, 1.0);
+    return Container(
+      width: double.infinity,
+      color: Colors.black,
+      padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.xs, FlcSpace.md, FlcSpace.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Text('${c.checkedIn} of ${c.sold} checked in', style: FlcTextStyles.body.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+              const Spacer(),
+              Text(c.live ? 'Live' : "This phone's list", style: FlcTextStyles.caption.copyWith(color: c.live ? FlcColors.scannerValidBg : Colors.white54)),
+            ],
+          ),
+          const SizedBox(height: FlcSpace.xs),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: fraction,
+              minHeight: 6,
+              backgroundColor: Colors.white24,
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
         ],

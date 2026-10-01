@@ -290,6 +290,23 @@ class EventAdminRepository {
     return ExtractedEventFields.fromJson(Map<String, dynamic>.from(data['fields'] as Map));
   }
 
+  // ------------------------------------------------------------ waiting list
+
+  /// Staff-only (checked in Postgres): who asked to be told when a place opens.
+  Future<List<InterestPerson>> interestList(String eventId) async {
+    final dynamic rows = await _client.rpc('event_interest_list', params: <String, dynamic>{'p_event_id': eventId});
+    return <InterestPerson>[
+      for (final dynamic r in (rows as List<dynamic>))
+        InterestPerson(
+          createdAt: DateTime.parse(r['created_at'] as String),
+          name: r['full_name'] as String?,
+          email: r['email'] as String?,
+          signedIn: r['signed_in'] == true,
+          notified: r['notified_at'] != null,
+        ),
+    ];
+  }
+
   // ----------------------------------------------------------------- images
 
   static const Map<String, String> _imageTypes = <String, String>{
@@ -376,3 +393,18 @@ class EventAdminRepository {
     ];
   }
 }
+
+/// One person on an event's waiting list.
+class InterestPerson {
+  const InterestPerson({required this.createdAt, required this.name, required this.email, required this.signedIn, required this.notified});
+
+  final DateTime createdAt;
+  final String? name;
+  final String? email;
+
+  /// Signed-in people get an app notification if a place opens; guests only
+  /// left an email, so the club has to contact them itself.
+  final bool signedIn;
+  final bool notified;
+}
+

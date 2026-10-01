@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/supabase/supabase_providers.dart';
 import 'loyalty_providers.dart';
+import 'loyalty_widgets.dart';
 
 /// Loyalty progress + ledger — briefing §9.5, §10. One point per event per
 /// person; the ledger below is already event-level by construction (the
@@ -58,29 +59,39 @@ class LoyaltyScreen extends ConsumerWidget {
         ),
         data: (status) {
           if (status == null) return const SizedBox.shrink();
+          final rewards = status.rewards.where((r) => r.isAvailable).toList();
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(loyaltyStatusProvider),
             child: ListView(
               padding: const EdgeInsets.all(FlcSpace.md),
               children: <Widget>[
-                _ProgressCard(status: status),
-                if (status.rewards.any((r) => r.isAvailable)) ...<Widget>[
-                  const SizedBox(height: FlcSpace.md),
-                  _AvailableRewardsCard(count: status.rewards.where((r) => r.isAvailable).length),
+                PunchCard(balance: status.balance, threshold: status.config.threshold, rewardsReady: rewards.length),
+                if (rewards.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: FlcSpace.lg),
+                  Text(rewards.length == 1 ? 'YOUR FREE TICKET' : 'YOUR FREE TICKETS', style: FlcTextStyles.overline.copyWith(color: FlcColors.secondary(context))),
+                  const SizedBox(height: FlcSpace.sm),
+                  for (final r in rewards) ...<Widget>[
+                    RewardTicket(earnedAt: r.earnedAt, expiresAt: r.expiresAt),
+                    const SizedBox(height: FlcSpace.sm),
+                  ],
                 ],
+                const SizedBox(height: FlcSpace.md),
+                LoyaltyHowItWorks(threshold: status.config.threshold),
                 const SizedBox(height: FlcSpace.lg),
-                const Text('Activity', style: FlcTextStyles.h3),
+                Text('ACTIVITY', style: FlcTextStyles.overline.copyWith(color: FlcColors.secondary(context))),
                 const SizedBox(height: FlcSpace.sm),
                 if (status.ledger.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: FlcSpace.md),
                     child: Text(
-                      'Buy a ticket to start earning — one point per event, however many tickets you buy to it.',
+                      'Book an event to earn your first stamp.',
                       style: FlcTextStyles.body,
                     ),
                   )
                 else
-                  for (final entry in status.ledger) _LedgerRow(entry: entry, eventTitles: status.eventTitles),
+                  for (int i = 0; i < status.ledger.length; i++)
+                    _ActivityRow(entry: status.ledger[i], eventTitles: status.eventTitles, isLast: i == status.ledger.length - 1),
+                const SizedBox(height: FlcSpace.xl),
               ],
             ),
           );
@@ -90,113 +101,59 @@ class LoyaltyScreen extends ConsumerWidget {
   }
 }
 
-class _ProgressCard extends StatelessWidget {
-  const _ProgressCard({required this.status});
-
-  final LoyaltyStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final threshold = status.config.threshold;
-    final progress = threshold == 0 ? 0.0 : (status.balance / threshold).clamp(0.0, 1.0);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(FlcSpace.md),
-      decoration: BoxDecoration(color: FlcColors.ink, borderRadius: BorderRadius.circular(FlcRadius.card)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            '${status.balance} of $threshold',
-            style: FlcTextStyles.h2.copyWith(color: Colors.white),
-          ),
-          const SizedBox(height: FlcSpace.xxs),
-          Text(
-            'tickets toward your next free one',
-            style: FlcTextStyles.body.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: FlcSpace.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: Colors.white24,
-              valueColor: const AlwaysStoppedAnimation<Color>(FlcColors.brand),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AvailableRewardsCard extends StatelessWidget {
-  const _AvailableRewardsCard({required this.count});
-
-  final int count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(FlcSpace.md),
-      decoration: BoxDecoration(
-        color: FlcColors.success.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(FlcRadius.card),
-        border: Border.all(color: FlcColors.success.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: <Widget>[
-          Icon(Icons.card_giftcard, color: FlcColors.successAccent(context)),
-          const SizedBox(width: FlcSpace.sm),
-          Expanded(
-            child: Text(
-              count == 1
-                  ? 'You have a free ticket ready — apply it at checkout on your next booking.'
-                  : 'You have $count free tickets ready — apply one at checkout on your next booking.',
-              style: FlcTextStyles.body,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LedgerRow extends StatelessWidget {
-  const _LedgerRow({required this.entry, required this.eventTitles});
+/// One line of history on a thin timeline: a dot, the event, the date, the stamp.
+class _ActivityRow extends StatelessWidget {
+  const _ActivityRow({required this.entry, required this.eventTitles, required this.isLast});
 
   final LoyaltyLedgerEntryModel entry;
   final Map<String, String> eventTitles;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('d MMM yyyy');
     final bool positive = entry.delta > 0;
-    final String title = entry.eventId != null
-        ? (eventTitles[entry.eventId] ?? 'Event ticket')
-        : _reasonLabel(entry.reason);
+    final bool reward = entry.reason == 'reward_granted' || entry.reason == 'reward_redeemed';
+    final String title = entry.eventId != null ? (eventTitles[entry.eventId] ?? 'Event ticket') : _reasonLabel(entry.reason);
+    final Color dot = reward ? FlcColors.warning : (positive ? FlcColors.accent(context) : FlcColors.secondary(context));
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: FlcSpace.xs),
+    return IntrinsicHeight(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Expanded(
+          SizedBox(
+            width: 28,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(title, style: FlcTextStyles.body, maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text(dateFormat.format(entry.createdAt), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
+                const SizedBox(height: 6),
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(color: reward ? dot : Colors.transparent, border: Border.all(color: dot, width: 2), shape: BoxShape.circle),
+                ),
+                if (!isLast) Expanded(child: Container(width: 2, color: FlcColors.secondary(context).withValues(alpha: 0.25))),
               ],
             ),
           ),
-          Text(
-            '${positive ? '+' : ''}${entry.delta}',
-            style: FlcTextStyles.body.copyWith(
-              color: positive ? FlcColors.successAccent(context) : FlcColors.secondary(context),
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: FlcSpace.md),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(title, style: FlcTextStyles.body.copyWith(fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(DateFormat('d MMM yyyy').format(entry.createdAt), style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context))),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    reward ? (entry.reason == 'reward_granted' ? 'Free ticket' : 'Used') : '${positive ? '+' : ''}${entry.delta}',
+                    style: FlcTextStyles.body.copyWith(color: dot, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -207,7 +164,7 @@ class _LedgerRow extends StatelessWidget {
   String _reasonLabel(String reason) => switch (reason) {
         'reward_granted' => 'Free ticket earned',
         'reward_redeemed' => 'Free ticket used',
-        'refund_reversal' => 'Point reversed (refund)',
+        'refund_reversal' => 'Stamp reversed (refund)',
         'manual_adjustment' => 'Adjustment',
         _ => 'Loyalty update',
       };

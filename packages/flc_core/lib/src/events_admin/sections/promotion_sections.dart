@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../models/event.dart';
 import '../../theme/flc_colors.dart';
@@ -387,6 +388,49 @@ class CampaignTile extends StatelessWidget {
       leading: const Icon(Icons.notifications_active_outlined, size: 20),
       title: Text(row['title'] as String? ?? ''),
       subtitle: Text('${pushAudienceLabels[row['audience']] ?? row['audience']} · ${row['delivered']}/${row['recipients']} delivered · $when'),
+    );
+  }
+}
+
+/// Who is waiting for a place (sold-out events). Signed-in people are told in
+/// the app automatically when a place opens; guests only left an email.
+class WaitingListSection extends StatelessWidget {
+  const WaitingListSection({required this.controller, super.key});
+
+  final EventEditorController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final String? id = controller.draft.id;
+    if (id == null) return const SizedBox.shrink();
+    return SectionCard(
+      title: 'Waiting list',
+      subtitle: 'People who asked to hear if a place opens. Signed-in people are notified in the app automatically; for guests, contact them yourself.',
+      child: FutureBuilder<List<InterestPerson>>(
+        future: controller.repository.interestList(id),
+        builder: (BuildContext context, AsyncSnapshot<List<InterestPerson>> snap) {
+          if (snap.connectionState != ConnectionState.done) return const LinearProgressIndicator();
+          if (snap.hasError) return Text("Couldn't load the list.", style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.errorAccent(context)));
+          final List<InterestPerson> people = snap.data ?? const <InterestPerson>[];
+          if (people.isEmpty) return Text('Nobody yet.', style: FlcTextStyles.bodySmall.copyWith(color: FlcColors.secondary(context)));
+          return Column(
+            children: <Widget>[
+              for (final InterestPerson p in people)
+                ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(p.signedIn ? Icons.smartphone_outlined : Icons.alternate_email, size: 20),
+                  title: Text(p.name ?? p.email ?? 'Unknown'),
+                  subtitle: Text(<String>[
+                    if (p.name != null && p.email != null) p.email!,
+                    DateFormat('d MMM, HH:mm').format(p.createdAt.toLocal()),
+                    if (p.notified) 'told a place opened',
+                  ].join(' · ')),
+                ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

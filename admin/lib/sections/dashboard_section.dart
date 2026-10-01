@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// A quick "how are we doing" page: a handful of live numbers, each one a
-/// plain count or sum straight from the database. Nothing here changes data.
+import '../data/overview_data.dart';
+import '../widgets/admin_charts.dart';
+
+/// "How are we doing": the headline numbers, then charts for the last month,
+/// the last year, membership and how full the next events are. Nothing here
+/// changes data.
 class DashboardSection extends StatefulWidget {
   const DashboardSection({super.key});
 
@@ -31,10 +35,19 @@ class _Stats {
   final int failedPayments;
 }
 
-class _DashboardSectionState extends State<DashboardSection> {
-  late Future<_Stats> _stats = _load();
+class _Everything {
+  const _Everything(this.stats, this.charts);
 
-  Future<_Stats> _load() async {
+  final _Stats stats;
+
+  /// Null if the charts query failed — the tiles still show.
+  final DashboardOverview? charts;
+}
+
+class _DashboardSectionState extends State<DashboardSection> {
+  late Future<_Everything> _data = _load();
+
+  Future<_Stats> _loadStats() async {
     final SupabaseClient db = Supabase.instance.client;
     final DateTime now = DateTime.now();
     final String startOfDay = DateTime(now.year, now.month, now.day).toUtc().toIso8601String();
@@ -44,7 +57,7 @@ class _DashboardSectionState extends State<DashboardSection> {
 
     Future<int> count(PostgrestFilterBuilder<dynamic> q) async => (await q.count(CountOption.exact)).count;
 
-    final results = await Future.wait<Object>(<Future<Object>>[
+    final List<Object> results = await Future.wait<Object>(<Future<Object>>[
       count(db.from('events').select('id').eq('status', 'published').gte('starts_at', nowIso)),
       count(db.from('tickets').select('id').gte('created_at', startOfDay)),
       db.from('orders').select('total_minor').eq('status', 'paid').gte('created_at', startOfMonth),
@@ -54,7 +67,7 @@ class _DashboardSectionState extends State<DashboardSection> {
       count(db.from('orders').select('id').eq('status', 'failed').gte('created_at', weekAgo)),
     ]);
 
-    final List paid = results[2] as List;
+    final List<dynamic> paid = results[2] as List<dynamic>;
     return _Stats(
       upcomingEvents: results[0] as int,
       ticketsSoldToday: results[1] as int,
@@ -66,6 +79,19 @@ class _DashboardSectionState extends State<DashboardSection> {
     );
   }
 
+  Future<_Everything> _load() async {
+    final Future<_Stats> stats = _loadStats();
+    DashboardOverview? charts;
+    try {
+      charts = await OverviewRepository().dashboard();
+    } catch (_) {
+      charts = null;
+    }
+    return _Everything(await stats, charts);
+  }
+
+  static final NumberFormat _money = NumberFormat.currency(locale: 'en_GB', symbol: '£');
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -75,28 +101,38 @@ class _DashboardSectionState extends State<DashboardSection> {
           children: <Widget>[
             Text('Dashboard', style: Theme.of(context).textTheme.headlineMedium),
             const Spacer(),
-            IconButton(icon: const Icon(Icons.refresh), tooltip: 'Refresh', onPressed: () => setState(() => _stats = _load())),
+            IconButton(icon: const Icon(Icons.refresh), tooltip: 'Refresh', onPressed: () => setState(() => _data = _load())),
           ],
         ),
         const SizedBox(height: 16),
-        FutureBuilder<_Stats>(
-          future: _stats,
-          builder: (BuildContext context, AsyncSnapshot<_Stats> snap) {
+        FutureBuilder<_Everything>(
+          future: _data,
+          builder: (BuildContext context, AsyncSnapshot<_Everything> snap) {
             if (snap.connectionState != ConnectionState.done) return const LinearProgressIndicator();
             if (snap.hasError) return const Text("Couldn't load the numbers. Try refreshing.");
-            final _Stats s = snap.data!;
-            final NumberFormat money = NumberFormat.currency(locale: 'en_GB', symbol: '£');
-            return Wrap(
-              spacing: 16,
-              runSpacing: 16,
+            final _Stats s = snap.data!.stats;
+            final DashboardOverview? c = snap.data!.charts;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                _Tile('Upcoming events', '${s.upcomingEvents}', Icons.event_outlined),
-                _Tile('Tickets sold today', '${s.ticketsSoldToday}', Icons.confirmation_number_outlined),
-                _Tile('Revenue this month', money.format(s.revenueThisMonthMinor / 100), Icons.payments_outlined),
-                _Tile('Active members', '${s.activeMembers}', Icons.badge_outlined),
-                _Tile('Applied to join', '${s.appliedMembers}', Icons.mark_email_unread_outlined),
-                _Tile('Registered people', '${s.registeredUsers}', Icons.people_outline),
-                _Tile('Failed payments (7 days)', '${s.failedPayments}', Icons.error_outline),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
+                  children: <Widget>[
+                    StatTile(label: 'Upcoming events', value: '${s.upcomingEvents}', icon: Icons.event_outlined),
+                    StatTile(label: 'Tickets sold today', value: '${s.ticketsSoldToday}', icon: Icons.confirmation_number_outlined),
+                    StatTile(label: 'Revenue this month', value: _money.format(s.revenueThisMonthMinor / 100), icon: Icons.payments_outlined),
+                    StatTile(label: 'Active members', value: '${s.activeMembers}', icon: Icons.badge_outlined),
+                    StatTile(label: 'Applied to join', value: '${s.appliedMembers}', icon: Icons.mark_email_unread_outlined),
+                    StatTile(label: 'Registered people', value: '${s.registeredUsers}', icon: Icons.people_outline),
+                    StatTile(label: 'Failed payments (7 days)', value: '${s.failedPayments}', icon: Icons.error_outline),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                if (c == null)
+                  const Text("The charts couldn't load just now — the numbers above are still right. Try refreshing.")
+                else
+                  _charts(context, c),
               ],
             );
           },
@@ -104,34 +140,66 @@ class _DashboardSectionState extends State<DashboardSection> {
       ],
     );
   }
-}
 
-class _Tile extends StatelessWidget {
-  const _Tile(this.label, this.value, this.icon);
+  Widget _charts(BuildContext context, DashboardOverview c) {
+    final DateTime today = DateTime.now();
+    final List<DayPoint> days = fillDays(c.daily, today.subtract(const Duration(days: 29)), today);
+    final List<String> months = lastMonths(12);
+    final Map<String, (int, int)> monthly = <String, (int, int)>{for (final (String, int, int) m in c.monthly) m.$1: (m.$2, m.$3)};
+    final Map<String, int> joined = <String, int>{for (final (String, int) m in c.newMembers) m.$1: m.$2};
+    String monthLabel(String ym) => DateFormat('MMM').format(DateTime(int.parse(ym.substring(0, 4)), int.parse(ym.substring(5))));
 
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 230,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Icon(icon, size: 22),
-              const SizedBox(height: 12),
-              Text(value, style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 4),
-              Text(label, style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints box) {
+        const double gap = 16;
+        final double half = box.maxWidth > 980 ? (box.maxWidth - gap) / 2 : box.maxWidth;
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: <Widget>[
+            ChartCard(
+              width: half,
+              title: 'Tickets sold',
+              subtitle: 'Last 30 days',
+              child: AdminBarChart(
+                bars: <(String, double)>[for (final DayPoint d in days) (DateFormat('d MMM').format(d.day), d.tickets.toDouble())],
+                format: (double v) => '${v.round()} ticket${v.round() == 1 ? '' : 's'}',
+              ),
+            ),
+            ChartCard(
+              width: half,
+              title: 'Revenue by month',
+              subtitle: 'Last 12 months, ticket sales',
+              child: AdminBarChart(
+                bars: <(String, double)>[for (final String m in months) (monthLabel(m), (monthly[m]?.$2 ?? 0) / 100)],
+                format: (double v) => _money.format(v),
+              ),
+            ),
+            ChartCard(
+              width: half,
+              title: 'New members',
+              subtitle: 'Joined per month, last 12 months',
+              child: AdminBarChart(
+                bars: <(String, double)>[for (final String m in months) (monthLabel(m), (joined[m] ?? 0).toDouble())],
+                format: (double v) => '${v.round()} new member${v.round() == 1 ? '' : 's'}',
+              ),
+            ),
+            ChartCard(
+              width: half,
+              title: 'Next events — how full',
+              subtitle: 'Tickets sold against capacity',
+              child: c.upcoming.isEmpty
+                  ? const EmptyChart('No upcoming events.')
+                  : Column(
+                      children: <Widget>[
+                        for (final UpcomingFill u in c.upcoming)
+                          FillBar(label: '${u.title} · ${DateFormat('d MMM').format(u.startsAt.toLocal())}', value: u.sold, of: u.capacity),
+                      ],
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
