@@ -47,6 +47,12 @@ abstract final class FlcColors {
   static Color accent(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? brandOnDark : brand;
 
+  /// The outline of a control (segmented buttons, the filter pill): a soft grey,
+  /// lighter than body text so a row of controls doesn't read as a row of
+  /// black boxes.
+  static Color controlBorder(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? const Color(0x4DFFFFFF) : const Color(0x736B7076);
+
   /// A lighter neutral grey for secondary text/icons in dark mode. [slate]
   /// on [surfaceDark] measures ~3.4:1 — under the 4.5:1 WCAG AA minimum for
   /// body-sized text, and the actual "still difficult to read in dark

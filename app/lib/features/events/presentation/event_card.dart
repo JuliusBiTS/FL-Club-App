@@ -35,12 +35,12 @@ class EventCard extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: event.heroImagePath == null
-                  ? EventHeroFallback(category: event.category)
+                  ? EventHeroFallback(category: event.category, showLabel: false)
                   : CachedNetworkImage(
                       imageUrl: event.heroImagePath!,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => EventHeroFallback(category: event.category),
-                      errorWidget: (context, url, error) => EventHeroFallback(category: event.category),
+                      placeholder: (context, url) => EventHeroFallback(category: event.category, showLabel: false),
+                      errorWidget: (context, url, error) => EventHeroFallback(category: event.category, showLabel: false),
                     ),
             ),
             Padding(

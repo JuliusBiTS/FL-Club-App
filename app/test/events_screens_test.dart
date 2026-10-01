@@ -39,15 +39,15 @@ final List<EventModel> _events = <EventModel>[
 
 ProfileModel _profile(UserRole role) => ProfileModel(id: 'u1', email: 'a@b.c', role: role);
 
-Future<void> _pumpFeed(WidgetTester tester, {UserRole? role}) async {
-  tester.view.physicalSize = const Size(1600, 2400);
+Future<void> _pumpFeed(WidgetTester tester, {UserRole? role, List<EventModel>? events, double? width}) async {
+  tester.view.physicalSize = Size(width ?? 1600, 2400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   await tester.pumpWidget(
     ProviderScope(
       key: UniqueKey(),
       overrides: [
-        eventsFeedControllerProvider.overrideWith(() => _FakeFeed(_events)),
+        eventsFeedControllerProvider.overrideWith(() => _FakeFeed(events ?? _events)),
         sellingFastIdsProvider.overrideWith((ref) async => <String>{'1'}),
         currentProfileProvider.overrideWith((ref) async => role == null ? null : _profile(role)),
       ],
@@ -59,16 +59,50 @@ Future<void> _pumpFeed(WidgetTester tester, {UserRole? role}) async {
 
 void main() {
   group('Events feed', () {
-    testWidgets('lifts FC Highlights into its own section at the top, on "All" only', (tester) async {
+    testWidgets('puts the very next event first, then FC Highlights, then the rest, on "All" only', (tester) async {
       await _pumpFeed(tester);
 
-      expect(find.text('FC HIGHLIGHTS'), findsOneWidget); // section header
+      expect(find.text('NEXT UP'), findsOneWidget);
+      expect(find.text('FC HIGHLIGHTS'), findsOneWidget);
       expect(find.text('COMING UP'), findsOneWidget);
 
-      final recommendedY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
-      final panelY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
-      expect(recommendedY, lessThan(panelY), reason: 'the recommended event is listed first even though it is later in date');
+      final nextY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
+      final highlightY = tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy;
+      final laterY = tester.getTopLeft(find.text("Members' quiz night")).dy;
+      expect(nextY, lessThan(highlightY), reason: 'the soonest event is on top even though a highlight exists');
+      expect(highlightY, lessThan(laterY));
     });
+
+    testWidgets('the soonest event is first even if the list arrives scrambled', (tester) async {
+      await _pumpFeed(tester, events: <EventModel>[_events[2], _events[1], _events[0]]);
+      final nextY = tester.getTopLeft(find.text('Afghanistan 2026')).dy;
+      expect(nextY, lessThan(tester.getTopLeft(find.text('Book talk: The Last Correspondent')).dy));
+      expect(nextY, lessThan(tester.getTopLeft(find.text("Members' quiz night")).dy));
+    });
+
+    testWidgets('flipping the date order gives one plain list, latest first', (tester) async {
+      await _pumpFeed(tester);
+      await tester.tap(find.byTooltip('Earliest first — tap to flip'));
+      await tester.pumpAndSettle();
+      expect(find.text('NEXT UP'), findsNothing);
+      expect(tester.getTopLeft(find.text("Members' quiz night")).dy, lessThan(tester.getTopLeft(find.text('Afghanistan 2026')).dy));
+    });
+
+    for (final double width in <double>[320, 360, 412]) {
+      testWidgets('Upcoming/Past, Filter and the arrow share one line at ${width.round()} px wide', (tester) async {
+        await _pumpFeed(tester, width: width);
+        final upcoming = tester.getRect(find.text('Upcoming'));
+        final past = tester.getRect(find.text('Past'));
+        final filter = tester.getRect(find.text('Filter'));
+        final arrow = tester.getRect(find.byTooltip('Earliest first — tap to flip'));
+        for (final r in <Rect>[past, filter, arrow]) {
+          expect((r.center.dy - upcoming.center.dy).abs(), lessThan(4), reason: 'all four are on the same line');
+        }
+        expect(past.right, lessThan(filter.left));
+        expect(filter.right, lessThan(arrow.left + 1));
+        expect(arrow.right, lessThanOrEqualTo(width));
+      });
+    }
 
     testWidgets('every other filter is plain chronological, with no grouping', (tester) async {
       await _pumpFeed(tester);

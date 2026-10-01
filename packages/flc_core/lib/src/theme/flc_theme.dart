@@ -68,8 +68,31 @@ abstract final class FlcTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(FlcRadius.input)),
+        // Soft grey outline at rest, brand olive when focused — the same family
+        // as the segmented buttons and filter pill, instead of near-black boxes.
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FlcRadius.input),
+          borderSide: BorderSide(color: isDark ? const Color(0x4DFFFFFF) : const Color(0x736B7076)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(FlcRadius.input),
+          borderSide: BorderSide(color: isDark ? FlcColors.brandOnDark : FlcColors.brand, width: 2),
+        ),
         filled: true,
         fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+      ),
+      // Selected = brand olive with white text, like the app bar — not the
+      // Material default (a grey-ish container colour).
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (Set<WidgetState> s) => s.contains(WidgetState.selected) ? FlcColors.brand : Colors.transparent,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (Set<WidgetState> s) => s.contains(WidgetState.selected) ? Colors.white : colorScheme.onSurface,
+          ),
+          side: WidgetStatePropertyAll<BorderSide>(BorderSide(color: isDark ? const Color(0x4DFFFFFF) : const Color(0x736B7076))),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

@@ -71,32 +71,36 @@ class EventsFeedScreen extends ConsumerWidget {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.fromLTRB(FlcSpace.md, FlcSpace.sm, FlcSpace.md, FlcSpace.sm),
-            // Two rows: the toggle gets the full width (sharing a row with the
-            // filter pill left "Upcoming" squashed on narrower phones), and the
-            // filter/sort pill sits right-aligned beneath it.
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            // One line: Upcoming/Past takes whatever room the filter pill
+            // leaves. Both are 40 high with the same outline, so they read as
+            // one control strip. Compact padding is what lets all three fit on
+            // a small phone without squashing the labels.
+            child: Row(
               children: <Widget>[
-                SegmentedButton<bool>(
-                  showSelectedIcon: false,
-                  segments: const <ButtonSegment<bool>>[
-                    ButtonSegment(value: false, label: Text('Upcoming', maxLines: 1, softWrap: false)),
-                    ButtonSegment(value: true, label: Text('Past', maxLines: 1, softWrap: false)),
-                  ],
-                  selected: <bool>{showingPast},
-                  onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
-                ),
-                const SizedBox(height: FlcSpace.sm),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _FilterButton(
-                    selected: filter,
-                    categories: eventsAsync.maybeWhen(data: _categoryFilters, orElse: () => const <(String, String)>[]),
-                    onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
-                    showFilter: !showingPast,
-                    reverse: reverseSort,
-                    onFlip: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
+                Expanded(
+                  child: SegmentedButton<bool>(
+                    showSelectedIcon: false,
+                    style: SegmentedButton.styleFrom(
+                      minimumSize: const Size(0, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      textStyle: FlcTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    segments: const <ButtonSegment<bool>>[
+                      ButtonSegment(value: false, label: Text('Upcoming', maxLines: 1, softWrap: false)),
+                      ButtonSegment(value: true, label: Text('Past', maxLines: 1, softWrap: false)),
+                    ],
+                    selected: <bool>{showingPast},
+                    onSelectionChanged: (selection) => ref.read(_showingPastProvider.notifier).state = selection.first,
                   ),
+                ),
+                const SizedBox(width: FlcSpace.xs),
+                _FilterButton(
+                  selected: filter,
+                  categories: eventsAsync.maybeWhen(data: _categoryFilters, orElse: () => const <(String, String)>[]),
+                  onChanged: (id) => ref.read(_feedFilterProvider.notifier).state = id,
+                  showFilter: !showingPast,
+                  reverse: reverseSort,
+                  onFlip: () => ref.read(_reverseSortProvider.notifier).state = !reverseSort,
                 ),
               ],
             ),
@@ -109,19 +113,25 @@ class EventsFeedScreen extends ConsumerWidget {
                     error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
                     data: (events) {
                       final saved = ref.watch(eventFollowsProvider).valueOrNull?.saved ?? const <String>{};
-                      final matching = _applyFilter(events, filter, saved);
+                      // Always put the soonest event first, whatever order the
+                      // cache or server handed them over in.
+                      final sorted = <EventModel>[...events]..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+                      final matching = _applyFilter(sorted, filter, saved);
                       if (matching.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
                       final filtered = reverseSort ? matching.reversed.toList() : matching;
 
-                      // Events already arrive ascending by starts_at (see
-                      // EventsRemoteDataSource.fetchUpcomingPublished), so
-                      // both of these stay chronological among themselves —
-                      // only the recommended ones move, as a whole group,
-                      // ahead of everything else.
-                      final bool grouped = filter == 'all';
-                      final recommended = grouped ? filtered.where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList() : const <EventModel>[];
-                      final recommendedIds = recommended.map((e) => e.id).toSet();
-                      final rest = filtered.where((e) => !recommendedIds.contains(e.id)).toList();
+                      // "All" (soonest first) is laid out as: the very next event
+                      // on top, then FC Highlights, then everything else in date
+                      // order. The next event is never pushed down by a highlight
+                      // that happens later. Any other filter, or a flipped date
+                      // order, is one plain list.
+                      final bool sectioned = filter == 'all' && !reverseSort;
+                      final EventModel? next = sectioned ? filtered.first : null;
+                      final recommended = sectioned
+                          ? filtered.skip(1).where((e) => e.highlight == EventHighlight.fcRecommends).take(3).toList()
+                          : const <EventModel>[];
+                      final shownAbove = <String>{if (next != null) next.id, ...recommended.map((e) => e.id)};
+                      final rest = filtered.where((e) => !shownAbove.contains(e.id)).toList();
 
                       Widget card(EventModel e) => EventCard(
                             event: e,
@@ -138,11 +148,15 @@ class EventsFeedScreen extends ConsumerWidget {
                         },
                         child: ListView(
                           children: <Widget>[
+                            if (next != null) ...<Widget>[
+                              const _SectionHeader(title: 'Next up', icon: Icons.schedule_outlined),
+                              card(next),
+                            ],
                             if (recommended.isNotEmpty) ...<Widget>[
                               const _SectionHeader(title: 'FC Highlights', icon: Icons.verified_outlined),
                               for (final e in recommended) card(e),
-                              if (rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
                             ],
+                            if (sectioned && rest.isNotEmpty) const _SectionHeader(title: 'Coming up'),
                             for (final e in rest) card(e),
                             const SizedBox(height: FlcSpace.xl),
                           ],
@@ -213,7 +227,7 @@ class _FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool active = showFilter && selected != 'all';
     final Color color = FlcColors.accent(context);
-    final Color border = Theme.of(context).colorScheme.outline;
+    final Color border = FlcColors.controlBorder(context);
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
@@ -246,15 +260,18 @@ class _FilterButton extends StatelessWidget {
                       ),
                     ),
                   ),
-                  VerticalDivider(width: 1, thickness: 1, indent: 8, endIndent: 8, color: border),
+                  VerticalDivider(width: 1, thickness: 1, indent: 10, endIndent: 10, color: border),
                 ],
                 Tooltip(
                   message: reverse ? 'Latest first — tap to flip' : 'Earliest first — tap to flip',
                   child: InkWell(
                     onTap: onFlip,
-                    child: SizedBox(
+                    // Tinted while the order is flipped, so it is obvious the list
+                    // is not in its usual soonest-first order.
+                    child: Container(
                       width: 44,
                       height: 40,
+                      color: reverse ? color.withValues(alpha: 0.16) : Colors.transparent,
                       child: Icon(reverse ? Icons.arrow_upward : Icons.arrow_downward, size: 20, color: color),
                     ),
                   ),
