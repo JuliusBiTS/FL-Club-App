@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../core/platform/secure_screen.dart';
+import '../../events/calendar_actions.dart';
 import '../tickets_providers.dart';
 
 /// Briefing §9.4. Live 30s-rotating HMAC-signed QR, entirely offline once
@@ -128,6 +129,19 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                 style: FlcTextStyles.bodySmall.copyWith(color: Colors.white54),
                 textAlign: TextAlign.center,
               ),
+              if (ticket.isUpcoming) ...<Widget>[
+                const SizedBox(height: FlcSpace.md),
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
+                    minimumSize: const Size(0, 44),
+                  ),
+                  onPressed: () => addToCalendar(context, icsFromTicket(ticket)),
+                  icon: const Icon(Icons.event_available_outlined, size: 18),
+                  label: const Text('Add to calendar'),
+                ),
+              ],
               const SizedBox(height: FlcSpace.lg),
               _DetailsCard(ticket: ticket),
             ],

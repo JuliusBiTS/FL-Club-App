@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/auth/profile_provider.dart';
 import '../events_providers.dart';
+import '../data/event_follow_repository.dart';
 import 'event_card.dart';
 import 'events_feed_controller.dart';
 
@@ -33,6 +34,7 @@ const List<(String, String)> _fixedFilters = <(String, String)>[
   ('week', 'In the next 7 days'),
   ('offers', 'Offers'),
   ('members', 'Members only'),
+  ('saved', 'Saved'),
 ];
 
 /// Briefing §9.1. Upcoming/Past toggle, one filter button (rather than a
@@ -106,7 +108,8 @@ class EventsFeedScreen extends ConsumerWidget {
                     loading: () => const _ShimmerList(),
                     error: (error, stackTrace) => _ErrorState(onRetry: () => ref.read(eventsFeedControllerProvider.notifier).refresh()),
                     data: (events) {
-                      final matching = _applyFilter(events, filter);
+                      final saved = ref.watch(eventFollowsProvider).valueOrNull?.saved ?? const <String>{};
+                      final matching = _applyFilter(events, filter, saved);
                       if (matching.isEmpty) return _EmptyState(filtered: events.isNotEmpty);
                       final filtered = reverseSort ? matching.reversed.toList() : matching;
 
@@ -162,7 +165,7 @@ class EventsFeedScreen extends ConsumerWidget {
     return <(String, String)>[for (final c in seen.take(8)) ('cat:$c', c)];
   }
 
-  List<EventModel> _applyFilter(List<EventModel> events, String filter) {
+  List<EventModel> _applyFilter(List<EventModel> events, String filter, Set<String> saved) {
     if (filter.startsWith('cat:')) {
       final name = filter.substring(4);
       return events.where((e) => e.category == name).toList();
@@ -173,6 +176,8 @@ class EventsFeedScreen extends ConsumerWidget {
         return events.where((e) => e.startsAt.isBefore(weekFromNow)).toList();
       case 'offers':
         return events.where((e) => e.highlight == EventHighlight.specialOffer || e.perks.isNotEmpty).toList();
+      case 'saved':
+        return events.where((e) => saved.contains(e.id)).toList();
       case 'members':
         return events.where((e) => e.membersOnly).toList();
       default:

@@ -11,6 +11,7 @@ import '../../../core/ui/membership_handle_visibility.dart';
 import '../../checkout/domain/checkout_args.dart';
 import '../../events_admin/events_admin_providers.dart';
 import '../events_providers.dart';
+import 'event_follow_widgets.dart';
 import 'events_feed_controller.dart';
 
 /// Briefing §9.2. Everything the club can enter in the event editor shows up
@@ -149,6 +150,7 @@ class _EventDetailBody extends ConsumerWidget {
           SliverAppBar(
             pinned: true,
             actions: <Widget>[
+              if (event.startsAt.isAfter(DateTime.now())) SaveEventButton(eventId: event.id, onDark: true),
               if (isStaff)
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
@@ -218,6 +220,8 @@ class _EventDetailBody extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: FlcSpace.sm),
+                EventActionsRow(event: event),
                 if (watchWindowOpen) ...<Widget>[
                   const SizedBox(height: FlcSpace.sm),
                   FilledButton.icon(
@@ -273,6 +277,10 @@ class _EventDetailBody extends ConsumerWidget {
                   const SizedBox(height: FlcSpace.lg),
                   const Text('Tickets', style: FlcTextStyles.h3),
                   const SizedBox(height: FlcSpace.sm),
+                  if (soldOut) ...<Widget>[
+                    WaitlistCard(eventId: event.id),
+                    const SizedBox(height: FlcSpace.sm),
+                  ],
                   ticketTypesAsync.when(
                     loading: () => const Padding(
                       padding: EdgeInsets.symmetric(vertical: FlcSpace.md),

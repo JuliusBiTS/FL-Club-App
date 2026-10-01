@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flc_core/flc_core.dart';
 import 'package:flutter/material.dart';
 
+import 'event_follow_widgets.dart';
+
 /// Briefing §9.1. Full member-price surfacing (struck-through standard
 /// price, live ticket-type-aware pricing) needs the event's ticket types,
 /// which the feed doesn't fetch per-card for cost/latency reasons — that
@@ -51,7 +53,14 @@ class EventCard extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: FlcSpace.xxs),
                       child: Text(event.category!.toUpperCase(), style: FlcTextStyles.overline.copyWith(color: FlcColors.accent(context))),
                     ),
-                  Text(event.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Expanded(child: Text(event.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: FlcTextStyles.h3)),
+                      // Kept in the text area, never over the picture.
+                      if (event.startsAt.isAfter(DateTime.now())) SaveEventButton(eventId: event.id, compact: true),
+                    ],
+                  ),
                   const SizedBox(height: FlcSpace.xxs),
                   Text(
                     '$when · ${event.venueRoom ?? event.venueName}${event.isOnline ? ' · Also online' : ''}',

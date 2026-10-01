@@ -78,3 +78,5 @@ verify_jwt = false # pg_cron-triggered
 verify_jwt = true
 [functions.extract-article-details]
 verify_jwt = true
+[functions.send-event-reminders]
+verify_jwt = false # pg_cron-triggered; checks the service role key itself
