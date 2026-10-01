@@ -139,18 +139,11 @@ class _AuthFormState extends ConsumerState<AuthForm> {
                 ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : Text(_isRegisterMode ? 'Create account' : 'Sign in'),
           ),
-          const SizedBox(height: FlcSpace.md),
-          const Row(children: <Widget>[
-            Expanded(child: Divider()),
-            Padding(padding: EdgeInsets.symmetric(horizontal: FlcSpace.sm), child: Text('or', style: FlcTextStyles.caption)),
-            Expanded(child: Divider()),
-          ]),
-          const SizedBox(height: FlcSpace.md),
-          OutlinedButton.icon(
-            onPressed: _loading ? null : _handleGoogleSignIn,
-            icon: const Icon(Icons.g_mobiledata),
-            label: const Text('Continue with Google'),
-          ),
+          // Google sign-in is hidden rather than shown disabled/broken —
+          // the Google OAuth provider isn't configured yet (needs a Google
+          // Cloud client + Supabase provider + Android SHA-1, see
+          // docs/STATUS_AND_TODO.md). Bring back the divider above this with
+          // it once AuthRepository.signInWithGoogle actually works.
         ],
       ),
     );
@@ -206,17 +199,6 @@ class _AuthFormState extends ConsumerState<AuthForm> {
       }
     } on AuthException catch (e) {
       setState(() => _errorMessage = e.message);
-    }
-  }
-
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _loading = true);
-    try {
-      await ref.read(authRepositoryProvider).signInWithGoogle();
-    } on AuthException catch (e) {
-      setState(() => _errorMessage = e.message);
-    } finally {
-      if (mounted) setState(() => _loading = false);
     }
   }
 }

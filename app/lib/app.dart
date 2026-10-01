@@ -81,7 +81,7 @@ class _FrontlineClubAppState extends ConsumerState<FrontlineClubApp> {
       builder: (BuildContext context, Widget? child) {
         return Stack(
           children: <Widget>[
-            if (child != null) child,
+            ?child,
             if (_showSplash) SplashOverlay(onFinished: () => setState(() => _showSplash = false)),
           ],
         );

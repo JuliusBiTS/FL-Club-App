@@ -144,12 +144,7 @@ class _SignedInBody extends ConsumerWidget {
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push('/you/loyalty'),
         ),
-        ListTile(
-          leading: const Icon(Icons.credit_card_outlined),
-          title: const Text('Payment methods'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming in M3.'))),
-        ),
+        const _ComingSoonTile(icon: Icons.credit_card_outlined, title: 'Payment methods'),
         ListTile(
           leading: const Icon(Icons.notifications_outlined),
           title: const Text('Notifications'),
@@ -207,16 +202,8 @@ class _SignedInBody extends ConsumerWidget {
           onChanged: (value) => setAlwaysShowDot(ref, value),
         ),
         const Divider(height: 1),
-        ListTile(
-          leading: const Icon(Icons.help_outline),
-          title: const Text('Help'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming later.'))),
-        ),
-        ListTile(
-          leading: const Icon(Icons.description_outlined),
-          title: const Text('Legal'),
-          onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming later.'))),
-        ),
+        const _ComingSoonTile(icon: Icons.help_outline, title: 'Help'),
+        const _ComingSoonTile(icon: Icons.description_outlined, title: 'Legal'),
         const Divider(height: 1),
         ListTile(
           leading: const Icon(Icons.logout),
@@ -270,6 +257,26 @@ Future<void> _showThemeModeSheet(BuildContext context, WidgetRef ref) async {
       ),
     ),
   );
+}
+
+/// A row that's genuinely not ready yet — muted, no chevron (nothing to go
+/// to), and a quiet "Soon" label rather than a snackbar full of internal
+/// milestone jargon. A tidier way to say "not yet" than a dead-end tap.
+class _ComingSoonTile extends StatelessWidget {
+  const _ComingSoonTile({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color muted = FlcColors.secondary(context);
+    return ListTile(
+      leading: Icon(icon, color: muted),
+      title: Text(title, style: FlcTextStyles.body.copyWith(color: muted)),
+      trailing: Text('Soon', style: FlcTextStyles.caption.copyWith(color: muted)),
+    );
+  }
 }
 
 class _ProfileHeader extends StatelessWidget {
